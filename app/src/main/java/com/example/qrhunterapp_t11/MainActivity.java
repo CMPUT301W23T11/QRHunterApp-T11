@@ -12,6 +12,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = "MainActivity";
     BottomNavigationView bottomToolbar;
 
     ProfileFragment profileFragment = new ProfileFragment();
