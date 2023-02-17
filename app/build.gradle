@@ -39,4 +39,8 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     implementation platform('com.google.firebase:firebase-bom:31.2.1')
     implementation 'com.google.firebase:firebase-firestore'
+    //google services
+    implementation 'com.google.android.gms:play-services-maps:18.1.0'
+    //google locations
+    implementation 'com.google.android.gms:play-services-location:21.0.1'
 }
