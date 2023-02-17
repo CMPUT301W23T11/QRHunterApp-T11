@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/map"
+        android:title="@string/map_icon"
+        android:icon="@drawable/pin_map_icon"/>
+
+    <item android:id="@+id/search"
+        android:title="@string/search_icon"
+        android:icon="@drawable/search_icon"/>
+
+    <item android:id="@+id/profile"
+        android:title="@string/profile_icon"
+        android:icon="@drawable/profile_icon"/>
+
+    <item android:id="@+id/camera"
+        android:title="@string/camera_icon"
+        android:icon="@drawable/camera_icon"/>
+
+    <item android:id="@+id/settings"
+        android:title="@string/settings"
+        android:icon="@drawable/settings_icon"/>
+
+
+
+</menu>

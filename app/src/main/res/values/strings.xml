@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">QRHunterApp-T11</string>
+    <string name="map_icon">Map</string>
+    <string name="search_icon">Search</string>
+    <string name="profile_icon">Profile</string>
+    <string name="camera_icon">Camera</string>
+    <string name="settings">Settings</string>
+
 </resources>
