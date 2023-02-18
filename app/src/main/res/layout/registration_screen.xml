@@ -10,7 +10,7 @@
 
     <EditText
         android:id="@+id/usernameregisterscreen"
-        android:layout_width="0dp"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="96dp"
         android:maxLength="20"
@@ -23,7 +23,7 @@
 
     <EditText
         android:id="@+id/emailregisterscreen"
-        android:layout_width="0dp"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:hint="Email"
@@ -35,7 +35,7 @@
 
     <EditText
         android:id="@+id/passwordregisterscreen"
-        android:layout_width="0dp"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:hint="Password"
@@ -47,7 +47,7 @@
 
     <TextView
         android:id="@+id/passwordhintregisterscreen"
-        android:layout_width="0dp"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:text="Password must be greater than 8 characters and include letters, digits, and special characters"
         android:textStyle="bold"
@@ -57,7 +57,7 @@
 
     <EditText
         android:id="@+id/confirmpasswordregisterscreen"
-        android:layout_width="0dp"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:hint="Confirm password"
