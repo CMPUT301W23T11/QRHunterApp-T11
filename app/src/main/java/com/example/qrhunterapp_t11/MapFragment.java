@@ -34,14 +34,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     public static final int permissionsRequestEnableGPS = 9002;
     public static final int permissionsRequestAccessFineLocation = 9003;
     private GoogleMap mMap;
+    private SupportMapFragment mapFragment;
     private boolean mLocationPermissionGranted = false;
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
+    }
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
-        // Initialize the map fragment
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
         return view;
     }
 

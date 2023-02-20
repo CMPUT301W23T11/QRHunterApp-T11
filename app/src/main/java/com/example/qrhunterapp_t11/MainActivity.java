@@ -45,6 +45,10 @@ public class MainActivity extends AppCompatActivity {
             /*
              * add cases for map, search, and camera after creating their fragments
             */
+            else if (item.getItemId() == R.id.map) {
+                MapFragment mapFragment = new MapFragment();
+                getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, mapFragment).commit();
+            }
             return false;
         });
 
