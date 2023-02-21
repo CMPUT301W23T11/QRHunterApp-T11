@@ -12,6 +12,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = "MainActivity";
     BottomNavigationView bottomToolbar;
 
     ProfileFragment profileFragment = new ProfileFragment();
@@ -63,6 +64,10 @@ public class MainActivity extends AppCompatActivity {
             /*
              - add cases for search after creating their fragments
             */
+            else if (item.getItemId() == R.id.map) {
+                MapFragment mapFragment = new MapFragment();
+                getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, mapFragment).commit();
+            }
             return false;
         });
 
