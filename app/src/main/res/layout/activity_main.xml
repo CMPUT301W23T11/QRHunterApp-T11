@@ -18,8 +18,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         app:menu="@menu/bottom_toolbar_menu"
-        app:itemIconTint="@color/black"
-        app:itemTextColor="@color/black"
-        app:labelVisibilityMode="labeled"/>
+        app:itemBackground="@color/toolbar"
+        app:itemIconTint="@drawable/selector"
+        app:itemTextColor="@drawable/selector"
+        />
 
 </RelativeLayout>
