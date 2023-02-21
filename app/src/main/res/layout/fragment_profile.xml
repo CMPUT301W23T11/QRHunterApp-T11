@@ -36,7 +36,8 @@
             android:textAlignment="center"
             android:textColor="#4CAF50"
             android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:paddingBottom="5dp"/>
 
         <TextView
             android:id="@+id/totalScoreText"
