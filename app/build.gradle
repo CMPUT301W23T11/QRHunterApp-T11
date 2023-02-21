@@ -28,6 +28,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    buildFeatures {
+        viewBinding true
+        dataBinding true // https://stackoverflow.com/questions/66459260/how-to-solve-data-binding-is-not-enabled-error-while-using-view-binding
+    }
 }
 
 dependencies {
@@ -44,4 +48,16 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
     //google locations
     implementation 'com.google.android.gms:play-services-location:21.0.1'
+    implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
+
+    // CameraX dependencies
+    def camerax_version = "1.1.0-beta01"
+    implementation "androidx.camera:camera-core:${camerax_version}"
+    implementation "androidx.camera:camera-camera2:${camerax_version}"
+    implementation "androidx.camera:camera-lifecycle:${camerax_version}"
+    implementation "androidx.camera:camera-video:${camerax_version}"
+
+    implementation "androidx.camera:camera-view:${camerax_version}"
+    implementation "androidx.camera:camera-extensions:${camerax_version}"
+
 }

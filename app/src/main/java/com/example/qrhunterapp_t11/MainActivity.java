@@ -17,6 +17,7 @@ public class MainActivity extends AppCompatActivity {
 
     ProfileFragment profileFragment = new ProfileFragment();
     SettingsFragment settingsFragment = new SettingsFragment();
+    CameraFragment cameraFragment = new CameraFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,14 +37,17 @@ public class MainActivity extends AppCompatActivity {
 
         // Changes the fragment based on which item is clicked on the toolbar
         bottomToolbar.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.profile) {
+            if (item.getItemId() == R.id.profile) { // TODO convert to switch statement?
                 getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
             }
             else if (item.getItemId() == R.id.settings) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, settingsFragment).commit();
             }
+            else if (item.getItemId() == R.id.camera) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, cameraFragment).commit();
+            }
             /*
-             * add cases for map, search, and camera after creating their fragments
+             * add cases for map, search after creating their fragments
             */
             else if (item.getItemId() == R.id.map) {
                 MapFragment mapFragment = new MapFragment();

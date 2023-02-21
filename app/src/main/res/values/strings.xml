@@ -5,6 +5,8 @@
     <string name="profile_icon">Profile</string>
     <string name="camera_icon">Camera</string>
     <string name="settings">Settings</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <string name="google_map_api_key">AIzaSyBi77bc0a3Lwbh-ZbfFUAGTeqo4m1NvGog</string>
 </resources>
