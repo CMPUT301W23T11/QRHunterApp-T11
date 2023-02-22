@@ -29,7 +29,8 @@ public class MainActivity extends AppCompatActivity {
         bottomToolbar = findViewById(R.id.bottomToolbar);
         bottomToolbar.setSelectedItemId(R.id.profile);
 
-        // When the app is started, sets the profile fragment to be opened first
+        // When the app is started, sets the profile fragment to be opened first if user is logged in
+        // Otherwise it starts with the login fragment
         /*
             https://www.geeksforgeeks.org/how-to-create-fragment-using-bottom-navigation-in-social-media-android-app/
             * How to use fragments with a bottom navigation bar
