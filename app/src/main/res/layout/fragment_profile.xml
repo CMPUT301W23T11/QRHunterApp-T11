@@ -11,42 +11,84 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Profile Name"
+        android:textStyle="bold"
+        android:elevation="10dp"
         android:textSize="30sp"
         android:padding="10dp"
         />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray" />
 
-    <TextView
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:background="#F5FFE2"
+        android:orientation="vertical"
+        android:padding="15dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="STATS"
+            android:textAlignment="center"
+            android:textColor="#4CAF50"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:paddingBottom="5dp"/>
+
+        <TextView
+            android:id="@+id/totalScoreText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Player's total score: "
-            android:textSize="20sp"
             android:textAlignment="center"
-            />
-    <TextView
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/topQRText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Player's top QR code: "
-            android:textSize="20sp"
             android:textAlignment="center"
+            android:textSize="20sp"
 
-        />
-    <TextView
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/lowQRText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Player's lowest QR code: "
-            android:textSize="20sp"
             android:textAlignment="center"
-        />
-    <TextView
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/totalQRText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Player's total Qr codes: "
-            android:textSize="20sp"
             android:textAlignment="center"
-        />
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="COLLECTIONS"
+        android:textSize="18sp"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        android:textColor="#4CAF50"/>
 
     <ListView
+        android:id="@+id/collectionListView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
 

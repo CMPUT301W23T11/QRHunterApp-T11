@@ -19,6 +19,9 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        // TODO: - add players calculated stats, and add collection of QR codes
+
+
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 }
