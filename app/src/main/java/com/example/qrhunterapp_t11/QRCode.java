@@ -63,6 +63,7 @@ public class QRCode {
      * calculatePoints uses the hash value of the QRCode to calculate the points value of the QRCode
      * @param hash
      * hash is a String identifying the QRCode
+     * Will probably need to have geolocation as a parameter also
      * @return
      * Returns the totalPoints int
      */
