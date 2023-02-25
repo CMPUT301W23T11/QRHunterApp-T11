@@ -2,6 +2,8 @@ package com.example.qrhunterapp_t11;
 
 // https://www.youtube.com/watch?v=lPfQN-Sfnjw&list=PLrnPJCHvNZuB_7nB5QD-4bNg6tpdEUImQ&index=3
 // USED WITHOUT MAJOR MODIFICATION
+
+// TODO this class might not be necessary but I don't know if it's worth removing
 public class PhotoUploader {
     private String mName; // hardcode?
     private String mImageUrl;
