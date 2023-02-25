@@ -1,39 +1,53 @@
 package com.example.qrhunterapp_t11;
 
-// https://www.youtube.com/watch?v=lPfQN-Sfnjw&list=PLrnPJCHvNZuB_7nB5QD-4bNg6tpdEUImQ&index=3
-// USED WITHOUT MAJOR MODIFICATION
-
-// TODO this class might not be necessary but I don't know if it's worth removing
+/**
+ * A simple object that contains the name and image url of an uploaded photo, that is added to the "uploads" collection
+ * in the Firebase database. Each document corresponds to a photo in FB Storage, and can be accessed later when retrieving
+ * the image data. This class isn't technically necessary, but it's probably the easiest way of adding the pairs of data to
+ * the FB database.
+ *
+ * @author Coding in Flow
+ * @reference Coding in Flow - https://www.youtube.com/watch?v=lPfQN-Sfnjw&list=PLrnPJCHvNZuB_7nB5QD-4bNg6tpdEUImQ&index=4 - how to set up this class; used
+ * without major modification
+ */
 public class PhotoUploader {
-    private String mName; // hardcode?
+    private String mName;
     private String mImageUrl;
 
+    /**
+     * Empty constructor needed to interact with Firebase
+     */
     public PhotoUploader() {
-        // empty constructor needed
     }
 
+    /**
+     * @param name the name of the image that will be stored in the document, which is simply the system time of when the photo is taken
+     *             in milliseconds; this also corresponds to the name of the actual photo in FB Storage
+     * @param imageUrl the image's link in FB Storage, which can be accessed later when attempting to download the photo
+     */
     public PhotoUploader(String name, String imageUrl) {
-        if (name.trim().equals("")) {
-            name = "No Name";
-        }
-
         mName = name;
         mImageUrl = imageUrl;
     }
 
+    /**
+     * @return the image's name
+     */
     public String getName() {
         return mName;
     }
 
+    /**
+     * @param name the string that is to be set as the image's name
+     */
     public void setName(String name) {
         mName = name;
     }
 
+    /**
+     * @return the image url of the photo in Firebase Storage
+     */
     public String getImageUrl() {
         return mImageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        mImageUrl = imageUrl;
     }
 }
