@@ -79,7 +79,8 @@ public class RegistrationFragment extends Fragment {
 
                     usersReference.document(registerUsername).set(user);
 
-                    prefs.edit().putBoolean("notLoggedIn", false).apply();
+                    prefs.edit().putBoolean("notLoggedIn", false).commit();
+                    prefs.edit().putString("loginUsername", registerUsername).commit();
 
                     getActivity().getSupportFragmentManager().beginTransaction()
                             .replace(R.id.main_screen, new ProfileFragment())

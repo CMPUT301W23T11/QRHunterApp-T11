@@ -63,6 +63,7 @@ public class LoginFragment extends Fragment {
 
                 if (validUsername && validPassword) {
                     prefs.edit().putBoolean("notLoggedIn", false).commit();
+                    prefs.edit().putString("loginUsername", loginUsername).commit();
 
                     getActivity().getSupportFragmentManager().beginTransaction()
                             .replace(R.id.main_screen, new ProfileFragment())
