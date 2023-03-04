@@ -102,6 +102,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         }
     }
 
+    //Device GPS turn on
     private void buildAlertMessageNoGps() {
         Log.d(TAG, "buildAlertMessageNoGps");
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -110,8 +111,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
                         if (ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            Intent gpsOptionsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            startActivity(gpsOptionsIntent);
                             ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, permissionsRequestAccessFineLocation);
                         } else {
+                            Intent gpsOptionsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            startActivity(gpsOptionsIntent);
                             mLocationPermissionGranted = true;
                             displayMap();
                         }
