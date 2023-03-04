@@ -19,7 +19,14 @@ public class LoginRegisterActivity extends AppCompatActivity {
 
         SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
 
-        setContentView(R.layout.activity_login_register);
-        getSupportFragmentManager().beginTransaction().replace(R.id.login_register_screen, loginFragment).commit();
+        if (prefs.getBoolean("notLoggedIn", true)) {
+            setContentView(R.layout.activity_login_register);
+            getSupportFragmentManager().beginTransaction().replace(R.id.login_register_screen, loginFragment).commit();
+
+        }
+        else {
+            Intent intent = new Intent(LoginRegisterActivity.this, MainActivity.class);
+            startActivity(intent);
+        }
     }
 }
