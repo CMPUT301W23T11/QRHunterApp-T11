@@ -69,7 +69,7 @@ public class LoginFragment extends Fragment {
                     prefs.edit().putBoolean("notLoggedIn", false).commit();
                     prefs.edit().putString("loginUsername", loginUsername).commit();
 
-                    Intent intent = new Intent(getActivity(), LoginRegisterActivity.class);
+                    Intent intent = new Intent(getActivity(), MainActivity.class);
                     startActivity(intent);
                 }
             }
@@ -88,7 +88,7 @@ public class LoginFragment extends Fragment {
         return view;
     }
     public boolean usernameExistsCheck(String loginUsername, EditText loginUsernameEditText) {
-        final boolean[] valid = {false};
+        boolean valid = false;
 
         if(loginUsername.length() == 0) {
             loginUsernameEditText.setError("Field cannot be blank");
@@ -102,17 +102,19 @@ public class LoginFragment extends Fragment {
                         DocumentSnapshot document = task.getResult();
                         if (!document.exists()) {
                             loginUsernameEditText.setError("Username not found");
-                            valid[0] = false;
                         }
                     }
                 }
             });
         }
+        if (loginUsernameEditText.getError() == null) {
+            valid = true;
+        }
 
-        return valid[0];
+        return valid;
     }
     public boolean passwordMatchesCheck(String loginUsername, String loginPassword, EditText loginPasswordEditText) {
-        final boolean[] valid = {false};
+        boolean valid = false;
 
         if(loginPassword.length() == 0) {
             loginPasswordEditText.setError("Field cannot be blank");
@@ -129,13 +131,15 @@ public class LoginFragment extends Fragment {
                                 QuerySnapshot document = task.getResult();
                                 if (document.isEmpty()) {
                                     loginPasswordEditText.setError("Incorrect password");
-                                    valid[0] = false;
                                 }
                             }
                         }
                     });
         }
+        if (loginPasswordEditText.getError() == null) {
+            valid = true;
+        }
 
-        return valid[0];
+        return valid;
     }
 }

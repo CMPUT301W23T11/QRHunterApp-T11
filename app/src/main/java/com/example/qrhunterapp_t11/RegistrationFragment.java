@@ -86,7 +86,7 @@ public class RegistrationFragment extends Fragment {
                     prefs.edit().putBoolean("notLoggedIn", false).commit();
                     prefs.edit().putString("loginUsername", registerUsername).commit();
 
-                    Intent intent = new Intent(getActivity(), LoginRegisterActivity.class);
+                    Intent intent = new Intent(getActivity(), MainActivity.class);
                     startActivity(intent);
                 }
             }
