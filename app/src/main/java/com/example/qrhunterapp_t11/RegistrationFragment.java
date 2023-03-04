@@ -35,6 +35,10 @@ public class RegistrationFragment extends Fragment {
     boolean validUsername;
     boolean validPassword;
     boolean validEmail;
+    EditText registerUsernameEditText;
+    EditText registerEmailEditText;
+    EditText registerPasswordEditText;
+    EditText registerConfirmPasswordEditText;
 
     public RegistrationFragment(FirebaseFirestore db) {
         this.db = db;
@@ -53,10 +57,10 @@ public class RegistrationFragment extends Fragment {
             @Override
             public void onClick(View view) {
 
-                EditText registerUsernameEditText = getView().findViewById(R.id.usernameregisterscreen);
-                EditText registerEmailEditText = getView().findViewById(R.id.emailregisterscreen);
-                EditText registerPasswordEditText = getView().findViewById(R.id.passwordregisterscreen);
-                EditText registerConfirmPasswordEditText = getView().findViewById(R.id.confirmpasswordregisterscreen);
+                registerUsernameEditText = getView().findViewById(R.id.usernameregisterscreen);
+                registerEmailEditText = getView().findViewById(R.id.emailregisterscreen);
+                registerPasswordEditText = getView().findViewById(R.id.passwordregisterscreen);
+                registerConfirmPasswordEditText = getView().findViewById(R.id.confirmpasswordregisterscreen);
 
                 String registerUsername = registerUsernameEditText.getText().toString();
                 String registerEmail = registerEmailEditText.getText().toString();
