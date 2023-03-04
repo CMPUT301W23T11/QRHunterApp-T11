@@ -126,7 +126,7 @@ public class RegistrationFragment extends Fragment {
     }
 
     public boolean emailExistsCheck(String registerEmail, EditText registerEmailEditText) {
-        boolean valid = false;
+        final boolean[] valid = {false};
 
         if (registerEmail.length() == 0) {
             registerEmailEditText.setError("Field cannot be blank");
@@ -142,19 +142,18 @@ public class RegistrationFragment extends Fragment {
                                 QuerySnapshot document = task.getResult();
                                 if (!document.isEmpty()) {
                                     registerEmailEditText.setError("User already exists with this email");
+                                    valid[0] = true;
                                 }
                             }
                         }
                     });
         }
-        if (registerEmailEditText.getError() == null) {
-            valid = true;
-        }
-        return valid;
+
+        return valid[0];
     }
 
     public boolean usernameExistsCheck(String registerUsername, EditText registerUsernameEditText) {
-        boolean valid = false;
+        final boolean[] valid = {false};
 
         if (registerUsername.length() == 0) {
             registerUsernameEditText.setError("Field cannot be blank");
@@ -171,14 +170,13 @@ public class RegistrationFragment extends Fragment {
                         DocumentSnapshot document = task.getResult();
                         if (document.exists()) {
                             registerUsernameEditText.setError("Username is not unique");
+                            valid[0] = true;
                         }
                     }
                 }
             });
         }
-        if (registerUsernameEditText.getError() == null) {
-            valid = true;
-        }
-        return valid;
+
+        return valid[0];
     }
 }
