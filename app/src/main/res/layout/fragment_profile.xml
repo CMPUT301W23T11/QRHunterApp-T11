@@ -43,7 +43,7 @@
             android:id="@+id/totalScoreText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Player's total score: "
+            android:text="Your total score: "
             android:textAlignment="center"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -52,7 +52,7 @@
             android:id="@+id/topQRText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Player's top QR code: "
+            android:text="Your top QR code: "
             android:textAlignment="center"
             android:textSize="20sp"
 
@@ -62,7 +62,7 @@
             android:id="@+id/lowQRText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Player's lowest QR code: "
+            android:text="Your lowest QR code: "
             android:textAlignment="center"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -71,7 +71,7 @@
             android:id="@+id/totalQRText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Player's total QR codes: "
+            android:text="Your total QR codes: "
             android:textAlignment="center"
             android:textSize="20sp"
             android:textStyle="bold" />

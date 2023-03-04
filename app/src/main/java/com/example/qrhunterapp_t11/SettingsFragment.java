@@ -1,6 +1,7 @@
 package com.example.qrhunterapp_t11;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -33,7 +34,9 @@ public class SettingsFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 prefs.edit().clear().commit();
-                getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new LoginFragment(db)).commit();
+                Intent intent = new Intent(getActivity(), LoginRegisterActivity.class);
+
+                startActivity(intent);
             }
         });
 

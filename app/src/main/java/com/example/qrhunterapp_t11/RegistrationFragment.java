@@ -1,6 +1,7 @@
 package com.example.qrhunterapp_t11;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -85,10 +86,8 @@ public class RegistrationFragment extends Fragment {
                     prefs.edit().putBoolean("notLoggedIn", false).commit();
                     prefs.edit().putString("loginUsername", registerUsername).commit();
 
-                    getActivity().getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.main_screen, new ProfileFragment(db))
-                            .addToBackStack(null)
-                            .commit();
+                    Intent intent = new Intent(getActivity(), LoginRegisterActivity.class);
+                    startActivity(intent);
                 }
             }
         });

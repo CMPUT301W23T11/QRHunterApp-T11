@@ -4,6 +4,7 @@
 package com.example.qrhunterapp_t11;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -65,13 +66,11 @@ public class LoginFragment extends Fragment {
                 validPassword = passwordMatchesCheck(loginUsername, loginPassword, loginPasswordEditText);
 
                 if (validUsername && validPassword) {
-                    prefs.edit().putString("loginUsername", loginUsername).commit();
                     prefs.edit().putBoolean("notLoggedIn", false).commit();
+                    prefs.edit().putString("loginUsername", loginUsername).commit();
 
-                    getActivity().getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.main_screen, new ProfileFragment(db))
-                            .addToBackStack(null)
-                            .commit();
+                    Intent intent = new Intent(getActivity(), LoginRegisterActivity.class);
+                    startActivity(intent);
                 }
             }
         });
@@ -80,7 +79,7 @@ public class LoginFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 getActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.main_screen, new RegistrationFragment(db))
+                        .replace(R.id.login_register_screen, new RegistrationFragment(db))
                         .addToBackStack(null)
                         .commit();
             }
