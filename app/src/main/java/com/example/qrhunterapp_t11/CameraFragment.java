@@ -5,7 +5,10 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -30,6 +33,7 @@ import java.util.TimerTask;
  */
 public class CameraFragment extends Fragment {
     ActivityResultLauncher<ScanOptions> barLauncher;
+    ActivityResultLauncher<Intent> photoLauncher;
 
     /**
      * Inflates the layout for the camera fragment.
@@ -82,11 +86,23 @@ public class CameraFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        photoLauncher = registerForActivityResult( // should be okay to initialize before scanner
+                new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        promptForLocation(); // prompt for location once the TakePhotoActivity has finished
+                    }
+                }
+        );
+
         barLauncher = registerForActivityResult(new ScanContract(), result -> {
             if (result.getContents() != null) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext()); // create a builder for the alert dialog
                 //String resultString = result.getContents(); // how to access QR code contents; score dialog shows placeholder value for now
-                //TODO compute hash and create new instance of QR code in database if it's unique (ie. hook into whatever josh and sarah come up with for that)
+                //TODO JOSH SARAH - resultString is a string of whatever was in the QR code; supply it as an argument into your hash function/constructor
+                // resultString will probably need to be turned into a class attribute so it can be accessed later in runtime (once the location is obtained),
+                // since we don't have that at this point in time
 
                 // create custom dialog to display QR score
                 LayoutInflater inflater = this.getLayoutInflater();
@@ -124,7 +140,7 @@ public class CameraFragment extends Fragment {
     }
 
     /**
-     * Creates another dialog for whether the user would like to take a photo of the object or location of the QR code.
+     * Creates a dialog for whether the user would like to take a photo of the object or location of the QR code.
      * If the user selects "no", this step will be skipped and the user's geo-location will be prompted next.
      *
      * @reference David Hedlund - https://stackoverflow.com/questions/2115758/how-do-i-display-an-alert-dialog-on-android - how to create an AlertDialog
@@ -146,7 +162,7 @@ public class CameraFragment extends Fragment {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 Log.d("PhotoPrompt", "User rejected photo prompt.");
-                                //TODO
+                                promptForLocation(); // skip straight to geolocation prompt
                             }
                         })
                         .show();
@@ -160,7 +176,39 @@ public class CameraFragment extends Fragment {
      * @reference Paul Thompson - https://stackoverflow.com/questions/28619113/start-a-new-activity-from-fragment - how to start an activity from within a fragment
      */
     private void takePhoto() {
-        Intent intent = new Intent(getActivity(), TakePhotoActivity.class); //
-        startActivity(intent);
+        Intent intent = new Intent(getActivity(), TakePhotoActivity.class);
+
+        photoLauncher.launch(intent);
+        //startActivity(intent);
     }
+
+    /**
+     * Creates a dialog asking whether the user would like to share their geolocation.
+     *
+     * @reference Daily Coding - https://www.youtube.com/watch?v=DfDj9EadOLk - how to use activityresultlauncher to execute code after an activity closes
+     * @reference Oleksandra - https://stackoverflow.com/a/63883427/14445107 - where to initialize an activityresultlauncher
+     */
+    private void promptForLocation() {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Share Geolocation")
+                .setMessage("Share your current location?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.d("LocationPrompt", "User accepted geolocation prompt.");
+                        Toast.makeText(getContext(), "User accepted geolocation prompt", Toast.LENGTH_SHORT).show(); // remove
+                        //TODO DANIEL - get current location
+                        // SARAH + JOSH - then proceed to create QR with location (probably want to check whether the QR already exists in DB first)
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.d("LocationPrompt", "User rejected geolocation prompt.");
+                        Toast.makeText(getContext(), "User rejected geolocation prompt", Toast.LENGTH_SHORT).show(); // remove
+                        //TODO SARAH + JOSH - create QR without location (I assume using null for location)
+                    }
+                })
+                .show();
+    }
+
 }
