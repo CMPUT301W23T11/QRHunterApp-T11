@@ -39,7 +39,7 @@ public class LoginFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.login_screen, container, false);
+        View view = inflater.inflate(R.layout.fragment_login_screen, container, false);
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         signInButton = view.findViewById(R.id.loginbuttonloginscreen);

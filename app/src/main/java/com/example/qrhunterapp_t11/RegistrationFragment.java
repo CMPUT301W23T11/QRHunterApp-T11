@@ -41,7 +41,7 @@ public class RegistrationFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.registration_screen, container, false);
+        View view = inflater.inflate(R.layout.fragment_registration_screen, container, false);
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         registerButton = view.findViewById(R.id.registerbuttonregisterscreen);

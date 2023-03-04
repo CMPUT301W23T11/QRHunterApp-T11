@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Switch;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -27,7 +26,7 @@ public class SettingsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.settings_fragment, container, false);
+        View view = inflater.inflate(R.layout.fragment_settings, container, false);
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         logoutButton = view.findViewById(R.id.logout_button);
