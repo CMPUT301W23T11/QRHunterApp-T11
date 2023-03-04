@@ -32,6 +32,9 @@ public class RegistrationFragment extends Fragment {
     Button registerButton;
     FirebaseFirestore db;
     CollectionReference usersReference;
+    boolean validUsername;
+    boolean validPassword;
+    boolean validEmail;
 
     public RegistrationFragment(FirebaseFirestore db) {
         this.db = db;
@@ -49,9 +52,6 @@ public class RegistrationFragment extends Fragment {
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                boolean validUsername;
-                boolean validPassword;
-                boolean validEmail;
 
                 EditText registerUsernameEditText = getView().findViewById(R.id.usernameregisterscreen);
                 EditText registerEmailEditText = getView().findViewById(R.id.emailregisterscreen);
@@ -66,37 +66,48 @@ public class RegistrationFragment extends Fragment {
                 // Some input validation
 
                 // Check if username exists
-                validUsername = usernameExistsCheck(registerUsername, registerUsernameEditText);
+                usernameExistsCheck(registerUsername, registerUsernameEditText, new Callback() {
+                    public void dataValid(boolean valid) {
+                        validUsername = valid;
 
-                // Check if password is valid
-                validPassword = passwordIsValid(registerPassword, registerConfirmPassword, registerPasswordEditText, registerConfirmPasswordEditText);
+                        // Check if email exists
+                        emailExistsCheck(registerEmail, registerEmailEditText, new Callback() {
+                            public void dataValid(boolean valid) {
+                                validEmail = valid;
 
-                // Check if email exists
-                validEmail = emailExistsCheck(registerEmail, registerEmailEditText);
+                                // Check if password is valid
+                                validPassword = passwordIsValid(registerPassword, registerConfirmPassword, registerPasswordEditText, registerConfirmPasswordEditText);
 
-                // Add user info to database
-                if (validUsername && validPassword && validEmail) {
-                    Map<String, Object> user = new HashMap<>();
-                    user.put("Username", registerUsername);
-                    user.put("Password", registerPassword);
-                    user.put("Email", registerEmail);
+                                // Add user info to database
+                                if (validUsername && validPassword && validEmail) {
+                                    Map<String, Object> user = new HashMap<>();
+                                    user.put("Username", registerUsername);
+                                    user.put("Password", registerPassword);
+                                    user.put("Email", registerEmail);
 
-                    usersReference.document(registerUsername).set(user);
+                                    usersReference.document(registerUsername).set(user);
 
-                    prefs.edit().putBoolean("notLoggedIn", false).commit();
-                    prefs.edit().putString("loginUsername", registerUsername).commit();
+                                    prefs.edit().putBoolean("notLoggedIn", false).commit();
+                                    prefs.edit().putString("loginUsername", registerUsername).commit();
 
-                    Intent intent = new Intent(getActivity(), MainActivity.class);
-                    startActivity(intent);
-                }
+                                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                                    startActivity(intent);
+                                }
+                            }
+                        });
+                    }
+                });
             }
         });
 
         return view;
     }
 
+    public interface Callback {
+        void dataValid(boolean valid);
+    }
+
     public boolean passwordIsValid(String registerPassword, String registerConfirmPassword, EditText registerPasswordEditText, EditText registerConfirmPasswordEditText) {
-        boolean valid = false;
 
         if (registerPassword.length() == 0) {
             registerPasswordEditText.setError("Field cannot be blank");
@@ -118,15 +129,15 @@ public class RegistrationFragment extends Fragment {
 
             if (!hasLetter.find() || !hasDigit.find() || !hasSpecial.find()) {
                 registerPasswordEditText.setError("Invalid password");
-            } else {
-                valid = true;
             }
         }
-        return valid;
+        if (registerPasswordEditText.getError() == null) {
+            return true;
+        }
+        return false;
     }
 
-    public boolean emailExistsCheck(String registerEmail, EditText registerEmailEditText) {
-        final boolean[] valid = {false};
+    public void emailExistsCheck(String registerEmail, EditText registerEmailEditText, final Callback dataValid) {
 
         if (registerEmail.length() == 0) {
             registerEmailEditText.setError("Field cannot be blank");
@@ -140,20 +151,19 @@ public class RegistrationFragment extends Fragment {
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                             if (task.isSuccessful()) {
                                 QuerySnapshot document = task.getResult();
-                                if (!document.isEmpty()) {
+                                if (document.isEmpty()) {
+                                    dataValid.dataValid(true);
+                                } else {
                                     registerEmailEditText.setError("User already exists with this email");
-                                    valid[0] = true;
+                                    dataValid.dataValid(false);
                                 }
                             }
                         }
                     });
         }
-
-        return valid[0];
     }
 
-    public boolean usernameExistsCheck(String registerUsername, EditText registerUsernameEditText) {
-        final boolean[] valid = {false};
+    public void usernameExistsCheck(String registerUsername, EditText registerUsernameEditText, final Callback dataValid) {
 
         if (registerUsername.length() == 0) {
             registerUsernameEditText.setError("Field cannot be blank");
@@ -170,13 +180,13 @@ public class RegistrationFragment extends Fragment {
                         DocumentSnapshot document = task.getResult();
                         if (document.exists()) {
                             registerUsernameEditText.setError("Username is not unique");
-                            valid[0] = true;
+                            dataValid.dataValid(false);
+                        } else {
+                            dataValid.dataValid(true);
                         }
                     }
                 }
             });
         }
-
-        return valid[0];
     }
 }
