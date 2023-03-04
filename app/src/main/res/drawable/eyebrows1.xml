@@ -6,22 +6,22 @@
     android:viewportHeight="263.17743">
 
     <group
-            android:name="layer1"
-            android:translateX="27.653225"
-            android:translateY="-16.911289">
+        android:name="layer1"
+        android:translateX="27.653225"
+        android:translateY="-16.911289">
         <path
             android:name="path1632-5"
             android:fillColor="#000000"
-            android:strokeColor="#000000"
-            android:strokeWidth="1.37646"
             android:pathData="M 131.02562,78.855817 c 32.53161,-11.264498 52.96282,5.623585 52.96282,5.623585
-z" />
+z"
+            android:strokeWidth="1.37646"
+            android:strokeColor="#000000" />
         <path
             android:name="path1632-5-9"
             android:fillColor="#000000"
-            android:strokeColor="#000000"
-            android:strokeWidth="1.37646"
             android:pathData="M 25.149281,82.844838 C 54.995448,65.686738 78.228127,78.44935
-78.228127,78.44935 Z" />
+78.228127,78.44935 Z"
+            android:strokeWidth="1.37646"
+            android:strokeColor="#000000" />
     </group>
 </vector>
