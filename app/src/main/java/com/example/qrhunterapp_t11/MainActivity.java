@@ -1,22 +1,18 @@
 package com.example.qrhunterapp_t11;
 
-import androidx.annotation.NonNull;
+import android.os.Bundle;
+
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.os.Bundle;
-import android.view.MenuItem;
-
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "MainActivity";
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
     BottomNavigationView bottomToolbar;
-
-    ProfileFragment profileFragment = new ProfileFragment();
-    SettingsFragment settingsFragment = new SettingsFragment();
+    ProfileFragment profileFragment = new ProfileFragment(db);
+    SettingsFragment settingsFragment = new SettingsFragment(db);
     CameraFragment cameraFragment = new CameraFragment();
 
     @Override
@@ -24,17 +20,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        bottomToolbar = findViewById(R.id.bottomToolbar);
-        bottomToolbar.setSelectedItemId(R.id.profile);
-
-        // When the app is started, sets the profile fragment to be opened first if user is logged in
-        // Otherwise it starts with the login fragment
         /*
             https://www.geeksforgeeks.org/how-to-create-fragment-using-bottom-navigation-in-social-media-android-app/
             * How to use fragments with a bottom navigation bar
         */
+
+        bottomToolbar = findViewById(R.id.bottomToolbar);
+        bottomToolbar.setSelectedItemId(R.id.profile);
         getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
 
         // Changes the fragment based on which item is clicked on the toolbar
@@ -60,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
                     return true;
 
                 // use 'case R.id.search:' for search/leaderboard fragment
-                
+
             }
             /*
              - add cases for search after creating their fragments
@@ -68,7 +60,5 @@ public class MainActivity extends AppCompatActivity {
 
             return false;
         });
-
-
     }
 }
