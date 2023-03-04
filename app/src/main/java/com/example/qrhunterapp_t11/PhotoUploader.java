@@ -21,8 +21,8 @@ public class PhotoUploader {
     }
 
     /**
-     * @param name the name of the image that will be stored in the document, which is simply the system time of when the photo is taken
-     *             in milliseconds; this also corresponds to the name of the actual photo in FB Storage
+     * @param name     the name of the image that will be stored in the document, which is simply the system time of when the photo is taken
+     *                 in milliseconds; this also corresponds to the name of the actual photo in FB Storage
      * @param imageUrl the image's link in FB Storage, which can be accessed later when attempting to download the photo
      */
     public PhotoUploader(String name, String imageUrl) {

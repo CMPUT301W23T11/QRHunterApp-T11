@@ -23,8 +23,7 @@ public class LoginRegisterActivity extends AppCompatActivity {
             setContentView(R.layout.activity_login_register);
             getSupportFragmentManager().beginTransaction().replace(R.id.login_register_screen, loginFragment).commit();
 
-        }
-        else {
+        } else {
             Intent intent = new Intent(LoginRegisterActivity.this, MainActivity.class);
             startActivity(intent);
         }

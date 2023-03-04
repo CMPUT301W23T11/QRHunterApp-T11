@@ -29,6 +29,7 @@ import java.util.TimerTask;
 /**
  * Logic for the camera fragment, which is responsible for managing everything that pertains to scanning and adding a new QR code.
  * Calls all the necessary activities for achieving this (the scan QR and take photo activities).
+ *
  * @author Aidan Lynch
  */
 public class CameraFragment extends Fragment {
@@ -38,14 +39,13 @@ public class CameraFragment extends Fragment {
     /**
      * Inflates the layout for the camera fragment.
      *
-     * @param inflater The LayoutInflater object that can be used to inflate
-     * any views in the fragment,
-     * @param container If non-null, this is the parent view that the fragment's
-     * UI should be attached to.  The fragment should not add the view itself,
-     * but this can be used to generate the LayoutParams of the view.
+     * @param inflater           The LayoutInflater object that can be used to inflate
+     *                           any views in the fragment,
+     * @param container          If non-null, this is the parent view that the fragment's
+     *                           UI should be attached to.  The fragment should not add the view itself,
+     *                           but this can be used to generate the LayoutParams of the view.
      * @param savedInstanceState If non-null, this fragment is being re-constructed
-     * from a previous saved state as given here.
-     *
+     *                           from a previous saved state as given here.
      * @return a View containing the inflated layout.
      */
     @Override
@@ -59,12 +59,12 @@ public class CameraFragment extends Fragment {
      * Once the layout view is initialized, call the function to scan a code.
      * Having a view for the camera fragment may be redundant at the moment (since it's never really used),
      * but will keep this for now in case we need to display something in the layout later.
-     *
+     * <p>
      * Also for some reason scanCode() must be called here or the app will crash.
      *
-     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
      * @param savedInstanceState If non-null, this fragment is being re-constructed
-     * from a previous saved state as given here.
+     *                           from a previous saved state as given here.
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {

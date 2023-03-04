@@ -41,7 +41,7 @@ public class RegistrationFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.registration_screen, container, false);
+        View view = inflater.inflate(R.layout.fragment_registration_screen, container, false);
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         registerButton = view.findViewById(R.id.registerbuttonregisterscreen);
@@ -107,24 +107,24 @@ public class RegistrationFragment extends Fragment {
         if (!registerPassword.equals(registerConfirmPassword)) {
             registerConfirmPasswordEditText.setError("Passwords do not match");
         }
-        if(registerPassword.length() >= 8) {
+        if (registerPassword.length() >= 8) {
             Pattern letter = Pattern.compile("[a-zA-z]");
             Pattern digit = Pattern.compile("[0-9]");
-            Pattern special = Pattern.compile ("[!@#$%&*()_+=|<>?{}\\[\\]~-]");
+            Pattern special = Pattern.compile("[!@#$%&*()_+=|<>?{}\\[\\]~-]");
 
             Matcher hasLetter = letter.matcher(registerPassword);
             Matcher hasDigit = digit.matcher(registerPassword);
             Matcher hasSpecial = special.matcher(registerPassword);
 
-            if(!hasLetter.find() || !hasDigit.find() || !hasSpecial.find()) {
+            if (!hasLetter.find() || !hasDigit.find() || !hasSpecial.find()) {
                 registerPasswordEditText.setError("Invalid password");
-            }
-            else {
+            } else {
                 valid = true;
             }
         }
         return valid;
     }
+
     public boolean emailExistsCheck(String registerEmail, EditText registerEmailEditText) {
         boolean valid = false;
 
@@ -152,6 +152,7 @@ public class RegistrationFragment extends Fragment {
         }
         return valid;
     }
+
     public boolean usernameExistsCheck(String registerUsername, EditText registerUsernameEditText) {
         boolean valid = false;
 
