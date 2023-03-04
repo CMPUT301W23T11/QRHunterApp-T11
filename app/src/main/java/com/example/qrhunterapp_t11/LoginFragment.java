@@ -62,8 +62,8 @@ public class LoginFragment extends Fragment {
                 validPassword = passwordMatchesCheck(loginUsername, loginPassword, loginPasswordEditText);
 
                 if (validUsername && validPassword) {
-                    prefs.edit().putBoolean("notLoggedIn", false).commit();
-                    prefs.edit().putString("loginUsername", loginUsername).commit();
+                    //prefs.edit().putBoolean("notLoggedIn", false).commit();
+                    //prefs.edit().putString("loginUsername", loginUsername).commit();
 
                     getActivity().getSupportFragmentManager().beginTransaction()
                             .replace(R.id.main_screen, new ProfileFragment())
@@ -100,6 +100,7 @@ public class LoginFragment extends Fragment {
                         DocumentSnapshot document = task.getResult();
                         if (!document.exists()) {
                             loginUsernameEditText.setError("Username not found");
+
                         }
                     }
                 }

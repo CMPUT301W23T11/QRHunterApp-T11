@@ -23,12 +23,14 @@ public class ProfileFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        TextView loginUsernameTextView = view.findViewById(R.id.profile_name);
+        TextView loginUsernameTextView = (TextView) view.findViewById(R.id.profile_name);
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
-        // TODO: - add players calculated stats, and add collection of QR codes
         String username = prefs.getString("loginUsername", null);
         loginUsernameTextView.setText(username);
+
+        // TODO: - add players calculated stats, and add collection of QR codes
+
 
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
