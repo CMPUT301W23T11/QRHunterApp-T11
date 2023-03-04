@@ -6,19 +6,17 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     FirebaseFirestore db = FirebaseFirestore.getInstance();
-    CollectionReference usersReference = db.collection("Users");
     BottomNavigationView bottomToolbar;
-    ProfileFragment profileFragment = new ProfileFragment();
-    SettingsFragment settingsFragment = new SettingsFragment();
+    ProfileFragment profileFragment = new ProfileFragment(db);
+    SettingsFragment settingsFragment = new SettingsFragment(db);
     CameraFragment cameraFragment = new CameraFragment();
-    LoginFragment loginFragment = new LoginFragment(usersReference);
+    LoginFragment loginFragment = new LoginFragment(db);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

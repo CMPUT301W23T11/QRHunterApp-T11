@@ -21,15 +21,18 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 public class LoginFragment extends Fragment {
     Button signInButton;
     Button registerButton;
-    private final CollectionReference usersReference;
+    FirebaseFirestore db;
+    CollectionReference usersReference;
 
-    public LoginFragment(CollectionReference usersReference) {
-        this.usersReference = usersReference;
+    public LoginFragment(FirebaseFirestore db) {
+        this.db = db;
+        this.usersReference = db.collection("Users");
     }
 
     @Nullable
@@ -62,11 +65,11 @@ public class LoginFragment extends Fragment {
                 validPassword = passwordMatchesCheck(loginUsername, loginPassword, loginPasswordEditText);
 
                 if (validUsername && validPassword) {
-                    prefs.edit().putBoolean("notLoggedIn", false).commit();
                     prefs.edit().putString("loginUsername", loginUsername).commit();
+                    prefs.edit().putBoolean("notLoggedIn", false).commit();
 
                     getActivity().getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.main_screen, new ProfileFragment())
+                            .replace(R.id.main_screen, new ProfileFragment(db))
                             .addToBackStack(null)
                             .commit();
                 }
@@ -77,7 +80,7 @@ public class LoginFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 getActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.main_screen, new RegistrationFragment(usersReference))
+                        .replace(R.id.main_screen, new RegistrationFragment(db))
                         .addToBackStack(null)
                         .commit();
             }

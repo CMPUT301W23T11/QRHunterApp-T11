@@ -18,6 +18,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
@@ -28,10 +29,12 @@ import java.util.regex.Pattern;
 public class RegistrationFragment extends Fragment {
 
     Button registerButton;
-    private final CollectionReference usersReference;
+    FirebaseFirestore db;
+    CollectionReference usersReference;
 
-    public RegistrationFragment(CollectionReference usersReference) {
-        this.usersReference = usersReference;
+    public RegistrationFragment(FirebaseFirestore db) {
+        this.db = db;
+        this.usersReference = db.collection("Users");
     }
 
     @Nullable
@@ -83,7 +86,7 @@ public class RegistrationFragment extends Fragment {
                     prefs.edit().putString("loginUsername", registerUsername).commit();
 
                     getActivity().getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.main_screen, new ProfileFragment())
+                            .replace(R.id.main_screen, new ProfileFragment(db))
                             .addToBackStack(null)
                             .commit();
                 }

@@ -12,11 +12,18 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 
 /*
     Creates a fragment for the main profile page
 * */
 public class ProfileFragment extends Fragment {
+    FirebaseFirestore db;
+
+    public ProfileFragment(FirebaseFirestore db) {
+        this.db = db;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -33,6 +40,6 @@ public class ProfileFragment extends Fragment {
         // TODO: - add players calculated stats, and add collection of QR codes
 
 
-        return inflater.inflate(R.layout.fragment_profile, container, false);
+        return view;
     }
 }
