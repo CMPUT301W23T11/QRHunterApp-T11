@@ -87,10 +87,11 @@ public class LoginFragment extends Fragment {
 
         return view;
     }
+
     public boolean usernameExistsCheck(String loginUsername, EditText loginUsernameEditText) {
         boolean valid = false;
 
-        if(loginUsername.length() == 0) {
+        if (loginUsername.length() == 0) {
             loginUsernameEditText.setError("Field cannot be blank");
         }
         if (loginUsername.length() > 0) {
@@ -113,10 +114,11 @@ public class LoginFragment extends Fragment {
 
         return valid;
     }
+
     public boolean passwordMatchesCheck(String loginUsername, String loginPassword, EditText loginPasswordEditText) {
         boolean valid = false;
 
-        if(loginPassword.length() == 0) {
+        if (loginPassword.length() == 0) {
             loginPasswordEditText.setError("Field cannot be blank");
         }
         if (loginPassword.length() > 0) {

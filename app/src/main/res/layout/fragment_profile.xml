@@ -3,19 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ProfileFragment"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:context=".ProfileFragment">
 
     <TextView
         android:id="@+id/profile_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Profile Name"
-        android:textStyle="bold"
         android:elevation="10dp"
-        android:textSize="30sp"
         android:padding="10dp"
-        />
+        android:text="Profile Name"
+        android:textSize="30sp"
+        android:textStyle="bold" />
+
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
@@ -32,12 +32,12 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingBottom="5dp"
             android:text="STATS"
             android:textAlignment="center"
             android:textColor="#4CAF50"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:paddingBottom="5dp"/>
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/totalScoreText"
@@ -93,9 +93,6 @@
         android:layout_height="wrap_content"
 
         />
-
-
-
 
 
 </LinearLayout>

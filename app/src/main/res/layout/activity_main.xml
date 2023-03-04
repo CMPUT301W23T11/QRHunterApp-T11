@@ -10,17 +10,16 @@
         android:id="@+id/main_screen"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/bottomToolbar"/>
+        android:layout_above="@id/bottomToolbar" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomToolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        app:menu="@menu/bottom_toolbar_menu"
         app:itemBackground="@color/toolbar"
         app:itemIconTint="@drawable/selector"
         app:itemTextColor="@drawable/selector"
-        />
+        app:menu="@menu/bottom_toolbar_menu" />
 
 </RelativeLayout>
