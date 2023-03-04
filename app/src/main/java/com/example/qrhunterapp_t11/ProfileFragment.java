@@ -34,7 +34,6 @@ public class ProfileFragment extends Fragment {
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         String username = prefs.getString("loginUsername", null);
-        System.out.println(username + "3425e0a4iubjtae4itjbam0e84tj,aet4tjgaeio4jgvoooooooooooo");
         loginUsernameTextView.setText(username);
 
         // TODO: - add players calculated stats, and add collection of QR codes
