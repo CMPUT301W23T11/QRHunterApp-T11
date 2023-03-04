@@ -46,6 +46,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
     public static final int permissionsRequestAccessFineLocation = 9003;
     private GoogleMap mMap;
     private boolean mLocationPermissionGranted = false;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +58,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         checkMapServices();
         mapFragment.getMapAsync(this);
     }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
