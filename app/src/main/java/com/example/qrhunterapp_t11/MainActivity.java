@@ -1,6 +1,5 @@
 package com.example.qrhunterapp_t11;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,7 +9,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "MainActivity";
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     BottomNavigationView bottomToolbar;
     ProfileFragment profileFragment = new ProfileFragment(db);
@@ -22,8 +20,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // When the app is started, sets the profile fragment to be opened first if user is logged in
-        // Otherwise it starts with the login fragment
         /*
             https://www.geeksforgeeks.org/how-to-create-fragment-using-bottom-navigation-in-social-media-android-app/
             * How to use fragments with a bottom navigation bar
