@@ -8,18 +8,17 @@ import java.security.NoSuchAlgorithmException;
 
 /**
  * QRCode class (INCOMPLETE)
- * To do: implement geolocation, implement unique name
+ * To do: implement geolocation
  */
 public class QRCode {
     private String hash;
-
+    private String name;
     private int points;
 
     private Location geolocation;
-
     private ArrayList<Integer> faceList;
 
-    private String name;
+    private ArrayList<Comment> commentList;
 
     private int eyesNumbers[] = {
             R.drawable.eyes1,
@@ -45,12 +44,62 @@ public class QRCode {
             R.drawable.face1,
             R.drawable.face2
     };
+    private String nameParts [] = {
+            "Big ",
+            "Little ",
+            "Young ",
+            "Old ",
+
+            "La",
+            "Bo",
+            "We",
+            "Si",
+
+            "rg",
+            "p",
+            "ld",
+            "gs",
+
+            "a",
+            "i",
+            "o",
+            "u",
+
+            "men",
+            "can",
+            "yog",
+            "rol",
+
+            "gog",
+            "mor",
+            "tas",
+            "fli"
+    };
 
     public QRCode(String hash) {
         this.hash = hash;
         this.points = calculatePoints(hash);
-        this.name = "Test Name";
+        this.name = uniqueName(hash);
         this.faceList = uniqueImage(hash);
+        this.commentList = new ArrayList<Comment>();
+    }
+
+    public int getPoints() {
+        return points;
+    }
+    public String getName() {
+        return name;
+    }
+    public ArrayList<Integer> getFaceList() {
+        return faceList;
+    }
+
+    public ArrayList<Comment> getCommentList() {
+        return commentList;
+    }
+
+    public void setCommentList(ArrayList<Comment> commentList) {
+        this.commentList = commentList;
     }
 
     /**
@@ -87,35 +136,30 @@ public class QRCode {
         return output;
     }
 
-    public int getPoints() {
-        return points;
-    }
-
-    public ArrayList<Integer> getFaceList() {
-        return faceList;
-    }
-
-//https://docs.oracle.com/javase/tutorial/java/data/manipstrings.html
-
     /**
      * calculatePoints uses the hash value of the QRCode to calculate the points value of the QRCode
-     *
+     * References: Oracle's documentation on string manipulation https://docs.oracle.com/javase/tutorial/java/data/manipstrings.html
      * @param hash hash is a String identifying the QRCode
      *             Will probably need to have geolocation as a parameter also
      * @return Returns the totalPoints int
      */
     private int calculatePoints(String hash) {
 
+        //list of possible chars in the hash, other than 0, each corresponds to their base number of points
         Character[] values = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
         int pointMultiplier = 1;
         int totalPoints = 0;
 
+        //iterate through each character in values
         for (int i = 0; i < values.length; i++) {
+            //set previous char to a default unused char to handle edge cases
             Character previousChar = 'X';
 
+            //iterate through hash string
             for (int j = 0; j < hash.length(); j++) {
                 Character hashChar = hash.charAt(j);
 
+                //if a character in the hash string equals the current value char as well as is equal to the previous char in the hash, increase the point multiplier.
                 if ((hashChar.equals(values[i])) && (hashChar.equals(previousChar))) {
 
                     pointMultiplier++;
@@ -147,7 +191,10 @@ public class QRCode {
 
     /**
      * uniqueImage uses the 6 bits of a shortened hash function to determine which drawables will be used to make the unique image
-     *
+     * References:
+     * educative.io https://www.educative.io/answers/how-to-convert-an-integer-to-binary-in-java for converting integer to binary
+     * License: Creative Commons-Attribution-ShareAlike 4.0 (CC-BY-SA 4.0)
+     * techiedelight.com https://www.techiedelight.com/convert-hex-string-to-integer-java/ for converting string to hexadecimal integer
      * @param hash hash is a String identifying the QRCode
      * @return Returns an ArrayList of drawables to form the image
      */
@@ -165,5 +212,40 @@ public class QRCode {
         faceList.add(mouthNumbers[hashBinary.charAt(4) - '0']);
         faceList.add(faceNumbers[hashBinary.charAt(5) - '0']);
         return faceList;
+    }
+
+    /**
+     * uniqueImage uses the 6 bits of a shortened hash function to determine which drawables will be used to make the unique image
+     * @param hash
+     * hash is a String identifying the QRCode
+     * @return
+     * Returns an ArrayList of drawables to form the image
+     */
+    private String uniqueName(String hash){
+
+        String newName = "";
+        Integer hashSmall = Integer.parseInt(hash.substring(1,6), 16);
+        String hashBinary = Integer.toBinaryString(hashSmall);
+
+        for (int i = 0, j = 0; i <= 17; i = i + 3, j = j + 4){
+
+            Integer num = Integer.parseInt(String.valueOf(hashBinary.charAt(i))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i+1))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i+2)));
+            System.out.println("hash " + hashBinary);
+            System.out.println("num: " + num);
+            if (num == 0){
+                newName = newName + nameParts[j];
+            }
+            else if (num == 1){
+                newName = newName + nameParts[j];
+            }
+            else if (num == 2){
+                newName = newName + nameParts[j];
+            }
+            else if (num == 3) {
+                newName = newName + nameParts[j];
+            }
+            System.out.println("new part " + newName + " from i = " + i);
+        }
+        return newName;
     }
 }
