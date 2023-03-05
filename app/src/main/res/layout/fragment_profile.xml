@@ -13,6 +13,7 @@
         android:elevation="10dp"
         android:padding="10dp"
         android:text="Profile Name"
+        android:textColor="@color/black"
         android:textSize="30sp"
         android:textStyle="bold" />
 
@@ -35,7 +36,7 @@
             android:paddingBottom="5dp"
             android:text="STATS"
             android:textAlignment="center"
-            android:textColor="#4CAF50"
+            android:textColor="@color/headers"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -83,7 +84,7 @@
         android:layout_height="wrap_content"
         android:text="COLLECTION"
         android:textAlignment="center"
-        android:textColor="#4CAF50"
+        android:textColor="@color/headers"
         android:textSize="18sp"
         android:textStyle="bold" />
 

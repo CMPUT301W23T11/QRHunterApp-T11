@@ -11,14 +11,13 @@
         android:title="@string/search_icon" />
 
     <item
+        android:id="@+id/camera_placeholder"
+        android:title="" />
+
+    <item
         android:id="@+id/profile"
         android:icon="@drawable/profile_icon"
         android:title="@string/profile_icon" />
-
-    <item
-        android:id="@+id/camera"
-        android:icon="@drawable/camera_icon"
-        android:title="@string/camera_icon" />
 
     <item
         android:id="@+id/settings"
