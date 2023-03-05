@@ -18,11 +18,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -35,6 +37,7 @@ import java.util.TimerTask;
 public class CameraFragment extends Fragment {
     ActivityResultLauncher<ScanOptions> barLauncher;
     ActivityResultLauncher<Intent> photoLauncher;
+    QRCode qrCode;
 
     /**
      * Inflates the layout for the camera fragment.
@@ -99,16 +102,26 @@ public class CameraFragment extends Fragment {
         barLauncher = registerForActivityResult(new ScanContract(), result -> {
             if (result.getContents() != null) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext()); // create a builder for the alert dialog
-                //String resultString = result.getContents(); // how to access QR code contents; score dialog shows placeholder value for now
+                String resultString = result.getContents(); // how to access QR code contents; score dialog shows placeholder value for now
                 //TODO JOSH SARAH - resultString is a string of whatever was in the QR code; supply it as an argument into your hash function/constructor
                 // resultString will probably need to be turned into a class attribute so it can be accessed later in runtime (once the location is obtained),
                 // since we don't have that at this point in time
 
+                // NEW ADDITIONS
+                String hash = null;
+                try {
+                    hash = QRCode.strToHash(resultString);
+                } catch (NoSuchAlgorithmException e) {
+                    throw new RuntimeException(e);
+                }
+                qrCode = new QRCode(hash);
+
                 // create custom dialog to display QR score
                 LayoutInflater inflater = this.getLayoutInflater();
                 View dialogView = inflater.inflate(R.layout.qr_scored_dialog, null);
+                TextView scoredTV = dialogView.findViewById(R.id.scoredTV); // NEW ADDITION
                 builder.setView(dialogView);
-                //TODO update dialog to display true score of QR code
+                scoredTV.setText("Scored " + String.valueOf(qrCode.getPoints()) + " Points"); // NEW ADDITION
 
                 final AlertDialog alertDialog = builder.create();
                 alertDialog.show(); // create and display the dialog
