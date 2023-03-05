@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/liquid_cheese_background"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/linearLayoutCompat"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_margin="15dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/white_rounded_background"
+            android:orientation="vertical"
+            android:padding="15dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/imageColour"
+                    android:layout_width="120dp"
+                    android:layout_height="match_parent"
+                    android:padding="5dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/colour1" />
+
+                <ImageView
+                    android:id="@+id/imageEyes"
+                    android:layout_width="120dp"
+                    android:layout_height="match_parent"
+                    android:padding="5dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/eyes1" />
+
+                <ImageView
+                    android:id="@+id/imageFace"
+                    android:layout_width="120dp"
+                    android:layout_height="match_parent"
+                    android:padding="5dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/face1" />
+
+                <ImageView
+                    android:id="@+id/imageNose"
+                    android:layout_width="120dp"
+                    android:layout_height="match_parent"
+                    android:padding="5dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/nose1" />
+
+                <ImageView
+                    android:id="@+id/imageMouth"
+                    android:layout_width="120dp"
+                    android:layout_height="match_parent"
+                    android:padding="5dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/mouth1" />
+
+                <ImageView
+                    android:id="@+id/imageEyebrows"
+                    android:layout_width="120dp"
+                    android:layout_height="match_parent"
+                    android:padding="5dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/eyebrows1" />
+
+                <TextView
+                    android:id="@+id/pointsTV1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="3dp"
+                    android:text="Points:"
+                    android:textSize="20dp"
+                    android:textColor="#000000"
+                    app:layout_constraintBottom_toTopOf="@+id/scannedBy2"
+                    app:layout_constraintStart_toEndOf="@+id/imageColour" />
+
+                <TextView
+                    android:id="@+id/pointsTV2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="3dp"
+                    android:text="TextView"
+                    android:textSize="20dp"
+                    android:textColor="#000000"
+                    app:layout_constraintBottom_toTopOf="@+id/scannedBy2"
+                    app:layout_constraintStart_toEndOf="@+id/pointsTV1" />
+
+                <TextView
+                    android:id="@+id/scannedBy1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="3dp"
+                    android:text="3"
+                    android:textSize="20dp"
+                    android:textColor="#000000"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/scannedBy2"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/scannedBy2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="3dp"
+                    android:text="Total scans:"
+                    android:textColor="#000000"
+                    android:textSize="20dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/imageColour"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <ImageView
+            android:id="@+id/imageView4"
+            android:layout_width="284dp"
+            android:layout_height="258dp"
+            android:layout_marginTop="15dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:alpha=".50"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayoutCompat"
+            app:srcCompat="@drawable/add_image" />
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/linearLayoutCompat2"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_margin="15dp"
+            android:background="@drawable/white_rounded_background"
+            android:orientation="vertical"
+            android:padding="15dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageView4">
+
+            <ListView
+                android:id="@+id/commentListView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/imageView4" >
+
+            </ListView>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <EditText
+            android:id="@+id/editTextComment"
+            android:layout_width="match_parent"
+            android:layout_height="51dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginLeft="15dp"
+            android:background="@drawable/comment_box"
+            android:ems="10"
+            android:hint="Add Comment"
+            android:inputType="textPersonName"
+            android:padding="10dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayoutCompat2" />
+
+        <ImageView
+            android:id="@+id/imageViewSend"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            app:layout_constraintBottom_toBottomOf="@+id/editTextComment"
+            app:layout_constraintEnd_toEndOf="@+id/editTextComment"
+            app:layout_constraintTop_toTopOf="@+id/editTextComment"
+            app:srcCompat="@drawable/send_button" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>
