@@ -30,6 +30,10 @@ public class LoginFragment extends Fragment {
     Button registerButton;
     FirebaseFirestore db;
     CollectionReference usersReference;
+    boolean validUsername;
+    boolean validPassword;
+    EditText loginUsernameEditText;
+    EditText loginPasswordEditText;
 
     public LoginFragment(FirebaseFirestore db) {
         this.db = db;
@@ -48,11 +52,9 @@ public class LoginFragment extends Fragment {
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                boolean validUsername;
-                boolean validPassword;
 
-                EditText loginUsernameEditText = getView().findViewById(R.id.usernameloginscreen);
-                EditText loginPasswordEditText = getView().findViewById(R.id.passwordloginscreen);
+                loginUsernameEditText = getView().findViewById(R.id.usernameloginscreen);
+                loginPasswordEditText = getView().findViewById(R.id.passwordloginscreen);
 
                 String loginUsername = loginUsernameEditText.getText().toString();
                 String loginPassword = loginPasswordEditText.getText().toString();
@@ -60,18 +62,27 @@ public class LoginFragment extends Fragment {
                 // Some input validation
 
                 // Check if username exists
-                validUsername = usernameExistsCheck(loginUsername, loginUsernameEditText);
+                usernameExistsCheck(loginUsername, loginUsernameEditText, new Callback() {
+                    public void dataValid(boolean valid) {
+                        validUsername = valid;
 
-                // Check if document exists with matching username and password
-                validPassword = passwordMatchesCheck(loginUsername, loginPassword, loginPasswordEditText);
+                        // Check if document exists with matching username and password
+                        if (validUsername) {
+                            passwordMatchesCheck(loginUsername, loginPassword, loginPasswordEditText, new Callback() {
+                                public void dataValid(boolean valid) {
+                                    validPassword = valid;
+                                    if (validUsername && validPassword) {
+                                        prefs.edit().putBoolean("notLoggedIn", false).commit();
+                                        prefs.edit().putString("loginUsername", loginUsername).commit();
 
-                if (validUsername && validPassword) {
-                    prefs.edit().putBoolean("notLoggedIn", false).commit();
-                    prefs.edit().putString("loginUsername", loginUsername).commit();
-
-                    Intent intent = new Intent(getActivity(), MainActivity.class);
-                    startActivity(intent);
-                }
+                                        Intent intent = new Intent(getActivity(), MainActivity.class);
+                                        startActivity(intent);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
             }
         });
 
@@ -88,8 +99,11 @@ public class LoginFragment extends Fragment {
         return view;
     }
 
-    public boolean usernameExistsCheck(String loginUsername, EditText loginUsernameEditText) {
-        boolean valid = false;
+    public interface Callback {
+        void dataValid(boolean valid);
+    }
+
+    public void usernameExistsCheck(String loginUsername, EditText loginUsernameEditText, final Callback dataValid) {
 
         if (loginUsername.length() == 0) {
             loginUsernameEditText.setError("Field cannot be blank");
@@ -101,22 +115,19 @@ public class LoginFragment extends Fragment {
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                     if (task.isSuccessful()) {
                         DocumentSnapshot document = task.getResult();
-                        if (!document.exists()) {
+                        if (document.exists()) {
+                            dataValid.dataValid(true);
+                        } else {
                             loginUsernameEditText.setError("Username not found");
+                            dataValid.dataValid(false);
                         }
                     }
                 }
             });
         }
-        if (loginUsernameEditText.getError() == null) {
-            valid = true;
-        }
-
-        return valid;
     }
 
-    public boolean passwordMatchesCheck(String loginUsername, String loginPassword, EditText loginPasswordEditText) {
-        boolean valid = false;
+    public void passwordMatchesCheck(String loginUsername, String loginPassword, EditText loginPasswordEditText, final Callback dataValid) {
 
         if (loginPassword.length() == 0) {
             loginPasswordEditText.setError("Field cannot be blank");
@@ -131,17 +142,15 @@ public class LoginFragment extends Fragment {
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                             if (task.isSuccessful()) {
                                 QuerySnapshot document = task.getResult();
-                                if (document.isEmpty()) {
+                                if (!document.isEmpty()) {
+                                    dataValid.dataValid(true);
+                                } else {
                                     loginPasswordEditText.setError("Incorrect password");
+                                    dataValid.dataValid(false);
                                 }
                             }
                         }
                     });
         }
-        if (loginPasswordEditText.getError() == null) {
-            valid = true;
-        }
-
-        return valid;
     }
 }

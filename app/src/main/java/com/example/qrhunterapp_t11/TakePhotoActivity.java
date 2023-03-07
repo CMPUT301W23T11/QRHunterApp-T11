@@ -8,12 +8,17 @@ import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
 
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -61,6 +66,8 @@ public class TakePhotoActivity extends AppCompatActivity {
     private Uri mImageUri;
     private String imageUrl;
     private String msTime;
+    private static final int REQUEST = 112; // leave here?
+    private Context mContext= TakePhotoActivity.this;
 
     /**
      * Called when activity launches; starts by intializing the storage references for firebase, the preview view, capture button
@@ -96,9 +103,45 @@ public class TakePhotoActivity extends AppCompatActivity {
         captureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) { // when the capture button is clicked, take the photo
-                capturePhoto();
+                // capturePhoto();
+
+                if (Build.VERSION.SDK_INT >= 23 && Build.VERSION.SDK_INT <= 29) {
+                    String[] PERMISSIONS = {android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
+                    if (!hasPermissions(mContext, PERMISSIONS)) {
+                        ActivityCompat.requestPermissions((Activity) mContext, PERMISSIONS, REQUEST );
+                    } else {
+                        capturePhoto();
+                    }
+                } else {
+                    capturePhoto();
+                }
             }
         });
+    }
+
+    private static boolean hasPermissions(Context context, String... permissions) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case REQUEST: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    capturePhoto();
+                } else {
+                    Toast.makeText(mContext, "The app was not allowed to write in your storage", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
     }
 
     /**
