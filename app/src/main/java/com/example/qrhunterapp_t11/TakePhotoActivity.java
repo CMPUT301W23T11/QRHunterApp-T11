@@ -105,7 +105,7 @@ public class TakePhotoActivity extends AppCompatActivity {
             public void onClick(View v) { // when the capture button is clicked, take the photo
                 // capturePhoto();
 
-                if (Build.VERSION.SDK_INT >= 23) {
+                if (Build.VERSION.SDK_INT >= 23 && Build.VERSION.SDK_INT <= 29) {
                     String[] PERMISSIONS = {android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
                     if (!hasPermissions(mContext, PERMISSIONS)) {
                         ActivityCompat.requestPermissions((Activity) mContext, PERMISSIONS, REQUEST );
