@@ -124,14 +124,8 @@ public class CameraFragment extends Fragment {
                 // resultString will probably need to be turned into a class attribute so it can be accessed later in runtime (once the location is obtained),
                 // since we don't have that at this point in time
 
-                // NEW ADDITIONS
-                String hash = null;
-                try {
-                    hash = QRCode.strToHash(resultString);
-                } catch (NoSuchAlgorithmException e) {
-                    throw new RuntimeException(e);
-                }
-                qrCode = new QRCode(hash);
+                // object instantiated
+                qrCode = new QRCode(resultString);
 
                 // create custom dialog to display QR score
                 LayoutInflater inflater = this.getLayoutInflater();
