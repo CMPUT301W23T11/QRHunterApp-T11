@@ -1,4 +1,4 @@
-package com.example.qrhunterapp_t11;//package com.example.qrhunterapp_t11;
+package com.example.qrhunterapp_t11;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -55,7 +55,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
             mapFragment = SupportMapFragment.newInstance();
             getChildFragmentManager().beginTransaction().replace(R.id.google_map, mapFragment).commit();
         }
-        checkMapServices();
+        checkMapWorking();
         mapFragment.getMapAsync(this);
     }
 
@@ -66,17 +66,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         return view;
     }
 
-    private boolean checkMapServices() {
-        Log.d(TAG, "checkMapServices");
+    private void checkMapWorking() {
+        Log.d(TAG, "checkMapWorking");
         LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (!isGPSEnabled) {
             buildAlertMessageNoGps();
-            return false;
         }
         if (isServicesOK()) {
-            if (isMapsEnabled()) {
-                Log.d(TAG, "checkMapServices: True");
+            if (isLocationEnabled()) {
                 mLocationPermissionGranted = true;
                 SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map);
                 if (mapFragment == null) {
@@ -84,21 +82,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                     getChildFragmentManager().beginTransaction().replace(R.id.google_map, mapFragment).commit();
                 }
                 mapFragment.getMapAsync(this);
-                return true;
             }
-        }
-        return false;
-    }
-
-    @Override
-    public void onMapsSdkInitialized(MapsInitializer.Renderer renderer) {
-        switch (renderer) {
-            case LATEST:
-                Log.d(TAG, "The latest version of the renderer is used.");
-                break;
-            case LEGACY:
-                Log.d(TAG, "The legacy version of the renderer is used.");
-                break;
         }
     }
 
@@ -108,20 +92,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("This application requires GPS to work properly, do you want to enable it?")
                 .setCancelable(false)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
-                        if (ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                            Intent gpsOptionsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                            startActivity(gpsOptionsIntent);
-                            //ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, permissionsRequestAccessFineLocation);
-                            getLocationPermission();
-                        } else {
-                            Intent gpsOptionsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                            startActivity(gpsOptionsIntent);
-                            getLocationPermission();
-                            mLocationPermissionGranted = true;
-                            displayMap();
-                        }
+                .setPositiveButton("Yes", (dialog, id) -> {
+                    if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        Intent gpsOptionsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        startActivity(gpsOptionsIntent);
+                        getLocationPermission();
+                    } else {
+                        Intent gpsOptionsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        startActivity(gpsOptionsIntent);
+                        getLocationPermission();
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -134,22 +113,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
     }
 
     //checks if the current app allows gps location
-    public boolean isMapsEnabled() {
-        final LocationManager manager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        boolean isGpsEnabled = manager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        if (!isGpsEnabled) {
-            buildAlertMessageNoGps();
-            Log.d(TAG, "isMapEnabled: False");
-            return false;
-        }
-        else if (ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            //ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, permissionsRequestAccessFineLocation);
+    public boolean isLocationEnabled() {
+        if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             getLocationPermission();
-            Log.d(TAG, "isMapEnabled: Location permission not granted");
+            Log.d(TAG, "isLocationEnabled: No");
             return false;
         }
         else {
-            Log.d(TAG, "isMapEnabled: True");
+            Log.d(TAG, "isLocationEnabled: Yes");
             return true;
         }
     }
@@ -165,26 +136,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
             mLocationPermissionGranted = true;
             displayMap();
         } else {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, permissionsRequestAccessFineLocation);
+            requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, permissionsRequestAccessFineLocation);
         }
-    }
-
-    //checks if google services is available on device
-    private boolean isServicesOK() {
-        int available = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(getActivity());
-        if (available == ConnectionResult.SUCCESS) {
-            //everything is fine and the user can make map requests
-            Log.d(TAG, "isServicesOK: Google Play Services is working");
-            return true;
-        } else if (GoogleApiAvailability.getInstance().isUserResolvableError(available)) {
-            //an error occurred but we can resolve it
-            Log.d(TAG, "isServicesOK: an error occurred but we can fix it");
-            Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(getActivity(), available, errorDialogRequest);
-            dialog.show();
-        } else {
-            Toast.makeText(getActivity(), "You can't make map requests", Toast.LENGTH_SHORT).show();
-        }
-        return false;
     }
 
     @Override
@@ -213,7 +166,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        Log.d(TAG, "onActivityResult: called.");
+        Log.d(TAG, "onActivityResult");
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case permissionsRequestEnableGPS:
@@ -224,12 +177,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                 }
                 break;
         }
-    }
-
-    private void displayMap() {
-        Log.d(TAG, "displayMap");
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map);
-        mapFragment.getMapAsync((OnMapReadyCallback) this);
     }
 
     @Override
@@ -263,4 +210,39 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
             }
         }
     }
+
+    private void displayMap() {
+        Log.d(TAG, "displayMap");
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map);
+        mapFragment.getMapAsync((OnMapReadyCallback) this);
+    }
+
+    //checks if google services is available on device
+    private boolean isServicesOK() {
+        int available = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(getActivity());
+        if (available == ConnectionResult.SUCCESS) {
+            Log.d(TAG, "isServicesOK: Google Play Services is working");
+            return true;
+        } else if (GoogleApiAvailability.getInstance().isUserResolvableError(available)) {
+            Log.d(TAG, "isServicesOK: an error occurred but we can fix it");
+            Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(getActivity(), available, errorDialogRequest);
+            dialog.show();
+        } else {
+            Toast.makeText(getActivity(), "You can't make map requests", Toast.LENGTH_SHORT).show();
+        }
+        return false;
+    }
+
+    @Override
+    public void onMapsSdkInitialized(MapsInitializer.Renderer renderer) {
+        switch (renderer) {
+            case LATEST:
+                //Log.d(TAG, "Latest Renderer");
+                break;
+            case LEGACY:
+                //Log.d(TAG, "Legacy Renderer");
+                break;
+        }
+    }
+
 }
