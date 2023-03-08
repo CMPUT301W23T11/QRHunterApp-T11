@@ -77,7 +77,12 @@ public class QRCode {
     };
 
     public QRCode(String hash) {
-        this.hash = hash;
+        // mandatory exception due to message digest library
+        try {
+            this.hash = strToHash(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
         this.points = calculatePoints(hash);
         System.out.println(points);
         this.name = uniqueName(hash);
@@ -91,6 +96,9 @@ public class QRCode {
     public String getName() {
         return name;
     }
+
+    public Location getLocation() { return geolocation;}
+    public void setLocation(Location location) { this.geolocation = location;}
     public ArrayList<Integer> getFaceList() {
         return faceList;
     }
