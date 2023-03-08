@@ -20,7 +20,8 @@ public class QRCode {
 
     private ArrayList<Comment> commentList;
 
-/*  //Firebase won't let us store these attributes as part of a custom object
+  // TODO @Sarah Firebase won't let us store these attributes as part of a custom object
+  //  do we even need to store them?
     private int eyesNumbers[] = {
             R.drawable.eyes1,
             R.drawable.eyes2
@@ -76,7 +77,6 @@ public class QRCode {
             "tas",
             "fli"
     };
-*/
 
     public QRCode(String raw) {
         // mandatory exception due to message digest library
@@ -87,9 +87,8 @@ public class QRCode {
         }
         this.points = calculatePoints();
         System.out.println(points);
-        this.name = "testname";
-        //this.name = uniqueName();
-        //this.faceList = uniqueImage();
+        this.name = uniqueName();
+        this.faceList = uniqueImage();
         this.commentList = new ArrayList<Comment>();
         this.geolocation = null;
     }
@@ -121,7 +120,7 @@ public class QRCode {
         this.commentList = commentList;
     }
 
-    /*
+    /* I don't think we're going to need these
     public int[] getEyesNumbers() {return eyesNumbers;}
 
     public int[] getEyebrowsNumbers() {return eyebrowsNumbers;}
@@ -234,7 +233,7 @@ public class QRCode {
      * techiedelight.com https://www.techiedelight.com/convert-hex-string-to-integer-java/ for converting string to hexadecimal integer
      * @return Returns an ArrayList of drawables to form the image
      */
-    /*
+
     private ArrayList<Integer> uniqueImage() {
 
         int hashSmall = Integer.parseInt(this.hash.substring(0, 5), 16);
@@ -257,7 +256,7 @@ public class QRCode {
      * Returns an ArrayList of drawables to form the image
      */
 
-    /*
+
     private String uniqueName(){
 
         String newName = "";
@@ -286,5 +285,4 @@ public class QRCode {
         return newName;
     }
 
-    */
 }
