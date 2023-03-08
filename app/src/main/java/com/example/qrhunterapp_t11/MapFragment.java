@@ -1,4 +1,4 @@
-package com.example.qrhunterapp_t11;
+package com.example.qrhunterapp_t11;//package com.example.qrhunterapp_t11;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -102,6 +102,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         }
     }
 
+    //Device GPS turn on
     private void buildAlertMessageNoGps() {
         Log.d(TAG, "buildAlertMessageNoGps");
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -110,8 +111,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
                         if (ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                            ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, permissionsRequestAccessFineLocation);
+                            Intent gpsOptionsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            startActivity(gpsOptionsIntent);
+                            //ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, permissionsRequestAccessFineLocation);
+                            getLocationPermission();
                         } else {
+                            Intent gpsOptionsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            startActivity(gpsOptionsIntent);
+                            getLocationPermission();
                             mLocationPermissionGranted = true;
                             displayMap();
                         }
@@ -134,11 +141,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
             buildAlertMessageNoGps();
             Log.d(TAG, "isMapEnabled: False");
             return false;
-        } else if (ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, permissionsRequestAccessFineLocation);
+        }
+        else if (ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            //ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, permissionsRequestAccessFineLocation);
+            getLocationPermission();
             Log.d(TAG, "isMapEnabled: Location permission not granted");
             return false;
-        } else {
+        }
+        else {
             Log.d(TAG, "isMapEnabled: True");
             return true;
         }
@@ -179,17 +189,23 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        Log.d(TAG, "onRequestPermissionsResult called.");
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
         switch (requestCode) {
+            case permissionsRequestEnableGPS:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "onRequestPermissionsResult: GPS permission granted");
+                    displayMap();
+                } else {
+                    Log.d(TAG, "onRequestPermissionsResult: GPS permission denied");
+                }
+                break;
             case permissionsRequestAccessFineLocation:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "onRequestPermissionsResult: Location permission granted");
                     mLocationPermissionGranted = true;
                     displayMap();
                 } else {
-                    // Permission denied
-                    Toast.makeText(getActivity(), "Permission denied", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "onRequestPermissionsResult: Location permission denied");
                 }
                 break;
         }
@@ -248,4 +264,3 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         }
     }
 }
-

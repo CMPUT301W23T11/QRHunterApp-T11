@@ -1,8 +1,12 @@
 package com.example.qrhunterapp_t11;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResult;
@@ -12,6 +16,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -21,12 +27,22 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executor;
 
 /**
  * Logic for the camera fragment, which is responsible for managing everything that pertains to scanning and adding a new QR code.
@@ -54,6 +70,7 @@ public class CameraFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
         return inflater.inflate(R.layout.fragment_camera, container, false);
     }
@@ -201,27 +218,100 @@ public class CameraFragment extends Fragment {
      * @reference Daily Coding - https://www.youtube.com/watch?v=DfDj9EadOLk - how to use activityresultlauncher to execute code after an activity closes
      * @reference Oleksandra - https://stackoverflow.com/a/63883427/14445107 - where to initialize an activityresultlauncher
      */
+    private static final int PERMISSIONS_REQUEST_LOCATION = 100;
+    private GoogleApiClient googleApiClient;
+
+    private void connectGoogleApiClient() {
+        googleApiClient = new GoogleApiClient.Builder(requireContext())
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+                    @Override
+                    public void onConnected(Bundle bundle) {
+                        permissions();
+                    }
+                    @Override
+                    public void onConnectionSuspended(int i) {
+                    }
+                })
+                .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(ConnectionResult connectionResult) {
+                    }
+                })
+                .build();
+        googleApiClient.connect();
+    }
+
+    private void getCurrentLocation() {
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+        if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
+                    if (location != null) {
+                        // Location data is available
+                        double latitude = location.getLatitude();
+                        double longitude = location.getLongitude();
+                        Log.d("LocationPrompt", "Latitude: " + latitude + ", Longitude: " + longitude);
+                        //TODO SARAH + JOSH - create QR with location (probably want to check whether the QR already exists in DB first)
+                    } else {
+                        // Location data is not available
+                        Log.d("LocationPrompt", "ERROR Location data is not available.");
+                    }
+                }
+            });
+        }
+    }
+
+    private void permissions() {
+        if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            // Permission is already granted
+            Log.d("LocationPrompt", "PERMISSION ALREADY GAVE.");
+            getCurrentLocation();
+        } else {
+            // Permission is not granted
+            // Ask for the permission, calls onRequestPermissionsResult after selection
+            Log.d("LocationPrompt", "ASKING FOR PERMISSION.");
+            requestPermissions(
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSIONS_REQUEST_LOCATION);
+        }
+    }
+
+    //Only called if app doesn't have location permissions and after the user has selected allow or deny location.
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == PERMISSIONS_REQUEST_LOCATION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission is granted
+                Log.d("LocationPrompt", "Execute if permission granted.");
+                getCurrentLocation();
+            } else {
+                // Permission is not granted
+                Log.d("LocationPrompt", "Execute if permission not granted.");
+                //TODO SARAH + JOSH - create QR without location (I assume using null for location)
+            }
+        }
+    }
+
     private void promptForLocation() {
         new AlertDialog.Builder(getContext())
                 .setTitle("Share Geolocation")
-                .setMessage("Share your current location?")
+                .setMessage("Let others find this location on the map?")
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         Log.d("LocationPrompt", "User accepted geolocation prompt.");
-                        Toast.makeText(getContext(), "User accepted geolocation prompt", Toast.LENGTH_SHORT).show(); // remove
                         //TODO DANIEL - get current location
-                        // SARAH + JOSH - then proceed to create QR with location (probably want to check whether the QR already exists in DB first)
+                        permissions();
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Log.d("LocationPrompt", "User rejected geolocation prompt.");
-                        Toast.makeText(getContext(), "User rejected geolocation prompt", Toast.LENGTH_SHORT).show(); // remove
                         //TODO SARAH + JOSH - create QR without location (I assume using null for location)
                     }
                 })
                 .show();
     }
-
 }
