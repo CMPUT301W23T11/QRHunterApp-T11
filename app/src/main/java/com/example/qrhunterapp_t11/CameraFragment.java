@@ -36,6 +36,8 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
@@ -54,6 +56,11 @@ public class CameraFragment extends Fragment {
     ActivityResultLauncher<ScanOptions> barLauncher;
     ActivityResultLauncher<Intent> photoLauncher;
     QRCode qrCode;
+
+    //https://firebase.google.com/docs/firestore/manage-data/add-data
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    CollectionReference collectionReference = db.collection("QRCodes");
+
 
     /**
      * Inflates the layout for the camera fragment.
@@ -120,9 +127,7 @@ public class CameraFragment extends Fragment {
             if (result.getContents() != null) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext()); // create a builder for the alert dialog
                 String resultString = result.getContents(); // how to access QR code contents; score dialog shows placeholder value for now
-                //TODO JOSH SARAH - resultString is a string of whatever was in the QR code; supply it as an argument into your hash function/constructor
-                // resultString will probably need to be turned into a class attribute so it can be accessed later in runtime (once the location is obtained),
-                // since we don't have that at this point in time
+                // resultString is a string of whatever was in the QR code; supply it as an argument into your hash function/constructor
 
                 // object instantiated
                 qrCode = new QRCode(resultString);
@@ -304,6 +309,8 @@ public class CameraFragment extends Fragment {
                     public void onClick(DialogInterface dialog, int which) {
                         Log.d("LocationPrompt", "User rejected geolocation prompt.");
                         //TODO SARAH + JOSH - create QR without location (I assume using null for location)
+                        String id = qrCode.getHash();
+                        collectionReference.document(id).set(qrCode);
                     }
                 })
                 .show();
