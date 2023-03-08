@@ -20,7 +20,7 @@ public class QRCode {
 
     private ArrayList<Comment> commentList;
 
-/*
+/*  //Firebase won't let us store these attributes as part of a custom object
     private int eyesNumbers[] = {
             R.drawable.eyes1,
             R.drawable.eyes2
