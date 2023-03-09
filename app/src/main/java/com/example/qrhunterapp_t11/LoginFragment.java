@@ -82,7 +82,7 @@ public class LoginFragment extends Fragment {
                                     validPassword = valid;
                                     if (validUsername && validPassword) {
                                         prefs.edit().putBoolean("notLoggedIn", false).commit();
-                                        prefs.edit().putString("loginUsername", loginUsername).commit();
+                                        prefs.edit().putString("currentUser", loginUsername).commit();
 
                                         Intent intent = new Intent(getActivity(), MainActivity.class);
                                         startActivity(intent);

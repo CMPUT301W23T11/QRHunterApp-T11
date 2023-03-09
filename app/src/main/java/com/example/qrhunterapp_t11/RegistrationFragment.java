@@ -101,10 +101,9 @@ public class RegistrationFragment extends Fragment {
                                     user.put("Email", registerEmail);
 
                                     usersReference.document(registerUsername).set(user);
-                                    usersReference.document(registerUsername).collection("QR Codes");
 
                                     prefs.edit().putBoolean("notLoggedIn", false).commit();
-                                    prefs.edit().putString("loginUsername", registerUsername).commit();
+                                    prefs.edit().putString("currentUser", registerUsername).commit();
 
                                     Intent intent = new Intent(getActivity(), MainActivity.class);
                                     startActivity(intent);
@@ -133,33 +132,32 @@ public class RegistrationFragment extends Fragment {
         // Check for empty field
         if (registerPassword.length() == 0) {
             registerPasswordEditText.setError("Field cannot be blank");
+            return false;
         }
         // Check for length
-        if (registerPassword.length() < 8 && registerPassword.length() > 0) {
+        if (registerPassword.length() < 8) {
             registerPasswordEditText.setError("Password is too short");
+            return false;
         }
         // Check for matching passwords
         if (!registerPassword.equals(registerConfirmPassword)) {
             registerConfirmPasswordEditText.setError("Passwords do not match");
+            return false;
         }
         // Check for password containing necessary character types
-        if (registerPassword.length() >= 8) {
-            Pattern letter = Pattern.compile("[a-zA-z]");
-            Pattern digit = Pattern.compile("[0-9]");
-            Pattern special = Pattern.compile("[!@#$%&*()_+=|<>?{}\\[\\]~-]");
+        Pattern letter = Pattern.compile("[a-zA-z]");
+        Pattern digit = Pattern.compile("\\d");
+        Pattern special = Pattern.compile("[!@#$%&*()_+=|<>?{}\\[\\]~-]");
 
-            Matcher hasLetter = letter.matcher(registerPassword);
-            Matcher hasDigit = digit.matcher(registerPassword);
-            Matcher hasSpecial = special.matcher(registerPassword);
+        Matcher hasLetter = letter.matcher(registerPassword);
+        Matcher hasDigit = digit.matcher(registerPassword);
+        Matcher hasSpecial = special.matcher(registerPassword);
 
-            if (!hasLetter.find() || !hasDigit.find() || !hasSpecial.find()) {
-                registerPasswordEditText.setError("Invalid password");
-            }
+        if (!hasLetter.find() || !hasDigit.find() || !hasSpecial.find()) {
+            registerPasswordEditText.setError("Invalid password");
+            return false;
         }
-        if (registerPasswordEditText.getError() == null) {
-            return true;
-        }
-        return false;
+        return true;
     }
 
     /**
