@@ -17,7 +17,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
  * @author Afra, Josh, Kristina
  * @reference <a href="https://www.geeksforgeeks.org/how-to-create-fragment-using-bottom-navigation-in-social-media-android-app/">How to use fragments with a bottom navigation bar</a>
  * @reference <a href="https://youtu.be/x6-_va1R788">How to set up and align a floating action button on the BottomNavigationView</a>
- * @see RegistrationFragment
  */
 public class MainActivity extends AppCompatActivity {
 
