@@ -19,6 +19,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -137,6 +138,7 @@ public class CameraFragment extends Fragment {
                 View dialogView = inflater.inflate(R.layout.qr_scored_dialog, null);
                 TextView scoredTV = dialogView.findViewById(R.id.scoredTV); // NEW ADDITION
                 builder.setView(dialogView);
+                builder.setCancelable(false);
                 scoredTV.setText("Scored " + String.valueOf(qrCode.getPoints()) + " Points"); // NEW ADDITION
 
                 final AlertDialog alertDialog = builder.create();
@@ -174,6 +176,7 @@ public class CameraFragment extends Fragment {
      *
      * @reference David Hedlund - https://stackoverflow.com/questions/2115758/how-do-i-display-an-alert-dialog-on-android - how to create an AlertDialog
      * @reference EboMike - https://stackoverflow.com/questions/3875184/cant-create-handler-inside-thread-that-has-not-called-looper-prepare - updating UI elements from within a thread using runOnUiThread()
+     * @reference Rick - https://stackoverflow.com/a/19064968/14445107 - how to prevent users from touching outside a dialog box to escape it
      */
     private void promptForPhoto() {
         getActivity().runOnUiThread(new Runnable() {
@@ -181,6 +184,7 @@ public class CameraFragment extends Fragment {
                 new AlertDialog.Builder(getContext())
                         .setTitle("Take Photo")
                         .setMessage("Take photo of object or location?")
+                        .setCancelable(false)
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 Log.d("PhotoPrompt", "User accepted photo prompt.");
@@ -256,12 +260,14 @@ public class CameraFragment extends Fragment {
                         //stores QRCode into db with just hash as document id and location = null
                         String id = qrCode.getHash();
                         collectionReference.document(id).set(qrCode);
+                        returnToProfile();
                     } else {
                         // Location data is not available
                         Log.d("LocationPrompt", "ERROR Location data is not available.");
                         //stores QRCode into db with just hash as document id and location = null
                         String id = qrCode.getHash();
                         collectionReference.document(id).set(qrCode);
+                        returnToProfile();
                     }
                 }
             });
@@ -297,6 +303,7 @@ public class CameraFragment extends Fragment {
                 //stores QRCode into db with just hash as document id and location = null
                 String id = qrCode.getHash();
                 collectionReference.document(id).set(qrCode);
+                returnToProfile();
             }
         }
     }
@@ -305,6 +312,7 @@ public class CameraFragment extends Fragment {
         new AlertDialog.Builder(getContext())
                 .setTitle("Share Geolocation")
                 .setMessage("Let others find this location on the map?")
+                .setCancelable(false)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         Log.d("LocationPrompt", "User accepted geolocation prompt.");
@@ -319,8 +327,22 @@ public class CameraFragment extends Fragment {
                         //stores QRCode into db with just hash as document id and location = null
                         String id = qrCode.getHash();
                         collectionReference.document(id).set(qrCode);
+                        returnToProfile();
                     }
                 })
                 .show();
+    }
+
+    /**
+     * Helper function to return to profile screen once user has finished adding a QR code. Otherwise if a user tried
+     * to add another QR code immediately after scanning one, since they're technically still in the CameraFragment,
+     * nothing would happen.
+     *
+     * @reference Yoju - https://stackoverflow.com/a/60055145/14445107 - using getParentFragmentManager() instead of getFragmentManager()
+     */
+    private void returnToProfile() {
+        FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+        trans.replace(R.id.main_screen, new ProfileFragment(db));
+        trans.commit();
     }
 }
