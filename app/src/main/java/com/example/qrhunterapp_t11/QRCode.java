@@ -2,6 +2,7 @@ package com.example.qrhunterapp_t11;
 
 import android.location.Location;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -10,15 +11,15 @@ import java.security.NoSuchAlgorithmException;
  * QRCode class (INCOMPLETE)
  * To do: implement geolocation
  */
-public class QRCode {
+public class QRCode implements Serializable {
     private String hash;
     private String name;
     private int points;
 
     private Location geolocation;
     private ArrayList<Integer> faceList;
-
     private ArrayList<Comment> commentList;
+    private ArrayList<String> photoList;
 
   // TODO @Sarah Firebase won't let us store these attributes as part of a custom object
   //  do we even need to store them?
@@ -90,6 +91,7 @@ public class QRCode {
         this.name = uniqueName();
         this.faceList = uniqueImage();
         this.commentList = new ArrayList<Comment>();
+        this.photoList = new ArrayList<String>();
         this.geolocation = null;
     }
 
@@ -105,6 +107,9 @@ public class QRCode {
         return name;
     }
 
+    public ArrayList<String> getPhotoList() {
+        return photoList;
+    }
     public Location getLocation() { return geolocation;}
     public void setLocation(Location location) { this.geolocation = location;}
 

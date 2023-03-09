@@ -16,6 +16,7 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -35,6 +36,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
@@ -63,11 +65,13 @@ public class TakePhotoActivity extends AppCompatActivity {
     //FB upload
     private StorageReference mStorageRef;
     CollectionReference uploadsReference = FirebaseFirestore.getInstance().collection("uploads");
+    CollectionReference qrCodeReference = FirebaseFirestore.getInstance().collection("QRCodes");
     private Uri mImageUri;
     private String imageUrl;
     private String msTime;
     private static final int REQUEST = 112; // leave here?
     private Context mContext= TakePhotoActivity.this;
+    private QRCode qrCode;
 
     /**
      * Called when activity launches; starts by intializing the storage references for firebase, the preview view, capture button
@@ -81,6 +85,10 @@ public class TakePhotoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_take_photo);
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            qrCode = (QRCode)extras.getSerializable("QR");
+        }
 
         // initialize FB references
         mStorageRef = FirebaseStorage.getInstance().getReference("uploads"); // StorageReference points to a collection called "uploads" on DB
@@ -168,6 +176,8 @@ public class TakePhotoActivity extends AppCompatActivity {
                         Toast.makeText(TakePhotoActivity.this, "Photo has been saved successfully.", Toast.LENGTH_SHORT).show();
                         mImageUri = outputFileResults.getSavedUri(); // get uri (local address) of image to know which file to upload later
                         uploadFile(); // upload the photo
+                        Intent intent = new Intent(TakePhotoActivity.this, MainActivity.class);
+                        intent.putExtra("uri", mImageUri);
                         finish(); // close the photo capture activity
                     }
 
@@ -235,6 +245,7 @@ public class TakePhotoActivity extends AppCompatActivity {
     private void uploadFile() {
         if (mImageUri != null) { // if the image exists, upload it
             msTime = System.currentTimeMillis() + " ";
+            qrCode.getPhotoList().add(msTime + "." + getFileExtension(mImageUri));
 
             // we are grabbing the current time in ms, to ensure each photo upload has a unique name; .child() concatenates file to mStorageReference ("uploads" folder)
             StorageReference fileReference = mStorageRef.child(msTime + "." + getFileExtension(mImageUri));
@@ -256,6 +267,7 @@ public class TakePhotoActivity extends AppCompatActivity {
                                             PhotoUploader upload = new PhotoUploader(msTime, imageUrl);
 
                                             // make entry in database, that contains the name and url of our image upload
+                                            qrCodeReference.document(qrCode.getHash()).update("photoList", FieldValue.arrayUnion(imageUrl));
                                             uploadsReference.document(upload.getName()).set(upload);
                                         }
                                     }).addOnFailureListener(new OnFailureListener() {
