@@ -3,10 +3,9 @@ package com.example.qrhunterapp_t11;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResult;
@@ -17,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -26,26 +24,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Executor;
 
 /**
  * Logic for the camera fragment, which is responsible for managing everything that pertains to scanning and adding a new QR code.
@@ -57,10 +48,12 @@ public class CameraFragment extends Fragment {
     ActivityResultLauncher<ScanOptions> barLauncher;
     ActivityResultLauncher<Intent> photoLauncher;
     QRCode qrCode;
+    SharedPreferences prefs;
 
     //https://firebase.google.com/docs/firestore/manage-data/add-data
     FirebaseFirestore db = FirebaseFirestore.getInstance();
-    CollectionReference collectionReference = db.collection("QRCodes");
+    CollectionReference QRCodesReference = db.collection("QRCodes");
+    CollectionReference usersReference = db.collection("Users");
 
 
     /**
@@ -113,6 +106,7 @@ public class CameraFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         photoLauncher = registerForActivityResult( // should be okay to initialize before scanner
                 new ActivityResultContracts.StartActivityForResult(),
@@ -232,6 +226,7 @@ public class CameraFragment extends Fragment {
                     public void onConnected(Bundle bundle) {
                         permissions();
                     }
+
                     @Override
                     public void onConnectionSuspended(int i) {
                     }
@@ -258,15 +253,13 @@ public class CameraFragment extends Fragment {
                         Log.d("LocationPrompt", "Latitude: " + latitude + ", Longitude: " + longitude);
                         //TODO SARAH + JOSH - create QR with location (probably want to check whether the QR already exists in DB first)
                         //stores QRCode into db with just hash as document id and location = null
-                        String id = qrCode.getHash();
-                        collectionReference.document(id).set(qrCode);
+                        addQRCode();
                         returnToProfile();
                     } else {
                         // Location data is not available
                         Log.d("LocationPrompt", "ERROR Location data is not available.");
                         //stores QRCode into db with just hash as document id and location = null
-                        String id = qrCode.getHash();
-                        collectionReference.document(id).set(qrCode);
+                        addQRCode();
                         returnToProfile();
                     }
                 }
@@ -301,8 +294,7 @@ public class CameraFragment extends Fragment {
                 // Permission is not granted
                 Log.d("LocationPrompt", "Execute if permission not granted.");
                 //stores QRCode into db with just hash as document id and location = null
-                String id = qrCode.getHash();
-                collectionReference.document(id).set(qrCode);
+                addQRCode();
                 returnToProfile();
             }
         }
@@ -325,8 +317,7 @@ public class CameraFragment extends Fragment {
                     public void onClick(DialogInterface dialog, int which) {
                         Log.d("LocationPrompt", "User rejected geolocation prompt.");
                         //stores QRCode into db with just hash as document id and location = null
-                        String id = qrCode.getHash();
-                        collectionReference.document(id).set(qrCode);
+                        addQRCode();
                         returnToProfile();
                     }
                 })
@@ -344,5 +335,16 @@ public class CameraFragment extends Fragment {
         FragmentTransaction trans = getParentFragmentManager().beginTransaction();
         trans.replace(R.id.main_screen, new ProfileFragment(db));
         trans.commit();
+    }
+
+    /**
+     * Helper function to add QRCode object to QRCodes and Users collections
+     */
+    private void addQRCode() {
+        String currentUser = prefs.getString("currentUser", null);
+        String id = qrCode.getHash();
+
+        QRCodesReference.document(id).set(qrCode);
+        usersReference.document(currentUser).collection("QR Codes").document(id).set(qrCode);
     }
 }

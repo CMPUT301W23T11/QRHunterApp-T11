@@ -1,6 +1,3 @@
-// References:
-// https://stackoverflow.com/a/66270738
-
 package com.example.qrhunterapp_t11;
 
 import android.content.Context;
@@ -25,16 +22,28 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
+/**
+ * Handles login functionality for the app. Also displays the register button
+ * to take the user to the registration fragment.
+ *
+ * @author Afra
+ * @reference <a href="https://stackoverflow.com/a/66270738">For changing fragments</a>
+ * @see LoginRegisterActivity
+ */
 public class LoginFragment extends Fragment {
-    Button signInButton;
-    Button registerButton;
-    FirebaseFirestore db;
-    CollectionReference usersReference;
-    boolean validUsername;
-    boolean validPassword;
-    EditText loginUsernameEditText;
-    EditText loginPasswordEditText;
+    private final FirebaseFirestore db;
+    private final CollectionReference usersReference;
+    private boolean validUsername;
+    private boolean validPassword;
+    private EditText loginUsernameEditText;
+    private EditText loginPasswordEditText;
 
+    /**
+     * Constructor for login fragment.
+     * Also instantiates a reference to the Users collection for ease of access.
+     *
+     * @param db Firestore database instance
+     */
     public LoginFragment(FirebaseFirestore db) {
         this.db = db;
         this.usersReference = db.collection("Users");
@@ -46,8 +55,8 @@ public class LoginFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_login_screen, container, false);
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
-        signInButton = view.findViewById(R.id.loginbuttonloginscreen);
-        registerButton = view.findViewById(R.id.registerbuttonloginscreen);
+        Button signInButton = view.findViewById(R.id.loginbuttonloginscreen);
+        Button registerButton = view.findViewById(R.id.registerbuttonloginscreen);
 
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -59,9 +68,9 @@ public class LoginFragment extends Fragment {
                 String loginUsername = loginUsernameEditText.getText().toString();
                 String loginPassword = loginPasswordEditText.getText().toString();
 
-                // Some input validation
-
-                // Check if username exists
+                /* Run the validity checks, starting with the username check. If all info is valid, log the
+                  user in, and update the prefs file so that they don't have to log in again next time.
+                 */
                 usernameExistsCheck(loginUsername, loginUsernameEditText, new Callback() {
                     public void dataValid(boolean valid) {
                         validUsername = valid;
@@ -73,7 +82,7 @@ public class LoginFragment extends Fragment {
                                     validPassword = valid;
                                     if (validUsername && validPassword) {
                                         prefs.edit().putBoolean("notLoggedIn", false).commit();
-                                        prefs.edit().putString("loginUsername", loginUsername).commit();
+                                        prefs.edit().putString("currentUser", loginUsername).commit();
 
                                         Intent intent = new Intent(getActivity(), MainActivity.class);
                                         startActivity(intent);
@@ -86,6 +95,7 @@ public class LoginFragment extends Fragment {
             }
         });
 
+        // Switch to registration fragment if user clicks on register button
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -99,15 +109,20 @@ public class LoginFragment extends Fragment {
         return view;
     }
 
-    public interface Callback {
-        void dataValid(boolean valid);
-    }
-
+    /**
+     * Method to check if user exists with entered username or not.
+     *
+     * @param loginUsername         Username the user entered into the username field
+     * @param loginUsernameEditText EditText for username field
+     * @param dataValid             Callback value since the database is being queried
+     */
     public void usernameExistsCheck(String loginUsername, EditText loginUsernameEditText, final Callback dataValid) {
 
+        // Check for empty field
         if (loginUsername.length() == 0) {
             loginUsernameEditText.setError("Field cannot be blank");
         }
+        // Check if username exists
         if (loginUsername.length() > 0) {
             DocumentReference usernameReference = usersReference.document(loginUsername);
             usernameReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -127,11 +142,21 @@ public class LoginFragment extends Fragment {
         }
     }
 
+    /**
+     * Method to check if user entered correct password or not.
+     *
+     * @param loginUsername         Username the user entered into the username field
+     * @param loginPassword         Password the user entered into the password field
+     * @param loginPasswordEditText EditText for password field
+     * @param dataValid             Callback value since the database is being queried
+     */
     public void passwordMatchesCheck(String loginUsername, String loginPassword, EditText loginPasswordEditText, final Callback dataValid) {
 
+        // Check for empty field
         if (loginPassword.length() == 0) {
             loginPasswordEditText.setError("Field cannot be blank");
         }
+        // Check if password matches entered username
         if (loginPassword.length() > 0) {
             usersReference
                     .whereEqualTo("Username", loginUsername)

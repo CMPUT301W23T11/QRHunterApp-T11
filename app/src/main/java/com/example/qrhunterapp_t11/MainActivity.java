@@ -10,35 +10,34 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+/**
+ * Main app activity. Logged in users will see their player profile screen first, and
+ * can click on the toolbar at the bottom to switch to other parts of the app.
+ *
+ * @author Afra, Josh, Kristina
+ * @reference <a href="https://www.geeksforgeeks.org/how-to-create-fragment-using-bottom-navigation-in-social-media-android-app/">How to use fragments with a bottom navigation bar</a>
+ * @reference <a href="https://youtu.be/x6-_va1R788">How to set up and align a floating action button on the BottomNavigationView</a>
+ * @see RegistrationFragment
+ */
 public class MainActivity extends AppCompatActivity {
 
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
-    BottomNavigationView bottomToolbar;
-    FloatingActionButton addFab;
-    ProfileFragment profileFragment = new ProfileFragment(db);
-    SettingsFragment settingsFragment = new SettingsFragment(db);
-    CameraFragment cameraFragment = new CameraFragment();
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private BottomNavigationView bottomToolbar;
+    private FloatingActionButton addFab;
+    private final ProfileFragment profileFragment = new ProfileFragment(db);
+    private final SettingsFragment settingsFragment = new SettingsFragment();
+    private final CameraFragment cameraFragment = new CameraFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /*
-            https://www.geeksforgeeks.org/how-to-create-fragment-using-bottom-navigation-in-social-media-android-app/
-            - How to use fragments with a bottom navigation bar
-        */
-
         bottomToolbar = findViewById(R.id.bottomToolbar);
         addFab = findViewById(R.id.addFab);
         bottomToolbar.setSelectedItemId(R.id.profile);
         getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
 
-
-        /*
-            https://youtu.be/x6-_va1R788
-            - how to set up and align a floating action button on the BottomNavigationView
-         */
         addFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -47,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
 
         // Changes the fragment based on which item is clicked on the toolbar
         bottomToolbar.setOnItemSelectedListener(item -> {

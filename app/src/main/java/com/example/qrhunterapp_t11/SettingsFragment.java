@@ -11,25 +11,40 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
+/**
+ * Handles settings screen.
+ * Users can toggle geolocation on and off, or log out.
+ *
+ * @author Afra, Kristina
+ * @reference <a href="https://www.tutlane.com/tutorial/android/android-switch-on-off-button-with-examples">For handling switch events</a>
+ */
 public class SettingsFragment extends Fragment {
-
-    Button logoutButton;
-    FirebaseFirestore db;
-
-    public SettingsFragment(FirebaseFirestore db) {
-        this.db = db;
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
+
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
-        logoutButton = view.findViewById(R.id.logout_button);
+        Button logoutButton = view.findViewById(R.id.logout_button);
+        Switch geolocationSwitch = view.findViewById(R.id.geolocation_switch);
+
+        geolocationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    prefs.edit().putBoolean("geolocationOn", true).commit();
+                } else {
+                    prefs.edit().putBoolean("geolocationOn", false).commit();
+                }
+            }
+        });
+
         logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
