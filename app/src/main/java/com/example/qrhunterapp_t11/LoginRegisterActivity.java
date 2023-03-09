@@ -1,3 +1,5 @@
+// This file handles switching from the register/login activity to the main app activity
+
 package com.example.qrhunterapp_t11;
 
 import androidx.appcompat.app.AppCompatActivity;

@@ -22,11 +22,19 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Handles registration functionality for the app.
+ *
+ * @author afra
+ * @reference <a href="https://stackoverflow.com/a/66270738">For changing fragments</a>
+ * @see LoginRegisterActivity
+ */
 public class RegistrationFragment extends Fragment {
 
     Button registerButton;
@@ -40,6 +48,11 @@ public class RegistrationFragment extends Fragment {
     EditText registerPasswordEditText;
     EditText registerConfirmPasswordEditText;
 
+    /**
+     * Constructor for fragment. Also instantiates a reference to the users collection for ease of access.
+     *
+     * @param db Firestore database instance
+     */
     public RegistrationFragment(FirebaseFirestore db) {
         this.db = db;
         this.usersReference = db.collection("Users");
@@ -67,9 +80,9 @@ public class RegistrationFragment extends Fragment {
                 String registerPassword = registerPasswordEditText.getText().toString();
                 String registerConfirmPassword = registerConfirmPasswordEditText.getText().toString();
 
-                // Some input validation
-
-                // Check if username exists
+                /* Run the validity checks, starting with the username check. If all info is valid, add user to the database,
+                 log them in, and update the prefs file so that they don't have to log in again next time.
+                 */
                 usernameExistsCheck(registerUsername, registerUsernameEditText, new Callback() {
                     public void dataValid(boolean valid) {
                         validUsername = valid;
@@ -90,6 +103,7 @@ public class RegistrationFragment extends Fragment {
                                     user.put("Email", registerEmail);
 
                                     usersReference.document(registerUsername).set(user);
+                                    usersReference.document(registerUsername).collection("QR Codes");
 
                                     prefs.edit().putBoolean("notLoggedIn", false).commit();
                                     prefs.edit().putString("loginUsername", registerUsername).commit();
@@ -107,21 +121,30 @@ public class RegistrationFragment extends Fragment {
         return view;
     }
 
-    public interface Callback {
-        void dataValid(boolean valid);
-    }
-
+    /**
+     * Method to confirm if password is valid and relatively secure.
+     *
+     * @param registerPassword                Password the user entered into the password field
+     * @param registerConfirmPassword         Password the user entered into the confirm password field
+     * @param registerPasswordEditText        EditText for password field
+     * @param registerConfirmPasswordEditText EditText for confirm password field
+     * @return true if all checks pass, false otherwise
+     */
     public boolean passwordIsValid(String registerPassword, String registerConfirmPassword, EditText registerPasswordEditText, EditText registerConfirmPasswordEditText) {
 
+        // Check for empty field
         if (registerPassword.length() == 0) {
             registerPasswordEditText.setError("Field cannot be blank");
         }
+        // Check for length
         if (registerPassword.length() < 8 && registerPassword.length() > 0) {
             registerPasswordEditText.setError("Password is too short");
         }
+        // Check for matching passwords
         if (!registerPassword.equals(registerConfirmPassword)) {
             registerConfirmPasswordEditText.setError("Passwords do not match");
         }
+        // Check for password containing necessary character types
         if (registerPassword.length() >= 8) {
             Pattern letter = Pattern.compile("[a-zA-z]");
             Pattern digit = Pattern.compile("[0-9]");
@@ -141,6 +164,14 @@ public class RegistrationFragment extends Fragment {
         return false;
     }
 
+    /**
+     * Method to check if user already exists with entered email or not.
+     *
+     * @param registerEmail         Email the user entered into the email field
+     * @param registerEmailEditText EditText for email field
+     * @param dataValid             Callback value since the database is being queried
+     * @see Callback
+     */
     public void emailExistsCheck(String registerEmail, EditText registerEmailEditText, final Callback dataValid) {
 
         if (registerEmail.length() == 0) {
@@ -167,6 +198,13 @@ public class RegistrationFragment extends Fragment {
         }
     }
 
+    /**
+     * Method to check if entered username is already taken or not.
+     *
+     * @param registerUsername         Username the user entered into the username field
+     * @param registerUsernameEditText EditText for username field
+     * @param dataValid                Callback value since the database is being queried
+     */
     public void usernameExistsCheck(String registerUsername, EditText registerUsernameEditText, final Callback dataValid) {
 
         if (registerUsername.length() == 0) {

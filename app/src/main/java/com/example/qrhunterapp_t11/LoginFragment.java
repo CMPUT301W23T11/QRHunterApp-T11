@@ -1,6 +1,3 @@
-// References:
-// https://stackoverflow.com/a/66270738
-
 package com.example.qrhunterapp_t11;
 
 import android.content.Context;
@@ -25,6 +22,13 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
+/**
+ * Handles login functionality for the app.
+ *
+ * @author afra
+ * @reference <a href="https://stackoverflow.com/a/66270738">For changing fragments</a>
+ * @see LoginRegisterActivity
+ */
 public class LoginFragment extends Fragment {
     Button signInButton;
     Button registerButton;
@@ -97,10 +101,6 @@ public class LoginFragment extends Fragment {
         });
 
         return view;
-    }
-
-    public interface Callback {
-        void dataValid(boolean valid);
     }
 
     public void usernameExistsCheck(String loginUsername, EditText loginUsernameEditText, final Callback dataValid) {
