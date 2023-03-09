@@ -344,6 +344,7 @@ public class CameraFragment extends Fragment {
         String currentUser = prefs.getString("currentUser", null);
         String id = qrCode.getHash();
 
+        QRCodesReference.document(id).set(qrCode);
         usersReference.document(currentUser).collection("QR Codes").document(id).set(qrCode);
     }
 }
