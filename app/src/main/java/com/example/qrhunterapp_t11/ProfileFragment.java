@@ -45,7 +45,7 @@ public class ProfileFragment extends Fragment {
         TextView loginUsernameTextView = view.findViewById(R.id.profile_name);
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
-        String username = prefs.getString("loginUsername", null);
+        String username = prefs.getString("currentUser", null);
         loginUsernameTextView.setText(username);
 
         // TODO: - add players calculated stats, and add collection of QR codes
