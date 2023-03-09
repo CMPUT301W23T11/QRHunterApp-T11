@@ -11,17 +11,30 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 
-/*
-    Creates a fragment for the main profile page
-* */
+/**
+ * Handles player profile screen.
+ *
+ * @author Afra, Kristina
+ */
 public class ProfileFragment extends Fragment {
-    FirebaseFirestore db;
+    private final FirebaseFirestore db;
+    private final CollectionReference usersReference;
+    private final CollectionReference QRCodesReference;
 
+    /**
+     * Constructor for registration fragment.
+     * Also instantiates a reference to the Users and QRCodes collections for ease of access.
+     *
+     * @param db Firestore database instance
+     */
     public ProfileFragment(FirebaseFirestore db) {
         this.db = db;
+        this.usersReference = db.collection("Users");
+        this.QRCodesReference = db.collection("QRCodes");
     }
 
     @Override

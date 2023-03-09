@@ -31,30 +31,28 @@ import java.util.regex.Pattern;
 /**
  * Handles registration functionality for the app.
  *
- * @author afra
+ * @author Afra
  * @reference <a href="https://stackoverflow.com/a/66270738">For changing fragments</a>
  * @see LoginRegisterActivity
  */
 public class RegistrationFragment extends Fragment {
 
-    Button registerButton;
-    FirebaseFirestore db;
-    CollectionReference usersReference;
-    boolean validUsername;
-    boolean validPassword;
-    boolean validEmail;
-    EditText registerUsernameEditText;
-    EditText registerEmailEditText;
-    EditText registerPasswordEditText;
-    EditText registerConfirmPasswordEditText;
+    private final CollectionReference usersReference;
+    private boolean validUsername;
+    private boolean validPassword;
+    private boolean validEmail;
+    private EditText registerUsernameEditText;
+    private EditText registerEmailEditText;
+    private EditText registerPasswordEditText;
+    private EditText registerConfirmPasswordEditText;
 
     /**
-     * Constructor for fragment. Also instantiates a reference to the users collection for ease of access.
+     * Constructor for registration fragment.
+     * Also instantiates a reference to the Users collection for ease of access.
      *
      * @param db Firestore database instance
      */
     public RegistrationFragment(FirebaseFirestore db) {
-        this.db = db;
         this.usersReference = db.collection("Users");
     }
 
@@ -64,7 +62,7 @@ public class RegistrationFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_registration_screen, container, false);
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
-        registerButton = view.findViewById(R.id.registerbuttonregisterscreen);
+        Button registerButton = view.findViewById(R.id.registerbuttonregisterscreen);
 
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -174,9 +172,11 @@ public class RegistrationFragment extends Fragment {
      */
     public void emailExistsCheck(String registerEmail, EditText registerEmailEditText, final Callback dataValid) {
 
+        // Check for empty field
         if (registerEmail.length() == 0) {
             registerEmailEditText.setError("Field cannot be blank");
         }
+        // Check if email exists already
         if (registerEmail.length() > 0) {
             usersReference
                     .whereEqualTo("Email", registerEmail)
@@ -207,12 +207,15 @@ public class RegistrationFragment extends Fragment {
      */
     public void usernameExistsCheck(String registerUsername, EditText registerUsernameEditText, final Callback dataValid) {
 
+        // Check for empty field
         if (registerUsername.length() == 0) {
             registerUsernameEditText.setError("Field cannot be blank");
         }
+        // Check for length
         if (registerUsername.length() < 6 && registerUsername.length() > 0) {
             registerUsernameEditText.setError("Username is too short");
         }
+        // Check if username exists already
         if (registerUsername.length() >= 6) {
             DocumentReference usernameReference = usersReference.document(registerUsername);
             usernameReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
