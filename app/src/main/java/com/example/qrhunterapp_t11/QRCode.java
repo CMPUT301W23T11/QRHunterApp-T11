@@ -110,6 +110,11 @@ public class QRCode implements Serializable {
     public ArrayList<String> getPhotoList() {
         return photoList;
     }
+
+    public void setPhotoList(ArrayList<String> photoList) {
+        this.photoList = photoList;
+    }
+
     public Location getLocation() { return geolocation;}
     public void setLocation(Location location) { this.geolocation = location;}
 
