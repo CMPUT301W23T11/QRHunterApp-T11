@@ -44,9 +44,6 @@ import com.google.firebase.storage.UploadTask;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
-//
-//
-
 /**
  * The activity responsible for taking a photo of the QR object or location, and then uploading it to Firebase.
  *
@@ -119,6 +116,13 @@ public class TakePhotoActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Checks whether a permission is granted; in this case permission to access and write to the phone's storage.
+     *
+     * @param context Interface for global information about application environment.
+     * @param permissions Vararg of permission strings.
+     * @return Whether the permission has been granted.
+     */
     private static boolean hasPermissions(Context context, String... permissions) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
             for (String permission : permissions) {
@@ -130,6 +134,17 @@ public class TakePhotoActivity extends AppCompatActivity {
         return true;
     }
 
+
+    /**
+     * Handler for when the user accepts or rejects the initial prompt for storage access.
+     *
+     * @param requestCode The request code passed in.
+     * @param permissions The requested permissions. Never null.
+     * @param grantResults The grant results for the corresponding permissions
+     *     which is either {@link android.content.pm.PackageManager#PERMISSION_GRANTED}
+     *     or {@link android.content.pm.PackageManager#PERMISSION_DENIED}. Never null.
+     *
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -146,7 +161,7 @@ public class TakePhotoActivity extends AppCompatActivity {
 
     /**
      * Method that deals with capturing the photo, storing it intermediately on the device, and then uploading it to Firebase database (document containing photo name and url), and Firebase storage (the actual .jpeg).
-     * TODO currently the images are not compressed, but that's a detail that can be added in the later stages
+     * TODO currently the images are not compressed, but that's a detail that can be added in the later stages; apparently firebase can do this automatically?
      */
     private void capturePhoto() {
         long timestamp = System.currentTimeMillis(); //NOTE: this doesn't currently correspond to the same msTime that will be set for the photo on firebase; but since this is only for storing the image locally, it may not really matter
