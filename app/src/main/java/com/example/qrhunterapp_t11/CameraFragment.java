@@ -213,7 +213,9 @@ public class CameraFragment extends Fragment {
     private static final int PERMISSIONS_REQUEST_LOCATION = 100; //TODO move to top of class for cleanliness?
     private GoogleApiClient googleApiClient; //TODO move to top of class for cleanliness?
 
-    //TODO add javadoc comment please
+    /**
+     *Connects the GoogleApiClient and initiates the permissions check
+     */
     private void connectGoogleApiClient() {
         googleApiClient = new GoogleApiClient.Builder(requireContext())
                 .addApi(LocationServices.API)
@@ -236,7 +238,10 @@ public class CameraFragment extends Fragment {
         googleApiClient.connect();
     }
 
-    //TODO add javadoc comment please
+    /**
+     *Retrieves the current location and logs the latitude and longitude of the location.
+     *Adds QRCode to db with location and returns to profile
+     */
     private void getCurrentLocation() {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
         if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -263,7 +268,9 @@ public class CameraFragment extends Fragment {
         }
     }
 
-    //TODO add javadoc comment please
+    /**
+     *Initiates the location permission check and logs if permission is already granted
+     */
     private void permissions() {
         if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             // Permission is already granted
@@ -279,8 +286,14 @@ public class CameraFragment extends Fragment {
         }
     }
 
-    //Only called if app doesn't have location permissions and after the user has selected allow or deny location.
-    //TODO add javadoc comment please
+    /**
+     *Handles the user's response to the location permission request.
+     *Calls getCurrentLocation() if permission is granted, otherwise adds QRCode to db with location=null and returns to profile.
+     *
+     *@param requestCode The request code of the permission request.
+     *@param permissions The requested permissions.
+     *@param grantResults The results of the permission request.
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == PERMISSIONS_REQUEST_LOCATION) {
