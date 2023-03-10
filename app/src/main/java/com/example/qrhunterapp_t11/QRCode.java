@@ -282,13 +282,13 @@ public class QRCode implements Serializable {
                 newName = newName + nameParts[j];
             }
             else if (num == 1){
-                newName = newName + nameParts[j];
+                newName = newName + nameParts[j+1];
             }
             else if (num == 2){
-                newName = newName + nameParts[j];
+                newName = newName + nameParts[j+2];
             }
             else if (num == 3) {
-                newName = newName + nameParts[j];
+                newName = newName + nameParts[j+3];
             }
             System.out.println("new part " + newName + " from i = " + i);
         }
