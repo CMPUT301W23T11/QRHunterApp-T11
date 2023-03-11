@@ -1,5 +1,11 @@
 package com.example.qrhunterapp_t11;
 
+/**
+ * This Class represents a Comment that will belong to a QRCode object
+ *
+ * @author Sarah Thomson
+ */
+
 public class Comment {
     private String comment;
     private String profile;
