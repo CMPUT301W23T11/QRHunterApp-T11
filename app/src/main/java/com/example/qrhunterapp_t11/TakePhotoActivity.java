@@ -67,7 +67,6 @@ public class TakePhotoActivity extends AppCompatActivity {
     private String msTime;
     private static final int REQUEST = 112; // leave here?
     private Context mContext= TakePhotoActivity.this;
-    private QRCode qrCode;
 
     /**
      * Called when activity launches; starts by intializing the storage references for firebase, the preview view, capture button
@@ -81,10 +80,6 @@ public class TakePhotoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_take_photo);
-        Bundle extras = getIntent().getExtras();
-        qrCode = (QRCode) extras.getSerializable("QR");
-
-        System.out.println("HERE");
 
         // initialize FB references
         mStorageRef = FirebaseStorage.getInstance().getReference("uploads"); // StorageReference points to a collection called "uploads" on DB

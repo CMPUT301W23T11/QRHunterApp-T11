@@ -219,7 +219,6 @@ public class CameraFragment extends Fragment {
      */
     private void takePhoto(){
         Intent intent = new Intent(getActivity(), TakePhotoActivity.class);
-        intent.putExtra("QR", qrCode);
         photoLauncher.launch(intent);
     }
 
@@ -378,7 +377,6 @@ public class CameraFragment extends Fragment {
         String id = qrCode.getHash();
         QRCodesReference.document(id).set(qrCode);
         usersReference.document(currentUser).collection("QR Codes").document(id).set(qrCode);
-        System.out.println("IMAGE URL: " + imageUrl);
         QRCodesReference.document(qrCode.getHash()).update("photoList", FieldValue.arrayUnion(imageUrl));
 
     }
