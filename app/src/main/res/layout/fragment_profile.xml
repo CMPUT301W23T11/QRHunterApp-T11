@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:elevation="10dp"
         android:padding="10dp"
-        android:text="Profile Name"
+        android:text="@string/profile_name_text"
         android:textColor="@color/black"
         android:textSize="30sp"
         android:textStyle="bold" />
@@ -26,7 +26,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
-        android:background="#F5FFE2"
+        android:background="@color/off_green_box"
         android:orientation="vertical"
         android:padding="15dp">
 
@@ -34,7 +34,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="5dp"
-            android:text="STATS"
+            android:text="@string/stats_header"
             android:textAlignment="center"
             android:textColor="@color/headers"
             android:textSize="18sp"
@@ -44,8 +44,9 @@
             android:id="@+id/totalScoreText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Your total score: "
+            android:text="@string/your_total_score_text"
             android:textAlignment="center"
+            android:textColor="@color/stats_text"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -53,27 +54,29 @@
             android:id="@+id/topQRText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Your top QR code: "
+            android:text="@string/your_top_qr_code_text"
             android:textAlignment="center"
+            android:textColor="@color/stats_text"
             android:textSize="20sp"
-
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/lowQRText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Your lowest QR code: "
+            android:text="@string/your_lowest_qr_code_text"
             android:textAlignment="center"
             android:textSize="20sp"
+            android:textColor="@color/stats_text"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/totalQRText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Your total QR codes: "
+            android:text="@string/your_total_qr_codes_text"
             android:textAlignment="center"
+            android:textColor="@color/stats_text"
             android:textSize="20sp"
             android:textStyle="bold" />
     </androidx.appcompat.widget.LinearLayoutCompat>
@@ -82,7 +85,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="COLLECTION"
+        android:text="@string/collection_header"
         android:textAlignment="center"
         android:textColor="@color/headers"
         android:textSize="18sp"

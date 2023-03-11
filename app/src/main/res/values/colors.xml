@@ -9,4 +9,6 @@
     <color name="toolbar">#FEEDEDED</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="stats_text">#444444</color>
+    <color name="off_green_box">#F5FFE2</color>
 </resources>
