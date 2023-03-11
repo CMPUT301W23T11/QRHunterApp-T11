@@ -46,7 +46,6 @@ public class CommentAdapter extends BaseAdapter {
     // send back view that can be used in list layout
     public View getView(int i, View view, ViewGroup viewGroup) {
 
-
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         commentView = inflater.inflate(R.layout.individual_comment, viewGroup, false);
 

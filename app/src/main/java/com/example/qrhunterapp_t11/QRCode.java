@@ -20,8 +20,8 @@ public class QRCode {
 
     private ArrayList<Comment> commentList;
 
-  // TODO @Sarah Firebase won't let us store these attributes as part of a custom object
-  //  do we even need to store them?
+    // TODO @Sarah Firebase won't let us store these attributes as part of a custom object
+    //  do we even need to store them?
     private int eyesNumbers[] = {
             R.drawable.eyes1,
             R.drawable.eyes2
@@ -46,7 +46,7 @@ public class QRCode {
             R.drawable.face1,
             R.drawable.face2
     };
-    private String nameParts [] = {
+    private String nameParts[] = {
             "Big ",
             "Little ",
             "Young ",
@@ -94,7 +94,7 @@ public class QRCode {
     }
 
     // special blank constructor for Firebase
-    public QRCode(){
+    public QRCode() {
     }
 
     public int getPoints() {
@@ -105,8 +105,13 @@ public class QRCode {
         return name;
     }
 
-    public Location getLocation() { return geolocation;}
-    public void setLocation(Location location) { this.geolocation = location;}
+    public Location getLocation() {
+        return geolocation;
+    }
+
+    public void setLocation(Location location) {
+        this.geolocation = location;
+    }
 
     public ArrayList<Integer> getFaceList() {
         return faceList;
@@ -171,11 +176,14 @@ public class QRCode {
         return output;
     }
 
-    public String getHash() { return hash;}
+    public String getHash() {
+        return hash;
+    }
 
     /**
      * calculatePoints uses the hash value of the QRCode to calculate the points value of the QRCode
      * References: Oracle's documentation on string manipulation https://docs.oracle.com/javase/tutorial/java/data/manipstrings.html
+     *
      * @return Returns the totalPoints int
      */
     public int calculatePoints() {
@@ -231,6 +239,7 @@ public class QRCode {
      * educative.io https://www.educative.io/answers/how-to-convert-an-integer-to-binary-in-java for converting integer to binary
      * License: Creative Commons-Attribution-ShareAlike 4.0 (CC-BY-SA 4.0)
      * techiedelight.com https://www.techiedelight.com/convert-hex-string-to-integer-java/ for converting string to hexadecimal integer
+     *
      * @return Returns an ArrayList of drawables to form the image
      */
 
@@ -252,32 +261,29 @@ public class QRCode {
 
     /**
      * uniqueImage uses the 6 bits of a shortened hash function to determine which drawables will be used to make the unique image
-     * @return
-     * Returns an ArrayList of drawables to form the image
+     *
+     * @return Returns an ArrayList of drawables to form the image
      */
 
 
-    private String uniqueName(){
+    private String uniqueName() {
 
         String newName = "";
-        Integer hashSmall = Integer.parseInt(this.hash.substring(1,6), 16);
+        Integer hashSmall = Integer.parseInt(this.hash.substring(1, 6), 16);
         String hashBinary = Integer.toBinaryString(hashSmall);
 
-        for (int i = 0, j = 0; i <= 17; i = i + 3, j = j + 4){
+        for (int i = 0, j = 0; i <= 17; i = i + 3, j = j + 4) {
 
-            Integer num = Integer.parseInt(String.valueOf(hashBinary.charAt(i))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i+1))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i+2)));
+            Integer num = Integer.parseInt(String.valueOf(hashBinary.charAt(i))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i + 1))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i + 2)));
             System.out.println("hash " + hashBinary);
             System.out.println("num: " + num);
-            if (num == 0){
+            if (num == 0) {
                 newName = newName + nameParts[j];
-            }
-            else if (num == 1){
+            } else if (num == 1) {
                 newName = newName + nameParts[j];
-            }
-            else if (num == 2){
+            } else if (num == 2) {
                 newName = newName + nameParts[j];
-            }
-            else if (num == 3) {
+            } else if (num == 3) {
                 newName = newName + nameParts[j];
             }
             System.out.println("new part " + newName + " from i = " + i);
