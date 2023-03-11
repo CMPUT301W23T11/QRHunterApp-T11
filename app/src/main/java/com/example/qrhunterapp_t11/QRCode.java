@@ -3,9 +3,11 @@ package com.example.qrhunterapp_t11;
 import android.location.Location;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.BitSet;
 
 /**
  * This Class is used to model a QR Code. Calculates its hash value, points, unique name, and unique image on construction.
@@ -249,7 +251,13 @@ public class QRCode{
         System.out.println(totalPoints + " at end");
         System.out.println(numberOfZero + " at end");
         System.out.println(numberOfZero + totalPoints + " at end");
-        return (totalPoints + numberOfZero);
+        int grandTotal = (totalPoints + numberOfZero);
+
+        //Max points will be 1E9
+        if (grandTotal > Math.pow(10,8)){
+            grandTotal = (int) Math.pow(10,8);
+        }
+        return grandTotal;
     }
 
 

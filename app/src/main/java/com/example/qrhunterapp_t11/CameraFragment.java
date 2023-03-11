@@ -142,10 +142,10 @@ public class CameraFragment extends Fragment {
                 // create custom dialog to display QR score
                 LayoutInflater inflater = this.getLayoutInflater();
                 View dialogView = inflater.inflate(R.layout.qr_scored_dialog, null);
-                TextView scoredTV = dialogView.findViewById(R.id.scoredTV); // NEW ADDITION
+                TextView scoredTV = dialogView.findViewById(R.id.scoredTV);
                 builder.setView(dialogView);
                 builder.setCancelable(false);
-                scoredTV.setText("Scored " + String.valueOf(qrCode.getPoints()) + " Points"); // NEW ADDITION
+                scoredTV.setText("Scored " + String.valueOf(qrCode.getPoints()) + " Points");
 
                 final AlertDialog alertDialog = builder.create();
                 alertDialog.show(); // create and display the dialog

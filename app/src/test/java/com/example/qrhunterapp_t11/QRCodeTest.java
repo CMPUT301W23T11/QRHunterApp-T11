@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigInteger;
+
 public class QRCodeTest {
     private QRCode mockQR(String valueString) {
         return new QRCode(valueString);
@@ -28,6 +30,21 @@ public class QRCodeTest {
 
         //test with single and multiple 0s
         points = QRCode.calculatePoints("666004dbd7bb57cbfe58b64f530f428b749999b37e2ee60000490cd9052de333");
-        Assertions.assertEquals(8840, points);
+        Assertions.assertEquals(8822, points);
+
+        //test largest possible value
+        points = QRCode.calculatePoints("0000000000000000000000000000000000000000000000000000000000000000");
+        Assertions.assertEquals(Math.pow(10, 8), points);
+
+        //test small value
+        points = QRCode.calculatePoints("0");
+        Assertions.assertEquals(1, points);
+
+        //test wrapping "hash"
+        points = QRCode.calculatePoints("55558ee34121555");
+        Assertions.assertEquals(164, points);
+
     }
+
+
 }
