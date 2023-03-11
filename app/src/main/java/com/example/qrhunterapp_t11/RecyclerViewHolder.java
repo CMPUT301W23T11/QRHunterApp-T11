@@ -6,6 +6,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+/**
+ * ViewHolder for RecyclerView
+ *
+ * @author Afra
+ * @reference <a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation</a>
+ */
 public class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
     public TextView QRCodeName;

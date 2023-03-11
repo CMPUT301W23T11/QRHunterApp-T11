@@ -6,6 +6,8 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
@@ -40,10 +42,10 @@ import java.util.ArrayList;
  */
 public class ProfileFragment extends Fragment {
     private final CollectionReference usersReference;
-    private final CollectionReference QRCodesReference;
     private ArrayList<QRCode> QRCodeDataList;
     private RecyclerView QRCodeRecyclerView;
-    private QRCodeAdapterClass QRCodeAdapter;
+    FirestoreRecyclerAdapter <QRCode, RecyclerViewHolder> adapter;
+    FirestoreRecyclerOptions<QRCode> options;
 
     /**
      * Constructor for registration fragment.
@@ -53,7 +55,6 @@ public class ProfileFragment extends Fragment {
      */
     public ProfileFragment(FirebaseFirestore db) {
         this.usersReference = db.collection("Users");
-        this.QRCodesReference = db.collection("QRCodes");
     }
 
     @Override
@@ -77,21 +78,19 @@ public class ProfileFragment extends Fragment {
 
         QRCodeDataList = new ArrayList<>();
         QRCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
-//        QRCodeAdapter = new QRCodeAdapterClass(this.getContext(), QRCodeDataList);
-//        QRCodeRecyclerView.setAdapter(QRCodeAdapter);
 
         Query query = usersReference.document(username).collection("QR Codes");
-        FirestoreRecyclerOptions<QRCode> options = new FirestoreRecyclerOptions.Builder<QRCode>()
+        options = new FirestoreRecyclerOptions.Builder<QRCode>()
                 .setQuery(query, QRCode.class)
                 .build();
 
-        FirestoreRecyclerAdapter adapter = new FirestoreRecyclerAdapter<QRCode, RecyclerViewHolder>(options) {
+        adapter = new FirestoreRecyclerAdapter<QRCode, RecyclerViewHolder>(options) {
             @Override
-            public void onBindViewHolder(RecyclerViewHolder holder, int position, QRCode model) {
+            public void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position, @NonNull QRCode model) {
                 // Bind the QRCode object to the RecyclerViewHolder
-                holder.QRCodeName.setText(QRCodeDataList.get(position).getName());
-                holder.QRCodePoints.setText(String.valueOf(QRCodeDataList.get(position).getPoints()));
-                holder.QRCodeNumComments.setText(String.valueOf(QRCodeDataList.get(position).getCommentList().size()));
+                holder.QRCodeName.setText(model.getName());
+                holder.QRCodePoints.setText("Points: " + model.getPoints());
+                holder.QRCodeNumComments.setText("Comments: " + model.getCommentList().size());
             }
 
             @Override
@@ -102,7 +101,10 @@ public class ProfileFragment extends Fragment {
                 return new RecyclerViewHolder(view);
             }
         };
+        super.onStart();
+        adapter.startListening();
         QRCodeRecyclerView.setAdapter(adapter);
+        QRCodeRecyclerView.setLayoutManager(new LinearLayoutManager(this.getContext()));
 
         // Gets the sum of points from all the QR Code documents
         QRColl.addSnapshotListener((value, error) -> {
