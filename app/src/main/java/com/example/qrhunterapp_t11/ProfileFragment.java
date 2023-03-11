@@ -101,7 +101,7 @@ public class ProfileFragment extends Fragment {
                 return new RecyclerViewHolder(view);
             }
         };
-        super.onStart();
+        //super.onStart(); man idk
         adapter.startListening();
         QRCodeRecyclerView.setAdapter(adapter);
         QRCodeRecyclerView.setLayoutManager(new LinearLayoutManager(this.getContext()));
@@ -115,7 +115,7 @@ public class ProfileFragment extends Fragment {
 
             assert value != null;
             for (QueryDocumentSnapshot document : value) {
-                double points = document.getDouble("points");
+                int points = document.getLong("points").intValue();
                 total += points;
             }
             totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
