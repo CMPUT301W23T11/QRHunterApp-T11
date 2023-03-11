@@ -2,26 +2,23 @@ package com.example.qrhunterapp_t11;
 
 import android.location.Location;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * QRCode class (INCOMPLETE)
- * To do: implement geolocation
+ * This Class is used to model a QR Code. Calculates its hash value, points, unique name, and unique image on construction.
  */
-public class QRCode {
+public class QRCode{
     private String hash;
     private String name;
     private int points;
-
     private Location geolocation;
     private ArrayList<Integer> faceList;
-
     private ArrayList<Comment> commentList;
+    private ArrayList<String> photoList;
 
-    // TODO @Sarah Firebase won't let us store these attributes as part of a custom object
-    //  do we even need to store them?
     private int eyesNumbers[] = {
             R.drawable.eyes1,
             R.drawable.eyes2
@@ -46,7 +43,7 @@ public class QRCode {
             R.drawable.face1,
             R.drawable.face2
     };
-    private String nameParts[] = {
+    private String nameParts [] = {
             "Big ",
             "Little ",
             "Young ",
@@ -85,16 +82,16 @@ public class QRCode {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-        this.points = calculatePoints();
-        System.out.println(points);
+        this.points = calculatePoints(hash);
         this.name = uniqueName();
         this.faceList = uniqueImage();
         this.commentList = new ArrayList<Comment>();
+        this.photoList = new ArrayList<String>();
         this.geolocation = null;
     }
 
     // special blank constructor for Firebase
-    public QRCode() {
+    public QRCode(){
     }
 
     public int getPoints() {
@@ -105,13 +102,16 @@ public class QRCode {
         return name;
     }
 
-    public Location getLocation() {
-        return geolocation;
+    public ArrayList<String> getPhotoList() {
+        return photoList;
     }
 
-    public void setLocation(Location location) {
-        this.geolocation = location;
+    public void setPhotoList(ArrayList<String> photoList) {
+        this.photoList = photoList;
     }
+
+    public Location getLocation() { return geolocation;}
+    public void setLocation(Location location) { this.geolocation = location;}
 
     public ArrayList<Integer> getFaceList() {
         return faceList;
@@ -123,6 +123,9 @@ public class QRCode {
 
     public void setCommentList(ArrayList<Comment> commentList) {
         this.commentList = commentList;
+    }
+    public void setHashDebug(String hash){
+        this.hash = hash;
     }
 
     /* I don't think we're going to need these
@@ -176,42 +179,55 @@ public class QRCode {
         return output;
     }
 
-    public String getHash() {
-        return hash;
-    }
+    public String getHash() { return hash;}
 
     /**
      * calculatePoints uses the hash value of the QRCode to calculate the points value of the QRCode
-     * References: Oracle's documentation on string manipulation https://docs.oracle.com/javase/tutorial/java/data/manipstrings.html
+     *
+     * @reference Oracle's documentation on string manipulation https://docs.oracle.com/javase/tutorial/java/data/manipstrings.html
      *
      * @return Returns the totalPoints int
      */
-    public int calculatePoints() {
+    public static int calculatePoints(String hash) {
 
-        //list of possible chars in the hash, other than 0, each corresponds to their base number of points
+        // L of possible chars in the hash, other than 0, each corresponds to their base number of points
         Character[] values = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
         int pointMultiplier = 1;
         int totalPoints = 0;
+        int numberOfZero = 0;
 
-        //iterate through each character in values
+        // Iterate through hash string and count every 0
+        for (int k = 0; k < hash.length(); k++) {
+            Character hashChar = hash.charAt(k);
+            if (hashChar.equals('0')){
+                numberOfZero ++;
+            }
+        }
+
+        System.out.println(numberOfZero);
+
+        // Iterate through each character in values
         for (int i = 0; i < values.length; i++) {
-            //set previous char to a default unused char to handle edge cases
+            // Set previous char to a default unused char to handle edge cases
             Character previousChar = 'X';
 
-            //iterate through hash string
-            for (int j = 0; j < this.hash.length(); j++) {
-                Character hashChar = this.hash.charAt(j);
+            // Iterate through hash string
+            for (int j = 0; j < hash.length(); j++) {
+                Character hashChar = hash.charAt(j);
 
-                //if a character in the hash string equals the current value char as well as is equal to the previous char in the hash, increase the point multiplier.
+                // If a character in the hash string equals the current value char as well as is equal to the previous char in the hash, increase the point multiplier.
                 if ((hashChar.equals(values[i])) && (hashChar.equals(previousChar))) {
-
                     pointMultiplier++;
+                    System.out.println("digit " + values[i] + "points multiplier: " + pointMultiplier);
 
-                    if ((j == (this.hash.length() - 1))) {
+                    // Edge case for the final iteration: calculate based on current pointMultiplier and return pointMultiplier to 1
+                    if ((j == (hash.length() - 1))) {
                         if (i == 0) {
                             totalPoints += Math.pow(20, pointMultiplier - 1);
+                            numberOfZero -= pointMultiplier;
                         } else {
                             totalPoints += Math.pow(i, pointMultiplier - 1);
+                            System.out.println(totalPoints);
                         }
                         pointMultiplier = 1;
                     }
@@ -219,26 +235,29 @@ public class QRCode {
                     if (pointMultiplier > 1) {
                         if (i == 0) {
                             totalPoints += Math.pow(20, pointMultiplier - 1);
+                            numberOfZero -= pointMultiplier;
                         } else {
                             totalPoints += Math.pow(i, pointMultiplier - 1);
+                            System.out.println(totalPoints);
                         }
                         pointMultiplier = 1;
-
                     }
                 }
                 previousChar = hashChar;
             }
         }
-        return totalPoints;
+        System.out.println(totalPoints + " at end");
+        System.out.println(numberOfZero + " at end");
+        System.out.println(numberOfZero + totalPoints + " at end");
+        return (totalPoints + numberOfZero);
     }
 
 
     /**
      * uniqueImage uses the 6 bits of a shortened hash function to determine which drawables will be used to make the unique image
-     * References:
-     * educative.io https://www.educative.io/answers/how-to-convert-an-integer-to-binary-in-java for converting integer to binary
-     * License: Creative Commons-Attribution-ShareAlike 4.0 (CC-BY-SA 4.0)
-     * techiedelight.com https://www.techiedelight.com/convert-hex-string-to-integer-java/ for converting string to hexadecimal integer
+     *
+     * @reference educative.io https://www.educative.io/answers/how-to-convert-an-integer-to-binary-in-java for converting integer to binary, License: Creative Commons-Attribution-ShareAlike 4.0 (CC-BY-SA 4.0)
+     * @reference techiedelight.com https://www.techiedelight.com/convert-hex-string-to-integer-java/ for converting string to hexadecimal integer
      *
      * @return Returns an ArrayList of drawables to form the image
      */
@@ -265,28 +284,30 @@ public class QRCode {
      * @return Returns an ArrayList of drawables to form the image
      */
 
-
-    private String uniqueName() {
+    private String uniqueName(){
 
         String newName = "";
-        Integer hashSmall = Integer.parseInt(this.hash.substring(1, 6), 16);
+        Integer hashSmall = Integer.parseInt(this.hash.substring(1,6), 16);
         String hashBinary = Integer.toBinaryString(hashSmall);
 
-        for (int i = 0, j = 0; i <= 17; i = i + 3, j = j + 4) {
+        for (int i = 0, j = 0; i <= 17; i = i + 3, j = j + 4){
 
-            Integer num = Integer.parseInt(String.valueOf(hashBinary.charAt(i))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i + 1))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i + 2)));
-            System.out.println("hash " + hashBinary);
-            System.out.println("num: " + num);
-            if (num == 0) {
-                newName = newName + nameParts[j];
-            } else if (num == 1) {
-                newName = newName + nameParts[j];
-            } else if (num == 2) {
-                newName = newName + nameParts[j];
-            } else if (num == 3) {
+            Integer num = Integer.parseInt(String.valueOf(hashBinary.charAt(i))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i+1))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i+2)));
+            //System.out.println("hash " + hashBinary);
+           // System.out.println("num: " + num);
+            if (num == 0){
                 newName = newName + nameParts[j];
             }
-            System.out.println("new part " + newName + " from i = " + i);
+            else if (num == 1){
+                newName = newName + nameParts[j+1];
+            }
+            else if (num == 2){
+                newName = newName + nameParts[j+2];
+            }
+            else if (num == 3) {
+                newName = newName + nameParts[j+3];
+            }
+           // System.out.println("new part " + newName + " from i = " + i);
         }
         return newName;
     }

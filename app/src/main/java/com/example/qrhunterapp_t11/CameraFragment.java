@@ -1,5 +1,8 @@
 package com.example.qrhunterapp_t11;
 
+import static android.content.Intent.getIntent;
+import static android.content.Intent.getIntentOld;
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -7,6 +10,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.content.Intent;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -31,10 +35,13 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -50,6 +57,8 @@ public class CameraFragment extends Fragment {
     ActivityResultLauncher<ScanOptions> barLauncher;
     ActivityResultLauncher<Intent> photoLauncher;
     QRCode qrCode;
+
+    String imageUrl;
     SharedPreferences prefs;
 
     //https://firebase.google.com/docs/firestore/manage-data/add-data //TODO put this in a javadoc somewhere as an @reference?
@@ -113,6 +122,9 @@ public class CameraFragment extends Fragment {
                 new ActivityResultCallback<ActivityResult>() {
                     @Override
                     public void onActivityResult(ActivityResult result) {
+                        Intent intent = result.getData();
+                        Bundle extras = intent.getExtras();
+                        imageUrl = extras.getString("url");;
                         promptForLocation(); // prompt for location once the TakePhotoActivity has finished
                     }
                 }
@@ -144,6 +156,8 @@ public class CameraFragment extends Fragment {
                         alertDialog.dismiss();
                         timer.cancel();
                         promptForPhoto(); // prompt the user for a photo of the QR object or location once the score dialog disappears
+
+
                     }
                 }, 5000); // set a timer to automatically close the dialog after 5 seconds
             }
@@ -179,7 +193,8 @@ public class CameraFragment extends Fragment {
                         .setTitle("Take Photo")
                         .setMessage("Take photo of object or location?")
                         .setCancelable(false)
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        .setPositiveButton("Yes", new
+                                DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 Log.d("PhotoPrompt", "User accepted photo prompt.");
                                 takePhoto();
@@ -202,9 +217,8 @@ public class CameraFragment extends Fragment {
      *
      * @reference Paul Thompson - https://stackoverflow.com/questions/28619113/start-a-new-activity-from-fragment - how to start an activity from within a fragment
      */
-    private void takePhoto() {
+    private void takePhoto(){
         Intent intent = new Intent(getActivity(), TakePhotoActivity.class);
-
         photoLauncher.launch(intent);
     }
 
@@ -334,6 +348,7 @@ public class CameraFragment extends Fragment {
                         Log.d("LocationPrompt", "User rejected geolocation prompt.");
                         //stores QRCode into db with just hash as document id and location = null
                         addQRCode();
+
                         returnToProfile();
                     }
                 })
@@ -356,11 +371,12 @@ public class CameraFragment extends Fragment {
     /**
      * Helper function to add QRCode object to QRCodes and Users collections
      */
-    private void addQRCode() {
+    private void addQRCode(){
         String currentUser = prefs.getString("currentUser", null);
         String id = qrCode.getHash();
-
         QRCodesReference.document(id).set(qrCode);
         usersReference.document(currentUser).collection("QR Codes").document(id).set(qrCode);
+        QRCodesReference.document(qrCode.getHash()).update("photoList", FieldValue.arrayUnion(imageUrl));
+
     }
 }

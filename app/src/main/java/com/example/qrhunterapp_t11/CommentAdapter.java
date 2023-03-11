@@ -10,16 +10,13 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 /**
- * Comment Adapter is a custom adapter class to handle Comment objects
- * References: https://www.youtube.com/watch?v=cGIAZAbJJPc&t=1753s
- * by Programming w/ Professor Sluiter for custom array adapter help, video posted Sep 26, 2019, CC BY
+ * This class is a custom adapter to handle Comment objects
+ * @reference https://www.youtube.com/watch?v=cGIAZAbJJPc&t=1753s by Programming w/ Professor Sluiter for custom array adapter help, video posted Sep 26, 2019, CC BY
  */
 
 public class CommentAdapter extends BaseAdapter {
-
     private ArrayList<Comment> commentList;
     private View commentView;
-
     private Context context;
 
     public CommentAdapter(Context context, ArrayList<Comment> commentList) {

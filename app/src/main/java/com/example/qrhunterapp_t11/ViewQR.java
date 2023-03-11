@@ -20,7 +20,9 @@ import androidx.fragment.app.DialogFragment;
 import java.util.ArrayList;
 
 /**
- * This is the dialog fragment that appears when a user clicks to see more info about a certain QRCode
+ * This is the dialog fragment that appears when a user clicks to see more info about a certain QRCode. It handles...
+ *
+ * @author Sarah Thomson
  */
 public class ViewQR extends DialogFragment {
     private QRCode qrCode;
@@ -30,7 +32,6 @@ public class ViewQR extends DialogFragment {
     private CommentAdapter commentAdapter;
     private ImageView commentIV;
     private EditText commentET;
-
     public ViewQR(){
         super();
     }
@@ -102,27 +103,25 @@ public class ViewQR extends DialogFragment {
             }
         });
 
-        /**
-         * This OnTouchListener code block came from Moisés Olmedo to make a list view be scrollable within a scrollview.
-         * Link: https://stackoverflow.com/questions/6210895/listview-inside-scrollview-is-not-scrolling-on-android/17503823#17503823
-         * License: CC BY-SA 3.0
-         */
+         //This OnTouchListener code block came from Moisés Olmedo to make a list view be scrollable within a scrollview.
+         //Link: https://stackoverflow.com/questions/6210895/listview-inside-scrollview-is-not-scrolling-on-android/17503823#17503823
+         //License: CC BY-SA 3.0
         commentListView.setOnTouchListener(new ListView.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 int action = event.getAction();
                 switch (action) {
                     case MotionEvent.ACTION_DOWN:
-                        // Disallow ScrollView to intercept touch events.
+                        // Disallow ScrollView to intercept touch events
                         v.getParent().requestDisallowInterceptTouchEvent(true);
                         break;
 
                     case MotionEvent.ACTION_UP:
-                        // Allow ScrollView to intercept touch events.
+                        // Allow ScrollView to intercept touch events
                         v.getParent().requestDisallowInterceptTouchEvent(false);
                         break;
                 }
-                // Handle ListView touch events.
+                // Handle ListView touch events
                 v.onTouchEvent(event);
                 return true;
             }
