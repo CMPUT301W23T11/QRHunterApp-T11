@@ -37,13 +37,11 @@ public class MainActivity extends AppCompatActivity {
         bottomToolbar.setSelectedItemId(R.id.profile);
         getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
 
-        addFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                bottomToolbar.setSelectedItemId(R.id.camera_placeholder);
-                getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, cameraFragment).commit();
+        // floating action button that moves the fragment to the camera fragment
+        addFab.setOnClickListener(view -> {
+            bottomToolbar.setSelectedItemId(R.id.profile);
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, cameraFragment).commit();
 
-            }
         });
 
         // Changes the fragment based on which item is clicked on the toolbar
@@ -55,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
                     return true;
 
                 case R.id.camera_placeholder:
+                    bottomToolbar.setSelectedItemId(R.id.profile);
                     return true;
 
                 case R.id.settings:
