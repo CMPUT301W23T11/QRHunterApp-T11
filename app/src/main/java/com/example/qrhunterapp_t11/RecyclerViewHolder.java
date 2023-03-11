@@ -25,5 +25,4 @@ public class RecyclerViewHolder extends RecyclerView.ViewHolder {
         QRCodePoints = itemView.findViewById(R.id.qrcode_points);
         QRCodeNumComments = itemView.findViewById(R.id.qrcode_numcomments);
     }
-
 }

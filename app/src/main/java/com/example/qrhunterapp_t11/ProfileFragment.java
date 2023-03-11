@@ -1,12 +1,15 @@
 package com.example.qrhunterapp_t11;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -150,7 +153,6 @@ public class ProfileFragment extends Fragment {
             Log.d(TAG, "num of QR: " + value.size());
             totalQRCodesText.setText(MessageFormat.format("Total number of QR codes: {0}", value.size()));
         });
-
 
         return view;
     }
