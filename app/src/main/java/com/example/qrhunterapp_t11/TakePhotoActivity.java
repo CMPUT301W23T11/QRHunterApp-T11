@@ -1,5 +1,6 @@
 package com.example.qrhunterapp_t11;
 
+import androidx.activity.result.ActivityResultCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
@@ -16,6 +17,7 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -35,6 +37,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
@@ -56,7 +59,6 @@ public class TakePhotoActivity extends AppCompatActivity {
     private PreviewView previewView;
     private Button captureButton;
     public ImageCapture imageCapture;
-
     //FB upload
     private StorageReference mStorageRef;
     CollectionReference uploadsReference = FirebaseFirestore.getInstance().collection("uploads");
@@ -163,7 +165,7 @@ public class TakePhotoActivity extends AppCompatActivity {
      * Method that deals with capturing the photo, storing it intermediately on the device, and then uploading it to Firebase database (document containing photo name and url), and Firebase storage (the actual .jpeg).
      * TODO currently the images are not compressed, but that's a detail that can be added in the later stages; apparently firebase can do this automatically?
      */
-    private void capturePhoto() {
+    private void capturePhoto(){
         long timestamp = System.currentTimeMillis(); //NOTE: this doesn't currently correspond to the same msTime that will be set for the photo on firebase; but since this is only for storing the image locally, it may not really matter
 
         ContentValues contentValues = new ContentValues();
@@ -182,8 +184,16 @@ public class TakePhotoActivity extends AppCompatActivity {
                     public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
                         Toast.makeText(TakePhotoActivity.this, "Photo has been saved successfully.", Toast.LENGTH_SHORT).show();
                         mImageUri = outputFileResults.getSavedUri(); // get uri (local address) of image to know which file to upload later
-                        uploadFile(); // upload the photo
-                        finish(); // close the photo capture activity
+                        uploadFile(new OnUploadListener() {
+                            //use OnUploadListener to retrieve url String from uploadFile method
+                            @Override
+                            public void onUpload(String url) {
+                                Intent intent = new Intent();
+                                intent.putExtra("url", imageUrl);
+                                setResult(Activity.RESULT_OK, intent); // send url String back to the CameraFragment
+                                finish(); // close the photo capture activity
+                            }
+                        });
                     }
 
                     @Override
@@ -243,14 +253,23 @@ public class TakePhotoActivity extends AppCompatActivity {
     }
 
     /**
+     * A listener interface used to retrieve the url string after the photo has been uploaded to the db
+     * References: https://stackoverflow.com/questions/51086755/java-android-how-to-call-onsuccess-method from Fangming, Jun 28 2018, CC BY-SA 4.0.
+     */
+    public interface OnUploadListener{
+        void onUpload(String url);
+    }
+
+    /**
      * Function for uploading the image to Firebase database and storage.
      *
      * @reference Wilmer Villca - https://stackoverflow.com/a/55503926/14445107 - using a successListener to get the image url of the uploaded photo
      */
-    private void uploadFile() {
-        if (mImageUri != null) { // if the image exists, upload it
-            msTime = System.currentTimeMillis() + " ";
+    private void uploadFile(final OnUploadListener listener) {
 
+        if (mImageUri != null) { // if the image exists, upload it
+
+            msTime = System.currentTimeMillis() + " ";
             // we are grabbing the current time in ms, to ensure each photo upload has a unique name; .child() concatenates file to mStorageReference ("uploads" folder)
             StorageReference fileReference = mStorageRef.child(msTime + "." + getFileExtension(mImageUri));
             fileReference.putFile(mImageUri)
@@ -269,7 +288,7 @@ public class TakePhotoActivity extends AppCompatActivity {
                                             Log.d("UrlRetrieved", "Image url successfully retrieved: " + imageUrl); //TODO remove redundant key and attribute (in database collection?)
                                             imageUrl = uri.toString(); // this is *NOT* the image uri used earlier
                                             PhotoUploader upload = new PhotoUploader(msTime, imageUrl);
-
+                                            listener.onUpload(imageUrl);
                                             // make entry in database, that contains the name and url of our image upload
                                             uploadsReference.document(upload.getName()).set(upload);
                                         }
