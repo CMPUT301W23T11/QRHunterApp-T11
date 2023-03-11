@@ -1,36 +1,28 @@
 package com.example.qrhunterapp_t11;
 
-import static java.lang.String.*;
-
-import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.AggregateQuery;
-import com.google.firebase.firestore.AggregateQuerySnapshot;
-import com.google.firebase.firestore.AggregateSource;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.Source;
 
 import java.text.MessageFormat;
 
@@ -39,14 +31,16 @@ import java.text.MessageFormat;
  * Handles player profile screen.
  * Outputs the users' QR collection and the users' stats
  *
- * @author Afra, Kristina
+ * @author Afra, Kristina, Sarah
  * @reference Url: <https://stackoverflow.com/questions/74092262/calculate-total-from-values-stored-in-firebase-firestore-database-android> How to calculate the sum of a set of documents</a>
  * @reference Url: <https://firebase.google.com/docs/firestore/query-data/listen> How to get a new snapshot everytime the data is updated</a>
+ * @reference <a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation for RecyclerView</a>
  */
 public class ProfileFragment extends Fragment {
-    private final FirebaseFirestore db;
     private final CollectionReference usersReference;
-    private final CollectionReference QRCodesReference;
+    private RecyclerView QRCodeRecyclerView;
+    FirestoreRecyclerAdapter<QRCode, RecyclerViewHolder> adapter;
+    FirestoreRecyclerOptions<QRCode> options;
 
     /**
      * Constructor for registration fragment.
@@ -55,9 +49,7 @@ public class ProfileFragment extends Fragment {
      * @param db Firestore database instance
      */
     public ProfileFragment(FirebaseFirestore db) {
-        this.db = db;
         this.usersReference = db.collection("Users");
-        this.QRCodesReference = db.collection("QRCodes");
     }
 
     @Override
@@ -79,8 +71,36 @@ public class ProfileFragment extends Fragment {
 
         CollectionReference QRColl = usersReference.document(username).collection("QR Codes");
 
+        QRCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
 
-        //Gets the sum of points from all the QR Code documents
+        Query query = usersReference.document(username).collection("QR Codes");
+        options = new FirestoreRecyclerOptions.Builder<QRCode>()
+                .setQuery(query, QRCode.class)
+                .build();
+
+        adapter = new FirestoreRecyclerAdapter<QRCode, RecyclerViewHolder>(options) {
+            @Override
+            public void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position, @NonNull QRCode model) {
+                // Bind the QRCode object to the RecyclerViewHolder
+                holder.QRCodeName.setText(model.getName());
+                holder.QRCodePoints.setText("Points: " + model.getPoints());
+                holder.QRCodeNumComments.setText("Comments: " + model.getCommentList().size());
+            }
+
+            @Override
+            public RecyclerViewHolder onCreateViewHolder(ViewGroup group, int i) {
+                View view = LayoutInflater.from(group.getContext())
+                        .inflate(R.layout.qrcode_profile_view, group, false);
+
+                return new RecyclerViewHolder(view);
+            }
+        };
+        //super.onStart(); man idk
+        adapter.startListening();
+        QRCodeRecyclerView.setAdapter(adapter);
+        QRCodeRecyclerView.setLayoutManager(new LinearLayoutManager(this.getContext()));
+
+        // Gets the sum of points from all the QR Code documents
         QRColl.addSnapshotListener((value, error) -> {
             if (error != null) {
                 Log.w(TAG, "Listen FAILED", error);
@@ -89,7 +109,7 @@ public class ProfileFragment extends Fragment {
 
             assert value != null;
             for (QueryDocumentSnapshot document : value) {
-                double points = document.getDouble("points");
+                int points = document.getLong("points").intValue();
                 total += points;
             }
             totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
@@ -97,7 +117,7 @@ public class ProfileFragment extends Fragment {
         });
 
         Query topQR = QRColl.orderBy("points", Query.Direction.DESCENDING).limit(1);
-         // Orders the QR collection from biggest to smallest, then returns the first QR Code
+        // Orders the QR collection from biggest to smallest, then returns the first QR Code
         topQR.addSnapshotListener((value, error) -> {
             if (error != null) {
                 Log.w(TAG, "Listen FAILED", error);
@@ -112,7 +132,7 @@ public class ProfileFragment extends Fragment {
 
 
         Query lowQR = QRColl.orderBy("points", Query.Direction.ASCENDING).limit(1);
-        //Orders the QR collection from smallest to largest, then returns the first QR Code
+        // Orders the QR collection from smallest to largest, then returns the first QR Code
         lowQR.addSnapshotListener((value, error) -> {
             if (error != null) {
                 Log.w(TAG, "Listen FAILED", error);
@@ -132,8 +152,7 @@ public class ProfileFragment extends Fragment {
             }
             Log.d(TAG, "num of QR: " + value.size());
             totalQRCodesText.setText(MessageFormat.format("Total number of QR codes: {0}", value.size()));
-            });
-
+        });
 
         return view;
     }

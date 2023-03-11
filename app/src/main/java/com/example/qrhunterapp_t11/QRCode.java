@@ -206,8 +206,6 @@ public class QRCode{
             }
         }
 
-        System.out.println(numberOfZero);
-
         // Iterate through each character in values
         for (int i = 0; i < values.length; i++) {
             // Set previous char to a default unused char to handle edge cases
