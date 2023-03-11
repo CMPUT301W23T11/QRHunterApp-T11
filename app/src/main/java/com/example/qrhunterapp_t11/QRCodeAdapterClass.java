@@ -14,6 +14,7 @@ import java.util.ArrayList;
 
 /**
  * Adapter class for the QRCodes that will be displayed on user profiles
+ *
  * @author Afra
  * @reference Sarah's comment adapter class
  * @see CommentAdapter

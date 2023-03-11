@@ -3,48 +3,40 @@ package com.example.qrhunterapp_t11;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
 
 
 /**
  * Handles player profile screen.
  * Outputs the users' QR collection and the users' stats
  *
- * @author Afra, Kristina
+ * @author Afra, Kristina, Sarah
  * @reference Url: <https://stackoverflow.com/questions/74092262/calculate-total-from-values-stored-in-firebase-firestore-database-android> How to calculate the sum of a set of documents</a>
  * @reference Url: <https://firebase.google.com/docs/firestore/query-data/listen> How to get a new snapshot everytime the data is updated</a>
+ * @reference <a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation for RecyclerView</a>
  */
 public class ProfileFragment extends Fragment {
     private final CollectionReference usersReference;
-    private ArrayList<QRCode> QRCodeDataList;
     private RecyclerView QRCodeRecyclerView;
-    FirestoreRecyclerAdapter <QRCode, RecyclerViewHolder> adapter;
+    FirestoreRecyclerAdapter<QRCode, RecyclerViewHolder> adapter;
     FirestoreRecyclerOptions<QRCode> options;
 
     /**
@@ -76,7 +68,6 @@ public class ProfileFragment extends Fragment {
 
         CollectionReference QRColl = usersReference.document(username).collection("QR Codes");
 
-        QRCodeDataList = new ArrayList<>();
         QRCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
 
         Query query = usersReference.document(username).collection("QR Codes");

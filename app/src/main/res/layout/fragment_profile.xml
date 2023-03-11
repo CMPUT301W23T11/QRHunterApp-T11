@@ -66,8 +66,8 @@
             android:layout_height="wrap_content"
             android:text="@string/your_lowest_qr_code_text"
             android:textAlignment="center"
-            android:textSize="20sp"
             android:textColor="@color/stats_text"
+            android:textSize="20sp"
             android:textStyle="bold" />
 
         <TextView
