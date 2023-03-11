@@ -49,7 +49,9 @@ import java.util.TimerTask;
  * Logic for the camera fragment, which is responsible for managing everything that pertains to scanning and adding a new QR code.
  * Calls all the necessary activities for achieving this (the scan QR and take photo activities).
  *
- * @author Aidan Lynch
+ * @author Aidan Lynch - methods related to QR scanning, photo-taking and main camera fragment screen logic.
+ * @author Daniel Guo - methods related to geolocation and obtaining permissions for location.
+ * @author Josh Lucas and Afra - methods for creating a new QR object
  */
 public class CameraFragment extends Fragment {
     ActivityResultLauncher<ScanOptions> barLauncher;
@@ -59,7 +61,7 @@ public class CameraFragment extends Fragment {
     String imageUrl;
     SharedPreferences prefs;
 
-    //https://firebase.google.com/docs/firestore/manage-data/add-data
+    //https://firebase.google.com/docs/firestore/manage-data/add-data //TODO put this in a javadoc somewhere as an @reference?
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     CollectionReference QRCodesReference = db.collection("QRCodes");
     CollectionReference usersReference = db.collection("Users");
@@ -101,8 +103,6 @@ public class CameraFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         scanCode(); // start scanning a QR code
     }
-
-    // https://stackoverflow.com/questions/70211364/attempting-to-launch-an-unregistered-activityresultlauncher
 
     /**
      * Called when fragment is being initialized. Creates a dialog that displays the score of the scanned QR code. The dialog disappears automatically
@@ -221,19 +221,16 @@ public class CameraFragment extends Fragment {
         Intent intent = new Intent(getActivity(), TakePhotoActivity.class);
         intent.putExtra("QR", qrCode);
         photoLauncher.launch(intent);
-
-        //startActivity(intent);
     }
 
-    /**
-     * Creates a dialog asking whether the user would like to share their geolocation.
-     *
-     * @reference Daily Coding - https://www.youtube.com/watch?v=DfDj9EadOLk - how to use activityresultlauncher to execute code after an activity closes
-     * @reference Oleksandra - https://stackoverflow.com/a/63883427/14445107 - where to initialize an activityresultlauncher
-     */
-    private static final int PERMISSIONS_REQUEST_LOCATION = 100;
-    private GoogleApiClient googleApiClient;
 
+
+    private static final int PERMISSIONS_REQUEST_LOCATION = 100; //TODO move to top of class for cleanliness?
+    private GoogleApiClient googleApiClient; //TODO move to top of class for cleanliness?
+
+    /**
+     *Connects the GoogleApiClient and initiates the permissions check
+     */
     private void connectGoogleApiClient() {
         googleApiClient = new GoogleApiClient.Builder(requireContext())
                 .addApi(LocationServices.API)
@@ -256,6 +253,10 @@ public class CameraFragment extends Fragment {
         googleApiClient.connect();
     }
 
+    /**
+     *Retrieves the current location and logs the latitude and longitude of the location.
+     *Adds QRCode to db with location and returns to profile
+     */
     private void getCurrentLocation() {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
         if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -267,7 +268,6 @@ public class CameraFragment extends Fragment {
                         double latitude = location.getLatitude();
                         double longitude = location.getLongitude();
                         Log.d("LocationPrompt", "Latitude: " + latitude + ", Longitude: " + longitude);
-                        //TODO SARAH + JOSH - create QR with location (probably want to check whether the QR already exists in DB first)
                         //stores QRCode into db with just hash as document id and location = null
                         addQRCode();
                         returnToProfile();
@@ -283,6 +283,9 @@ public class CameraFragment extends Fragment {
         }
     }
 
+    /**
+     *Initiates the location permission check and logs if permission is already granted
+     */
     private void permissions() {
         if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             // Permission is already granted
@@ -298,7 +301,14 @@ public class CameraFragment extends Fragment {
         }
     }
 
-    //Only called if app doesn't have location permissions and after the user has selected allow or deny location.
+    /**
+     *Handles the user's response to the location permission request.
+     *Calls getCurrentLocation() if permission is granted, otherwise adds QRCode to db with location=null and returns to profile.
+     *
+     *@param requestCode The request code of the permission request.
+     *@param permissions The requested permissions.
+     *@param grantResults The results of the permission request.
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == PERMISSIONS_REQUEST_LOCATION) {
@@ -316,6 +326,13 @@ public class CameraFragment extends Fragment {
         }
     }
 
+    /**
+     * Prompts the user as to whether they would like to share their geolocation for a QR code. If they click "yes", the QR code will be created with location, and
+     * if they press "no" without location.
+     *
+     * @reference Daily Coding - https://www.youtube.com/watch?v=DfDj9EadOLk - how to use activityresultlauncher to execute code after an activity closes
+     * @reference Oleksandra - https://stackoverflow.com/a/63883427/14445107 - where to initialize an activityresultlauncher
+     */
     private void promptForLocation() {
         new AlertDialog.Builder(getContext())
                 .setTitle("Share Geolocation")
@@ -324,7 +341,6 @@ public class CameraFragment extends Fragment {
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         Log.d("LocationPrompt", "User accepted geolocation prompt.");
-                        //TODO DANIEL - get current location
                         permissions();
                     }
                 })

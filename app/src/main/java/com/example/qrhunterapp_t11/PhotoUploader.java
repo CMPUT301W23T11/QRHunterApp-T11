@@ -6,7 +6,7 @@ package com.example.qrhunterapp_t11;
  * the image data. This class isn't technically necessary, but it's probably the easiest way of adding the pairs of data to
  * the FB database.
  *
- * @author Coding in Flow
+ * @author Aidan Lynch and Coding in Flow
  * @reference Coding in Flow - https://www.youtube.com/watch?v=lPfQN-Sfnjw&list=PLrnPJCHvNZuB_7nB5QD-4bNg6tpdEUImQ&index=4 - how to set up this class; used
  * without major modification
  */
