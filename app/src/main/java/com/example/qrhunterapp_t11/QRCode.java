@@ -3,11 +3,9 @@ package com.example.qrhunterapp_t11;
 import android.location.Location;
 
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.BitSet;
 
 /**
  * This Class is used to model a QR Code. Calculates its hash value, points, unique name, and unique image on construction.
@@ -21,6 +19,61 @@ public class QRCode{
     private ArrayList<Comment> commentList;
     private ArrayList<String> photoList;
 
+    private int eyesNumbers[] = {
+            R.drawable.eyes1,
+            R.drawable.eyes2
+    };
+    private int eyebrowsNumbers[] = {
+            R.drawable.eyebrows1,
+            R.drawable.eyebrows2
+    };
+    private int colourNumbers[] = {
+            R.drawable.colour1,
+            R.drawable.colour2
+    };
+    private int noseNumbers[] = {
+            R.drawable.nose1,
+            R.drawable.nose2
+    };
+    private int mouthNumbers[] = {
+            R.drawable.mouth1,
+            R.drawable.mouth2
+    };
+    private int faceNumbers[] = {
+            R.drawable.face1,
+            R.drawable.face2
+    };
+    private String nameParts [] = {
+            "Big ",
+            "Little ",
+            "Young ",
+            "Old ",
+
+            "La",
+            "Bo",
+            "We",
+            "Si",
+
+            "rg",
+            "p",
+            "ld",
+            "gs",
+
+            "a",
+            "i",
+            "o",
+            "u",
+
+            "men",
+            "can",
+            "yog",
+            "rol",
+
+            "gog",
+            "mor",
+            "tas",
+            "fli"
+    };
 
     public QRCode(String raw) {
         // mandatory exception due to message digest library
@@ -30,8 +83,8 @@ public class QRCode{
             throw new RuntimeException(e);
         }
         this.points = calculatePoints(hash);
-        this.name = uniqueName(hash);
-        this.faceList = uniqueImage(hash);
+        this.name = uniqueName();
+        this.faceList = uniqueImage();
         this.commentList = new ArrayList<Comment>();
         this.photoList = new ArrayList<String>();
         this.geolocation = null;
@@ -130,7 +183,6 @@ public class QRCode{
 
     /**
      * calculatePoints uses the hash value of the QRCode to calculate the points value of the QRCode
-     * Static to increase testability
      *
      * @reference Oracle's documentation on string manipulation https://docs.oracle.com/javase/tutorial/java/data/manipstrings.html
      *
@@ -152,6 +204,8 @@ public class QRCode{
             }
         }
 
+        System.out.println(numberOfZero);
+
         // Iterate through each character in values
         for (int i = 0; i < values.length; i++) {
             // Set previous char to a default unused char to handle edge cases
@@ -164,7 +218,7 @@ public class QRCode{
                 // If a character in the hash string equals the current value char as well as is equal to the previous char in the hash, increase the point multiplier.
                 if ((hashChar.equals(values[i])) && (hashChar.equals(previousChar))) {
                     pointMultiplier++;
-                    //System.out.println("digit " + values[i] + "points multiplier: " + pointMultiplier);
+                    System.out.println("digit " + values[i] + "points multiplier: " + pointMultiplier);
 
                     // Edge case for the final iteration: calculate based on current pointMultiplier and return pointMultiplier to 1
                     if ((j == (hash.length() - 1))) {
@@ -173,7 +227,7 @@ public class QRCode{
                             numberOfZero -= pointMultiplier;
                         } else {
                             totalPoints += Math.pow(i, pointMultiplier - 1);
-                            //System.out.println(totalPoints);
+                            System.out.println(totalPoints);
                         }
                         pointMultiplier = 1;
                     }
@@ -184,7 +238,7 @@ public class QRCode{
                             numberOfZero -= pointMultiplier;
                         } else {
                             totalPoints += Math.pow(i, pointMultiplier - 1);
-                            //System.out.println(totalPoints);
+                            System.out.println(totalPoints);
                         }
                         pointMultiplier = 1;
                     }
@@ -192,16 +246,10 @@ public class QRCode{
                 previousChar = hashChar;
             }
         }
-       // System.out.println(totalPoints + " at end");
-      //  System.out.println(numberOfZero + " at end");
-       // System.out.println(numberOfZero + totalPoints + " at end");
-        int grandTotal = (totalPoints + numberOfZero);
-
-        //Max points will be 1E9
-        if (grandTotal > Math.pow(10,8)){
-            grandTotal = (int) Math.pow(10,8);
-        }
-        return grandTotal;
+        System.out.println(totalPoints + " at end");
+        System.out.println(numberOfZero + " at end");
+        System.out.println(numberOfZero + totalPoints + " at end");
+        return (totalPoints + numberOfZero);
     }
 
 
@@ -214,53 +262,13 @@ public class QRCode{
      * @return Returns an ArrayList of drawables to form the image
      */
 
-    public static ArrayList<Integer> uniqueImage(String hash) {
+    private ArrayList<Integer> uniqueImage() {
 
-        int eyesNumbers[] = {
-                R.drawable.eyes1,
-                R.drawable.eyes2
-        };
-        int eyebrowsNumbers[] = {
-                R.drawable.eyebrows1,
-                R.drawable.eyebrows2
-        };
-        int colourNumbers[] = {
-                R.drawable.colour1,
-                R.drawable.colour2
-        };
-        int noseNumbers[] = {
-                R.drawable.nose1,
-                R.drawable.nose2
-        };
-        int mouthNumbers[] = {
-                R.drawable.mouth1,
-                R.drawable.mouth2
-        };
-        int faceNumbers[] = {
-                R.drawable.face1,
-                R.drawable.face2
-        };
-
-        int hashSmall = Integer.parseInt(hash.substring(0, 5), 16);
-        System.out.println("eyes1: " +  R.drawable.eyes1);
-        System.out.println("eyes2: " +  R.drawable.eyes2);
-        System.out.println("eyebrows1: " +  R.drawable.eyebrows1);
-        System.out.println("eyebrows2: " +  R.drawable.eyebrows2);
-        System.out.println("colour1: " +  R.drawable.colour1);
-        System.out.println("colour2: " +  R.drawable.colour2);
-        System.out.println("nose1: " +  R.drawable.nose1);
-        System.out.println("nose2: " +  R.drawable.nose2);
-        System.out.println("mouth1: " +  R.drawable.mouth1);
-        System.out.println("mouth2: " +  R.drawable.mouth2);
-        System.out.println("face1 " + R.drawable.face1);
-        System.out.println("face2 " + R.drawable.face2);
-        System.out.println("hashSmall: " + hashSmall);
+        int hashSmall = Integer.parseInt(this.hash.substring(0, 5), 16);
 
         ArrayList<Integer> faceList = new ArrayList<>();
 
-        String hashBinary = Integer.toBinaryString(hashSmall).substring(1);
-        System.out.println("hashbinary: " + hashBinary);
-
+        String hashBinary = Integer.toBinaryString(hashSmall);
         faceList.add(eyesNumbers[hashBinary.charAt(0) - '0']);
         faceList.add(eyebrowsNumbers[hashBinary.charAt(1) - '0']);
         faceList.add(colourNumbers[hashBinary.charAt(2) - '0']);
@@ -272,55 +280,21 @@ public class QRCode{
 
     /**
      * uniqueImage uses the 6 bits of a shortened hash function to determine which drawables will be used to make the unique image
-     * Static to increase testability
      *
      * @return Returns an ArrayList of drawables to form the image
      */
 
-    public static String uniqueName(String hash){
-
-        String nameParts [] = {
-                "Big ",
-                "Little ",
-                "Young ",
-                "Old ",
-
-                "La",
-                "Bo",
-                "We",
-                "Si",
-
-                "rg",
-                "p",
-                "ld",
-                "gs",
-
-                "a",
-                "i",
-                "o",
-                "u",
-
-                "men",
-                "can",
-                "yog",
-                "rol",
-
-                "gog",
-                "mor",
-                "tas",
-                "fli"
-        };
+    private String uniqueName(){
 
         String newName = "";
-        Integer hashSmall = Integer.parseInt(hash.substring(0,6), 16);
-        String hashBinary = Integer.toBinaryString(hashSmall).substring(1);
+        Integer hashSmall = Integer.parseInt(this.hash.substring(1,6), 16);
+        String hashBinary = Integer.toBinaryString(hashSmall);
 
         for (int i = 0, j = 0; i <= 17; i = i + 3, j = j + 4){
 
             Integer num = Integer.parseInt(String.valueOf(hashBinary.charAt(i))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i+1))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i+2)));
             //System.out.println("hash " + hashBinary);
-            //System.out.println("num: " + num);
-            //System.out.println("j: " + j);
+           // System.out.println("num: " + num);
             if (num == 0){
                 newName = newName + nameParts[j];
             }
@@ -333,6 +307,7 @@ public class QRCode{
             else if (num == 3) {
                 newName = newName + nameParts[j+3];
             }
+           // System.out.println("new part " + newName + " from i = " + i);
         }
         return newName;
     }
