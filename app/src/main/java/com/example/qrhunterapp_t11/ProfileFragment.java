@@ -41,6 +41,7 @@ import java.text.MessageFormat;
 public class ProfileFragment extends Fragment {
     private final CollectionReference usersReference;
     private RecyclerView QRCodeRecyclerView;
+    private boolean userHasNoCodes;
     QRAdapterClass adapter;
     FirestoreRecyclerOptions<QRCode> options;
 
@@ -54,6 +55,10 @@ public class ProfileFragment extends Fragment {
         this.usersReference = db.collection("Users");
     }
 
+    public interface profileCallback {
+        void noCodes(boolean noCodes);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -64,6 +69,7 @@ public class ProfileFragment extends Fragment {
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         String username = prefs.getString("currentUser", null);
+        System.out.println(username);
         loginUsernameTextView.setText(username);
 
         TextView totalScoreText = view.findViewById(R.id.totalScoreText);
@@ -71,135 +77,144 @@ public class ProfileFragment extends Fragment {
         TextView lowQRCodeText = view.findViewById(R.id.lowQRText);
         TextView totalQRCodesText = view.findViewById(R.id.totalQRText);
 
-        usersReference.document(username).collection("QR Code")
+        noQRCodesCheck(username, new profileCallback() {
+            public void noCodes(boolean noCodes) {
+                userHasNoCodes = noCodes;
+
+                if (userHasNoCodes) {
+                    CollectionReference QRColl = usersReference.document(username).collection("QR Codes");
+
+                    QRCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
+
+                    Query query = usersReference.document(username).collection("QR Codes");
+                    options = new FirestoreRecyclerOptions.Builder<QRCode>()
+                            .setQuery(query, QRCode.class)
+                            .build();
+
+                    adapter = new QRAdapterClass(options);
+
+                    //super.onStart(); man idk
+                    adapter.startListening();
+                    QRCodeRecyclerView.setAdapter(adapter);
+                    QRCodeRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+                    // Gets the sum of points from all the QR Code documents
+                    QRColl.addSnapshotListener((value, error) -> {
+                        if (error != null) {
+                            Log.w(TAG, "Listen FAILED", error);
+                        }
+                        double total = 0;
+
+                        assert value != null;
+                        for (QueryDocumentSnapshot document : value) {
+                            int points = document.getLong("points").intValue();
+                            total += points;
+                        }
+                        totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
+                        Log.d(TAG, "Total Score: " + total);
+                    });
+
+                    Query topQR = QRColl.orderBy("points", Query.Direction.DESCENDING).limit(1);
+                    // Orders the QR collection from biggest to smallest, then returns the first QR Code
+                    topQR.addSnapshotListener((value, error) -> {
+                        if (error != null) {
+                            Log.w(TAG, "Listen FAILED", error);
+                        }
+                        assert value != null;
+                        for (QueryDocumentSnapshot document : value) {
+                            topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", document.get("points")));
+                            Log.d(TAG, "top QR code: " + document.get("points"));
+
+                        }
+                    });
+
+
+                    Query lowQR = QRColl.orderBy("points", Query.Direction.ASCENDING).limit(1);
+                    // Orders the QR collection from smallest to largest, then returns the first QR Code
+                    lowQR.addSnapshotListener((value, error) -> {
+                        if (error != null) {
+                            Log.w(TAG, "Listen FAILED", error);
+                        }
+                        assert value != null;
+                        for (QueryDocumentSnapshot document : value) {
+                            lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", document.get("points")));
+                            Log.d(TAG, "lowest QR code: " + document.get("points"));
+
+                        }
+                    });
+
+                    // Gets the size of the amount of QR codes there are
+                    QRColl.addSnapshotListener((value, error) -> {
+                        if (error != null) {
+                            Log.w(TAG, "Listen FAILED", error);
+                        }
+                        Log.d(TAG, "num of QR: " + value.size());
+                        totalQRCodesText.setText(MessageFormat.format("Total number of QR codes: {0}", value.size()));
+                    });
+
+                    // Handles clicking on an item to view the QR Code
+                    adapter.setOnItemClickListener(new OnItemClickListener() {
+                        @Override
+                        public void onItemClick(DocumentSnapshot documentSnapshot, int position) {
+
+                            QRCode qrCode = documentSnapshot.toObject(QRCode.class);
+                            DocumentReference QrReference = documentSnapshot.getReference();
+                            String documentId = documentSnapshot.getId();
+
+                            System.out.println("click position " + position);
+                            new ViewQR(qrCode, QrReference).show(getActivity().getSupportFragmentManager(), "Show QR");
+
+                        }
+                    });
+
+                    // Handles long clicking on an item for deletion
+                    adapter.setOnItemLongClickListener(new OnItemLongClickListener() {
+                        @Override
+                        public void onItemLongClick(DocumentSnapshot documentSnapshot, int position) {
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+
+                            String documentId = documentSnapshot.getId();
+
+                            builder
+                                    .setTitle("Delete QR Code?")
+                                    .setNegativeButton("Cancel", null)
+                                    .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            usersReference.document(username).collection("QR Codes").document(documentId).delete();
+                                        }
+                                    })
+                                    .create();
+
+                            builder.show();
+                        }
+                    });
+                }
+            }
+        });
+
+
+        return view;
+    }
+
+    public void noQRCodesCheck(String username, final profileCallback noCodes) {
+
+        usersReference.document(username).collection("QR Codes")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            if(task.getResult().size() > 0) {
+                            if (task.getResult().size() > 0) {
                                 for (DocumentSnapshot document : task.getResult()) {
-                                    Log.d("FTAG", "Room already exists, start the chat");
-
+                                    noCodes.noCodes(false);
                                 }
                             } else {
-                                Log.d("FTAG", "room doesn't exist create a new room");
-
+                                noCodes.noCodes(true);
                             }
-                        } else {
-                            Log.d("FTAG", "Error getting documents: ", task.getException());
                         }
                     }
                 });
-            CollectionReference QRColl = usersReference.document(username).collection("QR Codes");
-
-            QRCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
-
-            Query query = usersReference.document(username).collection("QR Codes");
-            options = new FirestoreRecyclerOptions.Builder<QRCode>()
-                    .setQuery(query, QRCode.class)
-                    .build();
-
-            adapter = new QRAdapterClass(options);
-
-            //super.onStart(); man idk
-            adapter.startListening();
-            QRCodeRecyclerView.setAdapter(adapter);
-            QRCodeRecyclerView.setLayoutManager(new LinearLayoutManager(this.getContext()));
-
-        // Gets the sum of points from all the QR Code documents
-        QRColl.addSnapshotListener((value, error) -> {
-            if (error != null) {
-                Log.w(TAG, "Listen FAILED", error);
-            }
-            double total = 0;
-
-            assert value != null;
-            for (QueryDocumentSnapshot document : value) {
-                int points = document.getLong("points").intValue();
-                total += points;
-            }
-            totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
-            Log.d(TAG, "Total Score: " + total);
-        });
-
-        Query topQR = QRColl.orderBy("points", Query.Direction.DESCENDING).limit(1);
-        // Orders the QR collection from biggest to smallest, then returns the first QR Code
-        topQR.addSnapshotListener((value, error) -> {
-            if (error != null) {
-                Log.w(TAG, "Listen FAILED", error);
-            }
-            assert value != null;
-            for (QueryDocumentSnapshot document : value) {
-                topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", document.get("points")));
-                Log.d(TAG, "top QR code: " + document.get("points"));
-
-            }
-        });
-
-
-        Query lowQR = QRColl.orderBy("points", Query.Direction.ASCENDING).limit(1);
-        // Orders the QR collection from smallest to largest, then returns the first QR Code
-        lowQR.addSnapshotListener((value, error) -> {
-            if (error != null) {
-                Log.w(TAG, "Listen FAILED", error);
-            }
-            assert value != null;
-            for (QueryDocumentSnapshot document : value) {
-                lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", document.get("points")));
-                Log.d(TAG, "lowest QR code: " + document.get("points"));
-
-            }
-        });
-
-        // Gets the size of the amount of QR codes there are
-        QRColl.addSnapshotListener((value, error) -> {
-            if (error != null) {
-                Log.w(TAG, "Listen FAILED", error);
-            }
-            Log.d(TAG, "num of QR: " + value.size());
-            totalQRCodesText.setText(MessageFormat.format("Total number of QR codes: {0}", value.size()));
-        });
-
-        // Handles clicking on an item to view the QR Code
-        adapter.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(DocumentSnapshot documentSnapshot, int position) {
-
-                QRCode qrCode = documentSnapshot.toObject(QRCode.class);
-                DocumentReference QrReference = documentSnapshot.getReference();
-                String documentId = documentSnapshot.getId();
-
-                System.out.println("click position " + position);
-                new ViewQR(qrCode, QrReference).show(getActivity().getSupportFragmentManager(), "Show QR");
-
-            }
-        });
-
-        // Handles long clicking on an item for deletion
-        adapter.setOnItemLongClickListener(new OnItemLongClickListener() {
-            @Override
-            public void onItemLongClick(DocumentSnapshot documentSnapshot, int position) {
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-
-                String documentId = documentSnapshot.getId();
-
-                builder
-                        .setTitle("Delete QR Code?")
-                        .setNegativeButton("Cancel", null)
-                        .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                usersReference.document(username).collection("QR Codes").document(documentId).delete();
-                            }
-                        })
-                        .create();
-
-                builder.show();
-            }
-        });
-
-        return view;
     }
 }
