@@ -7,12 +7,14 @@ To configure the app for testing (camera functionality):
 * launch the device, and in the settings (3 dots in right corner of the emulator toolbar)
 select 'Camera'; place the test QR code (BFG5DGW54.png) image as the "wall" image
 
-* click the add QR button, navigate to the back of the room using 
-shift + WASD and shift + mouse
+* click the add QR button and accept the system prompt to use the camera.
+
+* navigate to the back of the room using shift + WASD and shift + mouse
 
 * position the scanner so that the test QR code is scanned
 
-* once the QR code has been scanned, you can abort the app; the phone
-will retain that position when the app is launched again
+* once the code has been scanned, reject the prompt to take a photo
+
+* accept the prompt to share location; kill the app process, and the device should remember the permission of the QR scanner and permissions, so they will not have to be dealt with again during the tests
 
 * run the camerafragment tests
