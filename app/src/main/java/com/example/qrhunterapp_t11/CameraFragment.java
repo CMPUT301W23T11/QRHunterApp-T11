@@ -266,7 +266,8 @@ public class CameraFragment extends Fragment {
                         double latitude = location.getLatitude();
                         double longitude = location.getLongitude();
                         Log.d("LocationPrompt", "Latitude: " + latitude + ", Longitude: " + longitude);
-                        //stores QRCode into db with just hash as document id and location = null
+                        //set location and store
+                        qrCode.setLocation(location);
                         addQRCode();
                         returnToProfile();
                     } else {
