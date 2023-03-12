@@ -123,23 +123,6 @@ public class QRCode {
         this.hash = hash;
     }
 
-    /* I don't think we're going to need these
-    public int[] getEyesNumbers() {return eyesNumbers;}
-
-    public int[] getEyebrowsNumbers() {return eyebrowsNumbers;}
-
-    public int[] getColourNumbers() {return colourNumbers;}
-
-    public int[] getNoseNumbers() {return noseNumbers;}
-
-    public int[] getMouthNumbers() {return mouthNumbers;}
-
-    public int[] getFaceNumbers() {return faceNumbers;}
-
-    public String[] getNameParts() {return nameParts;}
-
-    */
-
     /**
      * Setter for QRCode Object's hash attribute
      * takes a string and runs it though Java's built in SHA256 hash algorithm
@@ -187,7 +170,8 @@ public class QRCode {
      * calculatePoints uses the hash value of the QRCode to calculate the points value of the QRCode
      * Static to increase testability
      *
-     * @return Returns the totalPoints int
+     * @param hash String hash value of the QR code
+     * @return grandTotal int
      * @reference Oracle's documentation on string manipulation https://docs.oracle.com/javase/tutorial/java/data/manipstrings.html
      */
     public static int calculatePoints(String hash) {
@@ -262,7 +246,8 @@ public class QRCode {
     /**
      * uniqueImage uses the 6 bits of a shortened hash function to determine which drawables will be used to make the unique image
      *
-     * @return Returns an ArrayList of drawables to form the image
+     * @param hash String hash value of the QR code
+     * @return faceList ArrayList of drawables to form the image
      * @reference educative.io https://www.educative.io/answers/how-to-convert-an-integer-to-binary-in-java for converting integer to binary, License: Creative Commons-Attribution-ShareAlike 4.0 (CC-BY-SA 4.0)
      * @reference techiedelight.com https://www.techiedelight.com/convert-hex-string-to-integer-java/ for converting string to hexadecimal integer
      */
@@ -294,24 +279,10 @@ public class QRCode {
         };
 
         int hashSmall = Integer.parseInt(hash.substring(0, 5), 16);
-        System.out.println("eyes1: " + R.drawable.eyes1);
-        System.out.println("eyes2: " + R.drawable.eyes2);
-        System.out.println("eyebrows1: " + R.drawable.eyebrows1);
-        System.out.println("eyebrows2: " + R.drawable.eyebrows2);
-        System.out.println("colour1: " + R.drawable.colour1);
-        System.out.println("colour2: " + R.drawable.colour2);
-        System.out.println("nose1: " + R.drawable.nose1);
-        System.out.println("nose2: " + R.drawable.nose2);
-        System.out.println("mouth1: " + R.drawable.mouth1);
-        System.out.println("mouth2: " + R.drawable.mouth2);
-        System.out.println("face1 " + R.drawable.face1);
-        System.out.println("face2 " + R.drawable.face2);
-        System.out.println("hashSmall: " + hashSmall);
 
         ArrayList<Integer> faceList = new ArrayList<>();
 
         String hashBinary = Integer.toBinaryString(hashSmall).substring(1);
-        System.out.println("hashbinary: " + hashBinary);
 
         faceList.add(eyesNumbers[hashBinary.charAt(0) - '0']);
         faceList.add(eyebrowsNumbers[hashBinary.charAt(1) - '0']);
@@ -323,10 +294,11 @@ public class QRCode {
     }
 
     /**
-     * uniqueImage uses the 6 bits of a shortened hash function to determine which drawables will be used to make the unique image
-     * Static to increase testability
+     * Uses the 6 bits of a shortened hash function to determine which drawables will be used to make the unique image
+     * static to increase testability
      *
-     * @return Returns an ArrayList of drawables to form the image
+     * @param hash String hash value of the QR code
+     * @return newName String
      */
     public static String uniqueName(String hash) {
 
@@ -366,19 +338,18 @@ public class QRCode {
         Integer hashSmall = Integer.parseInt(hash.substring(0, 6), 16);
         String hashBinary = Integer.toBinaryString(hashSmall).substring(1);
 
-        for (int i = 0, j = 0; i <= 17; i = i + 3, j = j + 4) {
+        for (int i = 0,j = 0; i< 12; i+=2, j+=4){
 
-            Integer num = Integer.parseInt(String.valueOf(hashBinary.charAt(i))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i + 1))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i + 2)));
-            //System.out.println("hash " + hashBinary);
-            //System.out.println("num: " + num);
-            //System.out.println("j: " + j);
-            if (num == 0) {
+            //Integer num = Integer.parseInt(String.valueOf(hashBinary.charAt(i))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i + 1))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i + 2)));
+            System.out.println("hash " + hashBinary);
+
+            if ((hashBinary.charAt(i) == '0') && (hashBinary.charAt(i+1) == '0') ) {
                 newName = newName + nameParts[j];
-            } else if (num == 1) {
+            } else if ((hashBinary.charAt(i) == '0') && (hashBinary.charAt(i+1) == '1')) {
                 newName = newName + nameParts[j + 1];
-            } else if (num == 2) {
+            } else if ((hashBinary.charAt(i) == '1') && (hashBinary.charAt(i+1) == '0')) {
                 newName = newName + nameParts[j + 2];
-            } else if (num == 3) {
+            } else if ((hashBinary.charAt(i) == '1') && (hashBinary.charAt(i+1) == '1')) {
                 newName = newName + nameParts[j + 3];
             }
         }
