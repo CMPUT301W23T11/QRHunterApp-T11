@@ -21,7 +21,6 @@ import io.reactivex.rxjava3.annotations.NonNull;
  */
 public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterClass.RecyclerViewHolder> {
     private OnItemClickListener listener;
-
     private OnItemLongClickListener listenerLong;
 
     public QRAdapterClass(@NonNull FirestoreRecyclerOptions<QRCode> options) {
