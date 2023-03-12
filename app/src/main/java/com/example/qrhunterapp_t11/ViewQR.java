@@ -34,7 +34,6 @@ import java.util.ArrayList;
  * @author Sarah Thomson
  * @reference https://stackoverflow.com/questions/6210895/listview-inside-scrollview-is-not-scrolling-on-android/17503823#17503823 by Moisés Olmedo, License: CC BY-SA 3.0
  * for scrollable comment box
- *
  */
 public class ViewQR extends DialogFragment {
     private QRCode qrCode;
@@ -62,7 +61,6 @@ public class ViewQR extends DialogFragment {
 
     /**
      * Listener for the ViewQR dialog
-     *
      */
     interface ViewQRDialogListener {
         void ViewCode(QRCode qrCode);
@@ -109,7 +107,7 @@ public class ViewQR extends DialogFragment {
         mouthImageView.setImageResource((qrCode.getFaceList()).get(4));
         eyebrowsImageView.setImageResource((qrCode.getFaceList()).get(5));
 
-        if (!qrCode.getPhotoList().isEmpty()){
+        if (!qrCode.getPhotoList().isEmpty()) {
             Picasso.with(getContext()).load(qrCode.getPhotoList().get(0)).into(photoImageView);
         }
         commentIV.setOnClickListener(new View.OnClickListener() {

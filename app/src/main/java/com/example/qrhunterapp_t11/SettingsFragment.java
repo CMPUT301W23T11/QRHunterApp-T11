@@ -89,6 +89,7 @@ public class SettingsFragment extends Fragment {
                                         public void onClick(DialogInterface dialogInterface, int i) {
                                             String user = prefs.getString("currentUser", null);
                                             usersReference.document(user).update("Display Name", usernameString);
+                                            usersReference.document(user).update("Email", emailString);
 
                                             prefs.edit().putString("currentUserDisplayName", usernameString).commit();
                                             prefs.edit().putString("currentUserEmail", emailString).commit();
