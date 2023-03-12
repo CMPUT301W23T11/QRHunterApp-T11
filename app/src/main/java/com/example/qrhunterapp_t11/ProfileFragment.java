@@ -9,27 +9,24 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.Objects;
 
 
 /**
@@ -74,21 +71,41 @@ public class ProfileFragment extends Fragment {
         TextView lowQRCodeText = view.findViewById(R.id.lowQRText);
         TextView totalQRCodesText = view.findViewById(R.id.totalQRText);
 
-        CollectionReference QRColl = usersReference.document(username).collection("QR Codes");
+        usersReference.document(username).collection("QR Code")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            if(task.getResult().size() > 0) {
+                                for (DocumentSnapshot document : task.getResult()) {
+                                    Log.d("FTAG", "Room already exists, start the chat");
 
-        QRCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
+                                }
+                            } else {
+                                Log.d("FTAG", "room doesn't exist create a new room");
 
-        Query query = usersReference.document(username).collection("QR Codes");
-        options = new FirestoreRecyclerOptions.Builder<QRCode>()
-                .setQuery(query, QRCode.class)
-                .build();
+                            }
+                        } else {
+                            Log.d("FTAG", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+            CollectionReference QRColl = usersReference.document(username).collection("QR Codes");
 
-        adapter = new QRAdapterClass(options);
+            QRCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
 
-        //super.onStart(); man idk
-        adapter.startListening();
-        QRCodeRecyclerView.setAdapter(adapter);
-        QRCodeRecyclerView.setLayoutManager(new LinearLayoutManager(this.getContext()));
+            Query query = usersReference.document(username).collection("QR Codes");
+            options = new FirestoreRecyclerOptions.Builder<QRCode>()
+                    .setQuery(query, QRCode.class)
+                    .build();
+
+            adapter = new QRAdapterClass(options);
+
+            //super.onStart(); man idk
+            adapter.startListening();
+            QRCodeRecyclerView.setAdapter(adapter);
+            QRCodeRecyclerView.setLayoutManager(new LinearLayoutManager(this.getContext()));
 
         // Gets the sum of points from all the QR Code documents
         QRColl.addSnapshotListener((value, error) -> {

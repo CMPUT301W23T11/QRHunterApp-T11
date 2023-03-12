@@ -17,29 +17,61 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <Switch
-            android:id="@+id/geolocation_switch"
+        <TextView
+            android:id="@+id/email_edit_textview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Disable Geolocation"
-            android:textSize="24dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.203"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="76dp"
+            android:text="Change Email:"
+            android:textSize="30dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.167" />
+            app:layout_constraintTop_toBottomOf="@+id/username_edit_edittext" />
+
+        <TextView
+            android:id="@+id/username_edit_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="112dp"
+            android:text="Change Username:"
+            android:textSize="30dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/username_edit_edittext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:text="Username"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/username_edit_textview" />
+
+        <EditText
+            android:id="@+id/email_edit_edittext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:ems="10"
+            android:inputType="textEmailAddress"
+            android:text="Email"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/email_edit_textview" />
 
         <Button
-            android:id="@+id/logout_button"
+            android:id="@+id/settings_confirm_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="28dp"
-            android:text="Log Out"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="116dp"
+            android:text="Confirm"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/geolocation_switch"
-            app:layout_constraintVertical_bias="0.099" />
+            app:layout_constraintTop_toBottomOf="@+id/email_edit_edittext" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>
