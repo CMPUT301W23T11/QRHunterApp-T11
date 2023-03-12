@@ -44,7 +44,7 @@ import java.util.Objects;
 public class ProfileFragment extends Fragment {
     private final CollectionReference usersReference;
     private RecyclerView QRCodeRecyclerView;
-    QRAdapter adapter;
+    QRAdapterClass adapter;
     FirestoreRecyclerOptions<QRCode> options;
 
     /**
@@ -83,7 +83,7 @@ public class ProfileFragment extends Fragment {
                 .setQuery(query, QRCode.class)
                 .build();
 
-        adapter = new QRAdapter(options);
+        adapter = new QRAdapterClass(options);
 
         //super.onStart(); man idk
         adapter.startListening();

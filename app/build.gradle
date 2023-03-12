@@ -52,8 +52,9 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.8.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'com.google.firebase:firebase-storage:20.1.0'
+    implementation 'com.google.firebase:firebase-storage:20.0.1'
     implementation 'com.google.firebase:firebase-database:20.1.0'
+
     implementation 'com.firebaseui:firebase-ui-firestore:8.0.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.2'
@@ -76,4 +77,6 @@ dependencies {
 
     implementation "androidx.camera:camera-view:${camerax_version}"
     implementation "androidx.camera:camera-extensions:${camerax_version}"
+
+    implementation 'com.squareup.picasso:picasso:2.5.2'
 }

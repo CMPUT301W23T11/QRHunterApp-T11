@@ -254,7 +254,8 @@ public class TakePhotoActivity extends AppCompatActivity {
 
     /**
      * A listener interface used to retrieve the url string after the photo has been uploaded to the db
-     * References: https://stackoverflow.com/questions/51086755/java-android-how-to-call-onsuccess-method from Fangming, Jun 28 2018, CC BY-SA 4.0.
+     *
+     * @reference https://stackoverflow.com/questions/51086755/java-android-how-to-call-onsuccess-method from Fangming, Jun 28 2018, CC BY-SA 4.0.
      */
     public interface OnUploadListener{
         void onUpload(String url);

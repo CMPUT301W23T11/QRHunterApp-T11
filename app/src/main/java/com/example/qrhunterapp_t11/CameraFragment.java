@@ -125,7 +125,6 @@ public class CameraFragment extends Fragment {
                         Intent intent = result.getData();
                         Bundle extras = intent.getExtras();
                         imageUrl = extras.getString("url");
-                        ;
                         promptForLocation(); // prompt for location once the TakePhotoActivity has finished
                     }
                 }
@@ -143,10 +142,10 @@ public class CameraFragment extends Fragment {
                 // create custom dialog to display QR score
                 LayoutInflater inflater = this.getLayoutInflater();
                 View dialogView = inflater.inflate(R.layout.qr_scored_dialog, null);
-                TextView scoredTV = dialogView.findViewById(R.id.scoredTV);
+                TextView scoredTV = dialogView.findViewById(R.id.scoredTV); // NEW ADDITION
                 builder.setView(dialogView);
                 builder.setCancelable(false);
-                scoredTV.setText("Scored " + String.valueOf(qrCode.getPoints()) + " Points");
+                scoredTV.setText("Scored " + String.valueOf(qrCode.getPoints()) + " Points"); // NEW ADDITION
 
                 final AlertDialog alertDialog = builder.create();
                 alertDialog.show(); // create and display the dialog
@@ -224,11 +223,12 @@ public class CameraFragment extends Fragment {
     }
 
 
+
     private static final int PERMISSIONS_REQUEST_LOCATION = 100; //TODO move to top of class for cleanliness?
     private GoogleApiClient googleApiClient; //TODO move to top of class for cleanliness?
 
     /**
-     * Connects the GoogleApiClient and initiates the permissions check
+     *Connects the GoogleApiClient and initiates the permissions check
      */
     private void connectGoogleApiClient() {
         googleApiClient = new GoogleApiClient.Builder(requireContext())
@@ -253,8 +253,8 @@ public class CameraFragment extends Fragment {
     }
 
     /**
-     * Retrieves the current location and logs the latitude and longitude of the location.
-     * Adds QRCode to db with location and returns to profile
+     *Retrieves the current location and logs the latitude and longitude of the location.
+     *Adds QRCode to db with location and returns to profile
      */
     private void getCurrentLocation() {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
@@ -268,7 +268,7 @@ public class CameraFragment extends Fragment {
                         double longitude = location.getLongitude();
                         Log.d("LocationPrompt", "Latitude: " + latitude + ", Longitude: " + longitude);
                         //set location and store
-                        qrCode.setLocation(location);
+                        //qrCode.setLocation(location);
                         addQRCode();
                         returnToProfile();
                     } else {
@@ -284,7 +284,7 @@ public class CameraFragment extends Fragment {
     }
 
     /**
-     * Initiates the location permission check and logs if permission is already granted
+     *Initiates the location permission check and logs if permission is already granted
      */
     private void permissions() {
         if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -302,12 +302,12 @@ public class CameraFragment extends Fragment {
     }
 
     /**
-     * Handles the user's response to the location permission request.
-     * Calls getCurrentLocation() if permission is granted, otherwise adds QRCode to db with location=null and returns to profile.
+     *Handles the user's response to the location permission request.
+     *Calls getCurrentLocation() if permission is granted, otherwise adds QRCode to db with location=null and returns to profile.
      *
-     * @param requestCode  The request code of the permission request.
-     * @param permissions  The requested permissions.
-     * @param grantResults The results of the permission request.
+     *@param requestCode The request code of the permission request.
+     *@param permissions The requested permissions.
+     *@param grantResults The results of the permission request.
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -378,6 +378,7 @@ public class CameraFragment extends Fragment {
         String id = qrCode.getHash();
         QRCodesReference.document(id).set(qrCode);
         usersReference.document(currentUser).collection("QR Codes").document(id).set(qrCode);
+        usersReference.document(currentUser).collection("QR Codes").document(qrCode.getHash()).update("photoList", FieldValue.arrayUnion(imageUrl));
         QRCodesReference.document(qrCode.getHash()).update("photoList", FieldValue.arrayUnion(imageUrl));
 
     }
