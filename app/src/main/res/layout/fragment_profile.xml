@@ -66,8 +66,8 @@
             android:layout_height="wrap_content"
             android:text="@string/your_lowest_qr_code_text"
             android:textAlignment="center"
-            android:textColor="@color/stats_text"
             android:textSize="20sp"
+            android:textColor="@color/stats_text"
             android:textStyle="bold" />
 
         <TextView
@@ -91,12 +91,12 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/collectionRecyclerView"
+    <ListView
+        android:id="@+id/collectionListView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
 
-        android:layout_marginBottom="25dp" />
+        />
 
 
 </LinearLayout>
