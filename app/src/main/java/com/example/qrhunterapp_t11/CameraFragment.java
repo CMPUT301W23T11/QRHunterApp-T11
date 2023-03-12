@@ -253,8 +253,9 @@ public class CameraFragment extends Fragment {
     }
 
     /**
-     *Retrieves the current location and logs the latitude and longitude of the location.
-     *Adds QRCode to db with location and returns to profile
+     * Retrieves the current location and logs the latitude and longitude of the location.
+     * TODO: adding location data to the QRCode is currently disabled due to a bug when displaying QR's on profile w/ location data
+     * Adds QRCode to db and returns to profile
      */
     private void getCurrentLocation() {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
