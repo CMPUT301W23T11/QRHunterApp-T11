@@ -11,7 +11,7 @@ public class Comment {
     private String profile;
 
     /**
-     *
+     * Constructor for Comment
      *
      * @param comment
      * @param profile
