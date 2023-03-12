@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
     private AggregateQuerySnapshot snapshot;
     private final ProfileFragment profileFragment = new ProfileFragment(db);
     private final SettingsFragment settingsFragment = new SettingsFragment(db);
-    private final CameraFragment cameraFragment = new CameraFragment();
+    private final CameraFragment cameraFragment = new CameraFragment(db);
 
     @Override
     public void ViewCode(QRCode qrCode) {
