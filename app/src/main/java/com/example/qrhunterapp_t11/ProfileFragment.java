@@ -28,6 +28,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Objects;
 
 
@@ -44,7 +45,7 @@ public class ProfileFragment extends Fragment {
     private static final String TAG = "ProfileFragment";
     private final CollectionReference usersReference;
     private RecyclerView QRCodeRecyclerView;
-    QRAdapter adapter;
+    QRAdapterClass adapter;
     FirestoreRecyclerOptions<QRCode> options;
 
     /**
@@ -56,8 +57,6 @@ public class ProfileFragment extends Fragment {
     public ProfileFragment(FirebaseFirestore db) {
         this.usersReference = db.collection("Users");
     }
-
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -84,8 +83,7 @@ public class ProfileFragment extends Fragment {
                 .setQuery(query, QRCode.class)
                 .build();
 
-        adapter = new QRAdapter(options);
-
+        adapter = new QRAdapterClass(options);
 
         //super.onStart(); man idk
         adapter.startListening();
@@ -146,6 +144,7 @@ public class ProfileFragment extends Fragment {
             totalQRCodesText.setText(MessageFormat.format("Total number of QR codes: {0}", value.size()));
         });
 
+        // Handles clicking on an item to view the QR Code
         adapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(DocumentSnapshot documentSnapshot, int position) {
@@ -157,6 +156,30 @@ public class ProfileFragment extends Fragment {
                 System.out.println("click position " + position);
                 new ViewQR(qrCode, QrReference).show(getActivity().getSupportFragmentManager(), "Show QR");
 
+            }
+        });
+
+        // Handles long clicking on an item for deletion
+        adapter.setOnItemLongClickListener(new OnItemLongClickListener() {
+            @Override
+            public void onItemLongClick(DocumentSnapshot documentSnapshot, int position) {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+
+                String documentId = documentSnapshot.getId();
+
+                builder
+                        .setTitle("Delete QR Code?")
+                        .setNegativeButton("Cancel", null)
+                        .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                usersReference.document(username).collection("QR Codes").document(documentId).delete();
+                            }
+                        })
+                        .create();
+
+                builder.show();
             }
         });
 

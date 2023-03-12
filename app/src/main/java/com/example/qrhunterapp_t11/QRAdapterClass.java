@@ -13,11 +13,17 @@ import com.google.firebase.firestore.DocumentSnapshot;
 
 import io.reactivex.rxjava3.annotations.NonNull;
 
-public class QRAdapter extends FirestoreRecyclerAdapter<QRCode, QRAdapter.RecyclerViewHolder> {
+/**
+ * Adapter class for RecyclerView that holds user's collection of QR Codes
+ *
+ * @author Afra, Sarah
+ * @reference <a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation</a>
+ */
+public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterClass.RecyclerViewHolder> {
+    private OnItemClickListener listener;
+    private OnItemLongClickListener listenerLong;
 
-    private  OnItemClickListener listener;
-
-    public QRAdapter(@NonNull FirestoreRecyclerOptions<QRCode> options){
+    public QRAdapterClass(@NonNull FirestoreRecyclerOptions<QRCode> options) {
         super(options);
     }
 
@@ -36,6 +42,7 @@ public class QRAdapter extends FirestoreRecyclerAdapter<QRCode, QRAdapter.Recycl
 
         return new RecyclerViewHolder(view);
     }
+
     public class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
         public TextView QRCodeName;
@@ -52,17 +59,32 @@ public class QRAdapter extends FirestoreRecyclerAdapter<QRCode, QRAdapter.Recycl
                 @Override
                 public void onClick(View view) {
                     int position = getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION && listener != null){
+                    if (position != RecyclerView.NO_POSITION && listener != null) {
                         listener.onItemClick(getSnapshots().getSnapshot(position), position);
                     }
+                }
+            });
+
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION && listener != null) {
+                        listenerLong.onItemLongClick(getSnapshots().getSnapshot(position), position);
+                    }
+                    return true;
                 }
             });
         }
     }
 
-    public void setOnItemClickListener(OnItemClickListener listener){
+    public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
 
+
+    public void setOnItemLongClickListener(OnItemLongClickListener listener) {
+        this.listenerLong = listener;
+    }
 
 }

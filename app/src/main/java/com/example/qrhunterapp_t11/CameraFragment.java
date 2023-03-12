@@ -124,7 +124,8 @@ public class CameraFragment extends Fragment {
                     public void onActivityResult(ActivityResult result) {
                         Intent intent = result.getData();
                         Bundle extras = intent.getExtras();
-                        imageUrl = extras.getString("url");;
+                        imageUrl = extras.getString("url");
+                        ;
                         promptForLocation(); // prompt for location once the TakePhotoActivity has finished
                     }
                 }
@@ -142,10 +143,10 @@ public class CameraFragment extends Fragment {
                 // create custom dialog to display QR score
                 LayoutInflater inflater = this.getLayoutInflater();
                 View dialogView = inflater.inflate(R.layout.qr_scored_dialog, null);
-                TextView scoredTV = dialogView.findViewById(R.id.scoredTV);
+                TextView scoredTV = dialogView.findViewById(R.id.scoredTV); // NEW ADDITION
                 builder.setView(dialogView);
                 builder.setCancelable(false);
-                scoredTV.setText("Scored " + String.valueOf(qrCode.getPoints()) + " Points");
+                scoredTV.setText("Scored " + String.valueOf(qrCode.getPoints()) + " Points"); // NEW ADDITION
 
                 final AlertDialog alertDialog = builder.create();
                 alertDialog.show(); // create and display the dialog
@@ -195,11 +196,11 @@ public class CameraFragment extends Fragment {
                         .setCancelable(false)
                         .setPositiveButton("Yes", new
                                 DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                Log.d("PhotoPrompt", "User accepted photo prompt.");
-                                takePhoto();
-                            }
-                        })
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        Log.d("PhotoPrompt", "User accepted photo prompt.");
+                                        takePhoto();
+                                    }
+                                })
                         .setNegativeButton("No", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -217,17 +218,18 @@ public class CameraFragment extends Fragment {
      *
      * @reference Paul Thompson - https://stackoverflow.com/questions/28619113/start-a-new-activity-from-fragment - how to start an activity from within a fragment
      */
-    private void takePhoto(){
+    private void takePhoto() {
         Intent intent = new Intent(getActivity(), TakePhotoActivity.class);
         photoLauncher.launch(intent);
     }
+
 
 
     private static final int PERMISSIONS_REQUEST_LOCATION = 100; //TODO move to top of class for cleanliness?
     private GoogleApiClient googleApiClient; //TODO move to top of class for cleanliness?
 
     /**
-     * Connects the GoogleApiClient and initiates the permissions check
+     *Connects the GoogleApiClient and initiates the permissions check
      */
     private void connectGoogleApiClient() {
         googleApiClient = new GoogleApiClient.Builder(requireContext())
@@ -253,7 +255,8 @@ public class CameraFragment extends Fragment {
 
     /**
      * Retrieves the current location and logs the latitude and longitude of the location.
-     * Adds QRCode to db with location and returns to profile
+     * TODO: adding location data to the QRCode is currently disabled due to a bug when displaying QR's on profile w/ location data
+     * Adds QRCode to db and returns to profile
      */
     private void getCurrentLocation() {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
@@ -267,7 +270,7 @@ public class CameraFragment extends Fragment {
                         double longitude = location.getLongitude();
                         Log.d("LocationPrompt", "Latitude: " + latitude + ", Longitude: " + longitude);
                         //set location and store
-                        qrCode.setLocation(location);
+                        //qrCode.setLocation(location);
                         addQRCode();
                         returnToProfile();
                     } else {
@@ -283,7 +286,7 @@ public class CameraFragment extends Fragment {
     }
 
     /**
-     * Initiates the location permission check and logs if permission is already granted
+     *Initiates the location permission check and logs if permission is already granted
      */
     private void permissions() {
         if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -301,12 +304,12 @@ public class CameraFragment extends Fragment {
     }
 
     /**
-     * Handles the user's response to the location permission request.
-     * Calls getCurrentLocation() if permission is granted, otherwise adds QRCode to db with location=null and returns to profile.
+     *Handles the user's response to the location permission request.
+     *Calls getCurrentLocation() if permission is granted, otherwise adds QRCode to db with location=null and returns to profile.
      *
-     * @param requestCode  The request code of the permission request.
-     * @param permissions  The requested permissions.
-     * @param grantResults The results of the permission request.
+     *@param requestCode The request code of the permission request.
+     *@param permissions The requested permissions.
+     *@param grantResults The results of the permission request.
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -372,7 +375,7 @@ public class CameraFragment extends Fragment {
     /**
      * Helper function to add QRCode object to QRCodes and Users collections
      */
-    private void addQRCode(){
+    private void addQRCode() {
         String currentUser = prefs.getString("currentUser", null);
         String id = qrCode.getHash();
         QRCodesReference.document(id).set(qrCode);
