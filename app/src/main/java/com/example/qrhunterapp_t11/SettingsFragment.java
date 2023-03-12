@@ -30,11 +30,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Handles settings screen.
- * Users can toggle geolocation on and off, or log out.
+ * Handles settings screen. Users can rename themselves and change their email.
  *
- * @author Afra, Kristina
- * @reference <a href="https://www.tutlane.com/tutorial/android/android-switch-on-off-button-with-examples">For handling switch events</a>
+ * @author Afra
+ * @reference
  */
 public class SettingsFragment extends Fragment {
 
@@ -80,7 +79,6 @@ public class SettingsFragment extends Fragment {
                 usernameCheck(usernameString, usernameEditText, new settingsCallback() {
                     public void usernameValid(boolean valid) {
                         validUsername = valid;
-                        System.out.println(validUsername);
 
                         if (validUsername) {
                             builder
@@ -103,10 +101,8 @@ public class SettingsFragment extends Fragment {
                         }
                     }
                 });
-
             }
         });
-
 
         return view;
     }
@@ -126,7 +122,7 @@ public class SettingsFragment extends Fragment {
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                     if (task.isSuccessful()) {
                         DocumentSnapshot document = task.getResult();
-                        System.out.println(document);
+
                         if (document.exists()) {
                             usernameEditText.setError("Username is not unique");
                             usernameValid.usernameValid(false);

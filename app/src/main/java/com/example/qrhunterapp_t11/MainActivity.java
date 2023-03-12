@@ -35,6 +35,7 @@ import java.util.Map;
  * @author Afra, Josh, Kristina
  * @reference <a href="https://www.geeksforgeeks.org/how-to-create-fragment-using-bottom-navigation-in-social-media-android-app/">How to use fragments with a bottom navigation bar</a>
  * @reference <a href="https://youtu.be/x6-_va1R788">How to set up and align a floating action button on the BottomNavigationView</a>
+ * @reference <a href="https://firebase.google.com/docs/firestore/query-data/aggregation-queries#java">For aggregation queries</a>
  */
 public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDialogListener {
 
@@ -89,10 +90,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
                 }
             });
-        }
-
-        else {
-
+        } else {
             getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
         }
 
