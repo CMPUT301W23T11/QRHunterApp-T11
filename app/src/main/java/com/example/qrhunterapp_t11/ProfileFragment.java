@@ -68,8 +68,8 @@ public class ProfileFragment extends Fragment {
         TextView loginUsernameTextView = view.findViewById(R.id.profile_name);
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
-        String username = prefs.getString("currentUser", null);
-        System.out.println(username);
+        String username = prefs.getString("currentUserDisplayName", null);
+
         loginUsernameTextView.setText(username);
 
         TextView totalScoreText = view.findViewById(R.id.totalScoreText);

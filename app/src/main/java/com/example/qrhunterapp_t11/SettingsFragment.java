@@ -40,10 +40,15 @@ public class SettingsFragment extends Fragment {
 
     private final CollectionReference usersReference;
     private boolean validUsername;
+    EditText usernameEditText;
+    EditText emailEditText;
+    String usernameString;
+    String emailString;
 
     public SettingsFragment(FirebaseFirestore db) {
         this.usersReference = db.collection("Users");
     }
+
     public interface settingsCallback {
         void usernameValid(boolean valid);
     }
@@ -55,29 +60,27 @@ public class SettingsFragment extends Fragment {
 
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
-        EditText usernameEditText = view.findViewById(R.id.username_edit_edittext);
-        EditText emailEditText = view.findViewById(R.id.email_edit_edittext);
+        usernameEditText = view.findViewById(R.id.username_edit_edittext);
+        emailEditText = view.findViewById(R.id.email_edit_edittext);
         Button confirmButton = view.findViewById(R.id.settings_confirm_button);
 
-        String usernameString = prefs.getString("currentUserDisplayName", null);
-        String emailString = prefs.getString("currentUserEmail", "No email");
+        usernameString = prefs.getString("currentUserDisplayName", null);
+        emailString = prefs.getString("currentUserEmail", "No email");
         usernameEditText.setText(usernameString);
         emailEditText.setText(emailString);
 
         confirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                usernameString = usernameEditText.getText().toString();
+                emailString = emailEditText.getText().toString();
+
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-
-                EditText newUsernameEditText = view.findViewById(R.id.username_edit_edittext);
-                EditText newEmailEditText = view.findViewById(R.id.email_edit_edittext);
-
-                String newUsernameString = String.valueOf(newUsernameEditText);
-                String newEmailString = String.valueOf(newEmailEditText);
-
-                usernameCheck(newUsernameString, newUsernameEditText, new settingsCallback() {
+                usernameCheck(usernameString, usernameEditText, new settingsCallback() {
                     public void usernameValid(boolean valid) {
                         validUsername = valid;
+                        System.out.println(validUsername);
 
                         if (validUsername) {
                             builder
@@ -87,10 +90,10 @@ public class SettingsFragment extends Fragment {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
                                             String user = prefs.getString("currentUser", null);
-                                            usersReference.document(user).update("Display Name", newUsernameString);
+                                            usersReference.document(user).update("Display Name", usernameString);
 
-                                            prefs.edit().putString("currentUserDisplayName", newUsernameString).commit();
-                                            prefs.edit().putString("currentUserEmail", newEmailString).commit();
+                                            prefs.edit().putString("currentUserDisplayName", usernameString).commit();
+                                            prefs.edit().putString("currentUserEmail", emailString).commit();
                                         }
                                     })
                                     .create();
@@ -100,6 +103,7 @@ public class SettingsFragment extends Fragment {
                         }
                     }
                 });
+
             }
         });
 
@@ -109,7 +113,7 @@ public class SettingsFragment extends Fragment {
 
     public void usernameCheck(String usernameString, EditText usernameEditText, final settingsCallback usernameValid) {
 
-        // Check for empty field
+        // Check if field is empty
         if (usernameString.length() == 0) {
             usernameEditText.setError("Field cannot be blank");
         }
@@ -122,6 +126,7 @@ public class SettingsFragment extends Fragment {
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                     if (task.isSuccessful()) {
                         DocumentSnapshot document = task.getResult();
+                        System.out.println(document);
                         if (document.exists()) {
                             usernameEditText.setError("Username is not unique");
                             usernameValid.usernameValid(false);

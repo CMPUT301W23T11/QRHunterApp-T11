@@ -60,12 +60,18 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        bottomToolbar = findViewById(R.id.bottomToolbar);
+        addFab = findViewById(R.id.addFab);
+
+        bottomToolbar.setSelectedItemId(R.id.profile);
+
         SharedPreferences prefs = this.getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         if (!prefs.getBoolean("LoggedIn", false)) {
             firstTimeLaunch(new mainActivityCallback() {
                 public void querySnapshot(AggregateQuerySnapshot querySnapshot) {
                     snapshot = querySnapshot;
+                    System.out.println(snapshot.getCount());
 
                     int numUsers = (int) snapshot.getCount();
 
@@ -73,26 +79,22 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
 
                     prefs.edit().putString("currentUser", username).commit();
                     prefs.edit().putString("currentUserDisplayName", username).commit();
+                    prefs.edit().putBoolean("LoggedIn", true).commit();
 
                     Map<String, Object> user = new HashMap<>();
                     user.put("Username", username);
                     user.put("Display Name", username);
 
                     usersReference.document(username).set(user);
-                    CollectionReference QRColl = usersReference.document(username).collection("QR Codes");
-                    System.out.println(QRColl);
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
                 }
             });
-
         }
-        prefs.edit().clear().commit();
-        //prefs.edit().putBoolean("LoggedIn", true).commit();
 
-        bottomToolbar = findViewById(R.id.bottomToolbar);
-        addFab = findViewById(R.id.addFab);
+        else {
 
-        bottomToolbar.setSelectedItemId(R.id.profile);
-        getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
+        }
 
         // floating action button that moves the fragment to the camera fragment
         addFab.setOnClickListener(view -> {
@@ -137,11 +139,14 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
 
     public void firstTimeLaunch(final mainActivityCallback querySnapshot) {
         AggregateQuery countQuery = usersReference.count();
-
-        countQuery.get(AggregateSource.SERVER).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                snapshot = task.getResult();
-                querySnapshot.querySnapshot(snapshot);
+        countQuery.get(AggregateSource.SERVER).addOnCompleteListener(new OnCompleteListener<AggregateQuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<AggregateQuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    AggregateQuerySnapshot snapshot = task.getResult();
+                    snapshot = task.getResult();
+                    querySnapshot.querySnapshot(snapshot);
+                }
             }
         });
     }
