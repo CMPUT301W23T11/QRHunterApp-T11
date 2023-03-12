@@ -4,37 +4,51 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
 /**
- * This is the dialog fragment that appears when a user clicks to see more info about a certain QRCode. It handles...
+ * This is the dialog fragment that appears when a user clicks to see more info about a certain QRCode. It shows the user the QR Code's image, name,
+ * # of points, photo, and implements comments.
  *
  * @author Sarah Thomson
+ * @reference https://stackoverflow.com/questions/6210895/listview-inside-scrollview-is-not-scrolling-on-android/17503823#17503823 by Moisés Olmedo, License: CC BY-SA 3.0
+ * for scrollable comment box
  */
 public class ViewQR extends DialogFragment {
     private QRCode qrCode;
-    private Integer pos;
     private ListView commentListView;
     private ArrayList<Comment> commentList;
     private CommentAdapter commentAdapter;
     private ImageView commentIV;
     private EditText commentET;
+    private SharedPreferences prefs;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private CollectionReference QRCodesReference = db.collection("QRCodes");
+    private CollectionReference usersReference = db.collection("Users");
+    private ViewQR.ViewQRDialogListener listener;
+    private ImageView eyesImageView, faceImageView, colourImageView, noseImageView, mouthImageView, eyebrowsImageView, photoImageView;
+    private TextView pointsTV;
 
     public ViewQR() {
         super();
@@ -45,18 +59,12 @@ public class ViewQR extends DialogFragment {
         this.qrCode = qrCode;
     }
 
-    public ViewQR(QRCode qrCode, Integer pos) {
-        super();
-        this.qrCode = qrCode;
-        this.pos = pos;
-    }
-
+    /**
+     * Listener for the ViewQR dialog
+     */
     interface ViewQRDialogListener {
         void ViewCode(QRCode qrCode);
     }
-
-    private ViewQR.ViewQRDialogListener listener;
-    private ImageView eyesImageView, faceImageView, colourImageView, noseImageView, mouthImageView, eyebrowsImageView;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -72,6 +80,7 @@ public class ViewQR extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
 
+        prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
         View view = LayoutInflater.from(getContext()).inflate(R.layout.qr_view, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
@@ -81,6 +90,8 @@ public class ViewQR extends DialogFragment {
         commentListView = view.findViewById(R.id.commentListView);
         commentAdapter = new CommentAdapter(getContext(), commentList);
         commentListView.setAdapter(commentAdapter);
+        pointsTV = view.findViewById(R.id.pointsTV);
+        pointsTV.setText("Points: " + String.valueOf(qrCode.getPoints()));
 
         eyesImageView = view.findViewById(R.id.imageEyes);
         colourImageView = view.findViewById(R.id.imageColour);
@@ -88,6 +99,7 @@ public class ViewQR extends DialogFragment {
         noseImageView = view.findViewById(R.id.imageNose);
         mouthImageView = view.findViewById(R.id.imageMouth);
         eyebrowsImageView = view.findViewById(R.id.imageEyebrows);
+        photoImageView = view.findViewById(R.id.imagePhoto);
         colourImageView.setImageResource((qrCode.getFaceList()).get(2));
         eyesImageView.setImageResource((qrCode.getFaceList()).get(0));
         faceImageView.setImageResource((qrCode.getFaceList()).get(1));
@@ -95,17 +107,23 @@ public class ViewQR extends DialogFragment {
         mouthImageView.setImageResource((qrCode.getFaceList()).get(4));
         eyebrowsImageView.setImageResource((qrCode.getFaceList()).get(5));
 
+        if (!qrCode.getPhotoList().isEmpty()) {
+            Picasso.with(getContext()).load(qrCode.getPhotoList().get(0)).into(photoImageView);
+        }
         commentIV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String commentString = commentET.getText().toString();
 
                 if (!commentString.isEmpty()) {
-                    Comment c = new Comment(commentString, "Test Profile");
+                    String currentUser = prefs.getString("currentUser", null);
+                    Comment c = new Comment(commentString, currentUser);
                     commentList.add(c);
                     qrCode.setCommentList(commentList);
                     commentAdapter.notifyDataSetChanged();
                     commentET.getText().clear();
+                    usersReference.document(currentUser).collection("QR Codes").document(qrCode.getHash()).update("commentList", FieldValue.arrayUnion(c));
+                    QRCodesReference.document(qrCode.getHash()).update("commentList", FieldValue.arrayUnion(c));
                 }
             }
         });
@@ -119,16 +137,13 @@ public class ViewQR extends DialogFragment {
                 int action = event.getAction();
                 switch (action) {
                     case MotionEvent.ACTION_DOWN:
-                        // Disallow ScrollView to intercept touch events
                         v.getParent().requestDisallowInterceptTouchEvent(true);
                         break;
 
                     case MotionEvent.ACTION_UP:
-                        // Allow ScrollView to intercept touch events
                         v.getParent().requestDisallowInterceptTouchEvent(false);
                         break;
                 }
-                // Handle ListView touch events
                 v.onTouchEvent(event);
                 return true;
             }
@@ -137,13 +152,7 @@ public class ViewQR extends DialogFragment {
         return builder
                 .setView(view)
                 .setTitle(qrCode.getName())
-                .setNegativeButton("Cancel", null)
-                .setPositiveButton("Submit", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                    }
-                })
+                .setNegativeButton("Back", null)
                 .create();
     }
 }

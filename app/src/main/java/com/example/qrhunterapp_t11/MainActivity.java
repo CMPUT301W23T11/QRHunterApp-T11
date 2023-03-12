@@ -14,13 +14,19 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationBarView;
+import com.google.firebase.firestore.AggregateQuery;
+import com.google.firebase.firestore.AggregateQuerySnapshot;
+import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Main app activity. Logged in users will see their player profile screen first, and
@@ -29,21 +35,29 @@ import java.util.ArrayList;
  * @author Afra, Josh, Kristina
  * @reference <a href="https://www.geeksforgeeks.org/how-to-create-fragment-using-bottom-navigation-in-social-media-android-app/">How to use fragments with a bottom navigation bar</a>
  * @reference <a href="https://youtu.be/x6-_va1R788">How to set up and align a floating action button on the BottomNavigationView</a>
+ * @reference <a href="https://firebase.google.com/docs/firestore/query-data/aggregation-queries#java">For aggregation queries</a>
  */
-public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDialogListener{
+public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDialogListener {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");
     private BottomNavigationView bottomToolbar;
+    private AggregateQuerySnapshot snapshot;
     private final ProfileFragment profileFragment = new ProfileFragment(db);
-    private final SettingsFragment settingsFragment = new SettingsFragment();
-    private final CameraFragment cameraFragment = new CameraFragment();
+    private final SettingsFragment settingsFragment = new SettingsFragment(db);
+    private final CameraFragment cameraFragment = new CameraFragment(db);
     private final MapFragment mapFragment = new MapFragment();
+
     @Override
-    public void ViewCode(QRCode qrCode) {}
+    public void ViewCode(QRCode qrCode) {
+    }
+
+    public interface mainActivityCallback {
+        void querySnapshot(AggregateQuerySnapshot querySnapshot);
+    }
 
     /**
-    * Called after the activity launches and sets the activity content to the provided layout resource
+     * Called after the activity launches and sets the activity content to the provided layout resource
      * initializes the bottomNavigationView and the floatingActionButton
      * @param savedInstanceState If the activity is being re-initialized after
      *      *                           previously being shut down then this Bundle contains the data it most
@@ -59,8 +73,34 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
 
         // sets the toolbar to be on profile item.
         bottomToolbar.setSelectedItemId(R.id.profile);
-        // sets the profile page to be the first screen displayed after the main screen opens
-        getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
+        SharedPreferences prefs = this.getSharedPreferences("prefs", Context.MODE_PRIVATE);
+
+        if (!prefs.getBoolean("LoggedIn", false)) {
+            firstTimeLaunch(new mainActivityCallback() {
+                public void querySnapshot(AggregateQuerySnapshot querySnapshot) {
+                    snapshot = querySnapshot;
+                    System.out.println(snapshot.getCount());
+
+                    int numUsers = (int) snapshot.getCount();
+
+                    String username = "user" + String.valueOf(numUsers + 1);
+
+                    prefs.edit().putString("currentUser", username).commit();
+                    prefs.edit().putString("currentUserDisplayName", username).commit();
+                    prefs.edit().putBoolean("LoggedIn", true).commit();
+
+                    Map<String, Object> user = new HashMap<>();
+                    user.put("Username", username);
+                    user.put("Display Name", username);
+
+                    usersReference.document(username).set(user);
+                    // sets the profile page to be the first screen displayed after the main screen opens
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
+                }
+            });
+        } else {
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
+        }
 
         // floating action button that moves the fragment to the camera fragment
         addFab.setOnClickListener(view -> {
@@ -101,6 +141,20 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
             */
 
             return false;
+        });
+    }
+
+    public void firstTimeLaunch(final mainActivityCallback querySnapshot) {
+        AggregateQuery countQuery = usersReference.count();
+        countQuery.get(AggregateSource.SERVER).addOnCompleteListener(new OnCompleteListener<AggregateQuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<AggregateQuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    AggregateQuerySnapshot snapshot = task.getResult();
+                    snapshot = task.getResult();
+                    querySnapshot.querySnapshot(snapshot);
+                }
+            }
         });
     }
 }

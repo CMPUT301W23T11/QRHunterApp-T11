@@ -62,9 +62,15 @@ public class CameraFragment extends Fragment {
     SharedPreferences prefs;
 
     //https://firebase.google.com/docs/firestore/manage-data/add-data //TODO put this in a javadoc somewhere as an @reference?
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
-    CollectionReference QRCodesReference = db.collection("QRCodes");
-    CollectionReference usersReference = db.collection("Users");
+    FirebaseFirestore db;
+    CollectionReference QRCodesReference;
+    CollectionReference usersReference;
+
+    public CameraFragment(FirebaseFirestore db) {
+        this.db = db;
+        this.QRCodesReference = db.collection("QRCodes");
+        this.usersReference = db.collection("Users");
+    }
 
 
     /**
@@ -125,7 +131,6 @@ public class CameraFragment extends Fragment {
                         Intent intent = result.getData();
                         Bundle extras = intent.getExtras();
                         imageUrl = extras.getString("url");
-                        ;
                         promptForLocation(); // prompt for location once the TakePhotoActivity has finished
                     }
                 }
@@ -224,12 +229,11 @@ public class CameraFragment extends Fragment {
     }
 
 
-
     private static final int PERMISSIONS_REQUEST_LOCATION = 100; //TODO move to top of class for cleanliness?
     private GoogleApiClient googleApiClient; //TODO move to top of class for cleanliness?
 
     /**
-     *Connects the GoogleApiClient and initiates the permissions check
+     * Connects the GoogleApiClient and initiates the permissions check
      */
     private void connectGoogleApiClient() {
         googleApiClient = new GoogleApiClient.Builder(requireContext())
@@ -255,6 +259,7 @@ public class CameraFragment extends Fragment {
 
     /**
      * Retrieves the current location and logs the latitude and longitude of the location.
+     * Adds QRCode to db with location and returns to profile
      * TODO: adding location data to the QRCode is currently disabled due to a bug when displaying QR's on profile w/ location data
      * Adds QRCode to db and returns to profile
      */
@@ -270,7 +275,7 @@ public class CameraFragment extends Fragment {
                         double longitude = location.getLongitude();
                         Log.d("LocationPrompt", "Latitude: " + latitude + ", Longitude: " + longitude);
                         //set location and store
-                        //qrCode.setLocation(location);
+                        qrCode.setLocation(location);
                         addQRCode();
                         returnToProfile();
                     } else {
@@ -286,7 +291,7 @@ public class CameraFragment extends Fragment {
     }
 
     /**
-     *Initiates the location permission check and logs if permission is already granted
+     * Initiates the location permission check and logs if permission is already granted
      */
     private void permissions() {
         if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -304,12 +309,12 @@ public class CameraFragment extends Fragment {
     }
 
     /**
-     *Handles the user's response to the location permission request.
-     *Calls getCurrentLocation() if permission is granted, otherwise adds QRCode to db with location=null and returns to profile.
+     * Handles the user's response to the location permission request.
+     * Calls getCurrentLocation() if permission is granted, otherwise adds QRCode to db with location=null and returns to profile.
      *
-     *@param requestCode The request code of the permission request.
-     *@param permissions The requested permissions.
-     *@param grantResults The results of the permission request.
+     * @param requestCode  The request code of the permission request.
+     * @param permissions  The requested permissions.
+     * @param grantResults The results of the permission request.
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -380,6 +385,7 @@ public class CameraFragment extends Fragment {
         String id = qrCode.getHash();
         QRCodesReference.document(id).set(qrCode);
         usersReference.document(currentUser).collection("QR Codes").document(id).set(qrCode);
+        usersReference.document(currentUser).collection("QR Codes").document(qrCode.getHash()).update("photoList", FieldValue.arrayUnion(imageUrl));
         QRCodesReference.document(qrCode.getHash()).update("photoList", FieldValue.arrayUnion(imageUrl));
 
     }

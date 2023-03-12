@@ -82,7 +82,6 @@ public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterCl
         this.listener = listener;
     }
 
-
     public void setOnItemLongClickListener(OnItemLongClickListener listener) {
         this.listenerLong = listener;
     }
