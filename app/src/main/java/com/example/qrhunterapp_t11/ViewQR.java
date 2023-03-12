@@ -35,6 +35,8 @@ import java.util.ArrayList;
  * @reference https://stackoverflow.com/questions/6210895/listview-inside-scrollview-is-not-scrolling-on-android/17503823#17503823 by Moisés Olmedo, License: CC BY-SA 3.0 for scrollable comment box
  * @reference https://www.youtube.com/watch?v=LMdxZ8UC00k by Technical Skillz for the Comment box/comment layout in the qr_view layout, and the comment_box drawable CC BY
  * @reference https://icon-icons.com/icon/send-button/72565 by Icons.com for the send button CC Attribution
+ * @reference https://cloud.google.com/firestore/docs/manage-data/add-data for adding comment to db using arrayUnion
+ * @reference https://www.svgbackgrounds.com/license/ for liquid_cheese_background CC BY 4.0
  */
 public class ViewQR extends DialogFragment {
     private QRCode qrCode;
@@ -128,7 +130,7 @@ public class ViewQR extends DialogFragment {
         eyebrowsImageView.setImageResource((qrCode.getFaceList()).get(5));
 
         // If the QRCode has an associated photo, use Picasso to load it into the photoImageView (Rotated for some reason)
-        if (!qrCode.getPhotoList().isEmpty()){
+        if (qrCode.getPhotoList().get(0) != null){
             Picasso.with(getContext()).load(qrCode.getPhotoList().get(0)).into(photoImageView);
         }
 
@@ -175,8 +177,7 @@ public class ViewQR extends DialogFragment {
         return builder
                 .setView(view)
                 .setTitle(qrCode.getName())
-                .setNegativeButton("Cancel", null)
-                .setPositiveButton("Submit", new DialogInterface.OnClickListener() {
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
 
