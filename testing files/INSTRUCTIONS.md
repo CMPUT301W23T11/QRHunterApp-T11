@@ -15,6 +15,6 @@ select 'Camera'; place the test QR code (BFG5DGW54.png) image as the "wall" imag
 
 * once the code has been scanned, reject the prompt to take a photo
 
-* accept the prompt to share location; kill the app process, and the device should remember the permission of the QR scanner and permissions, so they will not have to be dealt with again during the tests
+* accept the prompt to share location; kill the app process, and the device should remember the position of the QR scanner and permissions, so they will not have to be dealt with again during the tests
 
 * run the camerafragment tests
