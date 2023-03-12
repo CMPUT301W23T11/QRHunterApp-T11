@@ -41,6 +41,7 @@ import java.util.Objects;
  * @reference <a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation for RecyclerView</a>
  */
 public class ProfileFragment extends Fragment {
+    private static final String TAG = "ProfileFragment";
     private final CollectionReference usersReference;
     private RecyclerView QRCodeRecyclerView;
     QRAdapter adapter;
@@ -63,7 +64,6 @@ public class ProfileFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        String TAG = "Profile";
         TextView loginUsernameTextView = view.findViewById(R.id.profile_name);
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 

@@ -35,27 +35,36 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");
     private BottomNavigationView bottomToolbar;
-    private FloatingActionButton addFab;
     private final ProfileFragment profileFragment = new ProfileFragment(db);
     private final SettingsFragment settingsFragment = new SettingsFragment();
     private final CameraFragment cameraFragment = new CameraFragment();
+    private final MapFragment mapFragment = new MapFragment();
     @Override
     public void ViewCode(QRCode qrCode) {}
 
-
+    /**
+    * Called after the activity launches and sets the activity content to the provided layout resource
+     * initializes the bottomNavigationView and the floatingActionButton
+     * @param savedInstanceState If the activity is being re-initialized after
+     *      *                           previously being shut down then this Bundle contains the data it most
+     *      *                           recently supplied in {@link #onSaveInstanceState}.  <b><i>Note: Otherwise it is null.</i></b>
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         bottomToolbar = findViewById(R.id.bottomToolbar);
-        addFab = findViewById(R.id.addFab);
+        FloatingActionButton addFab = findViewById(R.id.addFab);
 
+        // sets the toolbar to be on profile item.
         bottomToolbar.setSelectedItemId(R.id.profile);
+        // sets the profile page to be the first screen displayed after the main screen opens
         getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
 
         // floating action button that moves the fragment to the camera fragment
         addFab.setOnClickListener(view -> {
+            // sets the toolbar back to profile item
             bottomToolbar.setSelectedItemId(R.id.profile);
             getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, cameraFragment).commit();
 
@@ -64,24 +73,24 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
         // Changes the fragment based on which item is clicked on the toolbar
         bottomToolbar.setOnItemSelectedListener(item -> {
             switch (item.getItemId()) {
-                case R.id.profile:
+                case R.id.profile: // changes the main screen to the profile
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
 
                     return true;
 
                 case R.id.camera_placeholder:
+                    // when add button clicked, the selected item in the toolbar will be set back to the profile
                     bottomToolbar.setSelectedItemId(R.id.profile);
                     return true;
 
-                case R.id.settings:
+                case R.id.settings: // changes the main screen to settings
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, settingsFragment).commit();
 
                     return true;
 
-                case R.id.map:
-                    MapFragment mapFragment = new MapFragment();
-
+                case R.id.map: // changes the main screen to the map
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, mapFragment).commit();
+
                     return true;
 
                 // use 'case R.id.search:' for search/leaderboard fragment
