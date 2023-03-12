@@ -32,9 +32,9 @@ import java.util.ArrayList;
  * # of points, photo, and implements comments.
  *
  * @author Sarah Thomson
- * @reference https://stackoverflow.com/questions/6210895/listview-inside-scrollview-is-not-scrolling-on-android/17503823#17503823 by Moisés Olmedo, License: CC BY-SA 3.0
- * for scrollable comment box
- *
+ * @reference https://stackoverflow.com/questions/6210895/listview-inside-scrollview-is-not-scrolling-on-android/17503823#17503823 by Moisés Olmedo, License: CC BY-SA 3.0 for scrollable comment box
+ * @reference https://www.youtube.com/watch?v=LMdxZ8UC00k by Technical Skillz for the Comment box/comment layout in the qr_view layout, and the comment_box drawable CC BY
+ * @reference https://icon-icons.com/icon/send-button/72565 by Icons.com for the send button CC Attribution
  */
 public class ViewQR extends DialogFragment {
     private QRCode qrCode;
@@ -51,23 +51,33 @@ public class ViewQR extends DialogFragment {
     private ImageView eyesImageView, faceImageView, colourImageView, noseImageView, mouthImageView, eyebrowsImageView, photoImageView;
     private TextView pointsTV;
 
+    /**
+     * Empty constructor
+     */
     public ViewQR() {
         super();
     }
 
-    public ViewQR(QRCode qrCode, DocumentReference qrReference) {
+    /**
+     * Constructor used when an item in the recyclerview is clicked in the profile
+     * @param qrCode - qrCode object that was clicked
+     */
+    public ViewQR(QRCode qrCode) {
         super();
         this.qrCode = qrCode;
     }
 
     /**
      * Listener for the ViewQR dialog
-     *
      */
     interface ViewQRDialogListener {
         void ViewCode(QRCode qrCode);
     }
 
+    /**
+     * Called when dialog is first attached to context
+     * @param context - Context should be instance of ViewQR.ViewQRDialogListener
+     */
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -78,6 +88,12 @@ public class ViewQR extends DialogFragment {
         }
     }
 
+    /**
+     * Called when dialog is created
+     *
+     * @param savedInstanceState - The last saved instance state of the Fragment, or null if this is a freshly created Fragment.
+     * @return - builder
+     */
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -88,13 +104,8 @@ public class ViewQR extends DialogFragment {
 
         commentET = view.findViewById(R.id.editTextComment);
         commentIV = view.findViewById(R.id.imageViewSend);
-        commentList = qrCode.getCommentList();
         commentListView = view.findViewById(R.id.commentListView);
-        commentAdapter = new CommentAdapter(getContext(), commentList);
-        commentListView.setAdapter(commentAdapter);
         pointsTV = view.findViewById(R.id.pointsTV);
-        pointsTV.setText("Points: " + String.valueOf(qrCode.getPoints()));
-
         eyesImageView = view.findViewById(R.id.imageEyes);
         colourImageView = view.findViewById(R.id.imageColour);
         faceImageView = view.findViewById(R.id.imageFace);
@@ -102,6 +113,13 @@ public class ViewQR extends DialogFragment {
         mouthImageView = view.findViewById(R.id.imageMouth);
         eyebrowsImageView = view.findViewById(R.id.imageEyebrows);
         photoImageView = view.findViewById(R.id.imagePhoto);
+
+        commentList = qrCode.getCommentList();
+        commentAdapter = new CommentAdapter(getContext(), commentList);
+        commentListView.setAdapter(commentAdapter);
+        pointsTV.setText("Points: " + String.valueOf(qrCode.getPoints()));
+
+        // Creates the appearance of the qrCode based on the drawable ids stored in its faceList array
         colourImageView.setImageResource((qrCode.getFaceList()).get(2));
         eyesImageView.setImageResource((qrCode.getFaceList()).get(0));
         faceImageView.setImageResource((qrCode.getFaceList()).get(1));
@@ -109,9 +127,12 @@ public class ViewQR extends DialogFragment {
         mouthImageView.setImageResource((qrCode.getFaceList()).get(4));
         eyebrowsImageView.setImageResource((qrCode.getFaceList()).get(5));
 
+        // If the QRCode has an associated photo, use Picasso to load it into the photoImageView (Rotated for some reason)
         if (!qrCode.getPhotoList().isEmpty()){
             Picasso.with(getContext()).load(qrCode.getPhotoList().get(0)).into(photoImageView);
         }
+
+        // When the send image arrow ImageView is clicked, if a comment has been made it will be added to the QRCode object's saved array of comments and appear in the comment box with the associated user
         commentIV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
