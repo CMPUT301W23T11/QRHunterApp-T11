@@ -32,7 +32,7 @@ public class QRCodeTest {
     }
 
     /**
-     * Used this website for "ultimate nasty string" test as even Bash's Echo | SHA256 stopped reading with ';' chars inserted
+     * @reference this website for verifying "ultimate nasty string" test as even Bash's Echo | SHA256 stopped reading with ';' chars inserted
      * https://emn178.github.io/online-tools/sha256.html (verified website output matched all other previous outputs)
      */
     @Test
@@ -73,7 +73,8 @@ public class QRCodeTest {
         // test emojis w/o \n
         // uniqueName() in QRCode constructor crashes program with this input string,
         // if you run this test with uniqueName disabled, assertion passes
-        //QRCode qrCode9 = mockQR("😭😭😭😭");
-        //Assertions.assertEquals("d1a885c6433d38a8cd1c486196a3b5fe6cb7105ad8f9e30bde61680b43adc4dd", qrCode9.getHash());
+        // problem resolved test, now passes
+        QRCode qrCode9 = mockQR("😭😭😭😭");
+        Assertions.assertEquals("d1a885c6433d38a8cd1c486196a3b5fe6cb7105ad8f9e30bde61680b43adc4dd", qrCode9.getHash());
     }
 }
