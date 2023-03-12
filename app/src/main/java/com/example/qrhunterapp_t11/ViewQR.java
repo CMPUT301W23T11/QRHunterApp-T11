@@ -17,6 +17,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+
 import java.util.ArrayList;
 
 /**
@@ -36,7 +39,7 @@ public class ViewQR extends DialogFragment {
         super();
     }
 
-    public ViewQR(QRCode qrCode){
+    public ViewQR(QRCode qrCode, DocumentReference qrReference){
         super();
         this.qrCode = qrCode;
     }
