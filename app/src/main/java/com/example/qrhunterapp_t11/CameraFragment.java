@@ -67,6 +67,7 @@ public class CameraFragment extends Fragment {
     CollectionReference usersReference;
 
     public CameraFragment(FirebaseFirestore db) {
+        this.db = db;
         this.QRCodesReference = db.collection("QRCodes");
         this.usersReference = db.collection("Users");
     }

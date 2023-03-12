@@ -152,13 +152,7 @@ public class ViewQR extends DialogFragment {
         return builder
                 .setView(view)
                 .setTitle(qrCode.getName())
-                .setNegativeButton("Cancel", null)
-                .setPositiveButton("Submit", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                    }
-                })
+                .setNegativeButton("Back", null)
                 .create();
     }
 }
