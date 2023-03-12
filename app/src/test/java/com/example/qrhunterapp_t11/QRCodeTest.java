@@ -55,6 +55,9 @@ public class QRCodeTest {
         QRCode qrCode2 = mockQR("");
         Assertions.assertEquals("Young Boldomentas", qrCode2.getName());
 
+        QRCode qrCode3 = mockQR("😭😭😭😭");
+        Assertions.assertEquals("Young Laldomenmor", qrCode3.getName());
+
         //simple test to make sure the hash to binary works correctly
         name = QRCode.uniqueName("080000");
         Assertions.assertEquals("Big Largamengog", name);
@@ -62,6 +65,9 @@ public class QRCodeTest {
         //simple test to make sure the hash to binary works correctly
         name = QRCode.uniqueName("07ffff");
         Assertions.assertEquals("Old Sigsurolfli", name);
+
+        name = QRCode.uniqueName("d1a885c6433d38a8cd1c486196a3b5fe6cb7105ad8f9e30bde61680b43adc4dd");
+        Assertions.assertEquals("Young Laldomenmor", name);
 
     }
 

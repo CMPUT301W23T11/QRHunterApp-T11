@@ -248,24 +248,10 @@ public class QRCode {
         };
 
         int hashSmall = Integer.parseInt(hash.substring(0, 5), 16);
-        System.out.println("eyes1: " + R.drawable.eyes1);
-        System.out.println("eyes2: " + R.drawable.eyes2);
-        System.out.println("eyebrows1: " + R.drawable.eyebrows1);
-        System.out.println("eyebrows2: " + R.drawable.eyebrows2);
-        System.out.println("colour1: " + R.drawable.colour1);
-        System.out.println("colour2: " + R.drawable.colour2);
-        System.out.println("nose1: " + R.drawable.nose1);
-        System.out.println("nose2: " + R.drawable.nose2);
-        System.out.println("mouth1: " + R.drawable.mouth1);
-        System.out.println("mouth2: " + R.drawable.mouth2);
-        System.out.println("face1 " + R.drawable.face1);
-        System.out.println("face2 " + R.drawable.face2);
-        System.out.println("hashSmall: " + hashSmall);
 
         ArrayList<Integer> faceList = new ArrayList<>();
 
         String hashBinary = Integer.toBinaryString(hashSmall).substring(1);
-        System.out.println("hashbinary: " + hashBinary);
 
         faceList.add(eyesNumbers[hashBinary.charAt(0) - '0']);
         faceList.add(eyebrowsNumbers[hashBinary.charAt(1) - '0']);
@@ -324,9 +310,9 @@ public class QRCode {
         for (int i = 0, j = 0; i <= 17; i = i + 3, j = j + 4) {
 
             Integer num = Integer.parseInt(String.valueOf(hashBinary.charAt(i))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i + 1))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i + 2)));
-            //System.out.println("hash " + hashBinary);
-            //System.out.println("num: " + num);
-            //System.out.println("j: " + j);
+            System.out.println("hash " + hashBinary);
+            System.out.println("num: " + num);
+            System.out.println("j: " + j);
             if (num == 0) {
                 newName = newName + nameParts[j];
             } else if (num == 1) {
