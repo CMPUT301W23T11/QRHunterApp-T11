@@ -30,7 +30,7 @@ import java.util.ArrayList;
  * @reference <a href="https://www.geeksforgeeks.org/how-to-create-fragment-using-bottom-navigation-in-social-media-android-app/">How to use fragments with a bottom navigation bar</a>
  * @reference <a href="https://youtu.be/x6-_va1R788">How to set up and align a floating action button on the BottomNavigationView</a>
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDialogListener{
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");
@@ -39,6 +39,9 @@ public class MainActivity extends AppCompatActivity {
     private final ProfileFragment profileFragment = new ProfileFragment(db);
     private final SettingsFragment settingsFragment = new SettingsFragment();
     private final CameraFragment cameraFragment = new CameraFragment();
+    @Override
+    public void ViewCode(QRCode qrCode) {}
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

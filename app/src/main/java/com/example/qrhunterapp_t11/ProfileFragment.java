@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -20,11 +21,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.text.MessageFormat;
+import java.util.Objects;
 
 
 /**
@@ -39,7 +43,7 @@ import java.text.MessageFormat;
 public class ProfileFragment extends Fragment {
     private final CollectionReference usersReference;
     private RecyclerView QRCodeRecyclerView;
-    FirestoreRecyclerAdapter<QRCode, RecyclerViewHolder> adapter;
+    QRAdapter adapter;
     FirestoreRecyclerOptions<QRCode> options;
 
     /**
@@ -51,6 +55,8 @@ public class ProfileFragment extends Fragment {
     public ProfileFragment(FirebaseFirestore db) {
         this.usersReference = db.collection("Users");
     }
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -78,23 +84,9 @@ public class ProfileFragment extends Fragment {
                 .setQuery(query, QRCode.class)
                 .build();
 
-        adapter = new FirestoreRecyclerAdapter<QRCode, RecyclerViewHolder>(options) {
-            @Override
-            public void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position, @NonNull QRCode model) {
-                // Bind the QRCode object to the RecyclerViewHolder
-                holder.QRCodeName.setText(model.getName());
-                holder.QRCodePoints.setText("Points: " + model.getPoints());
-                holder.QRCodeNumComments.setText("Comments: " + model.getCommentList().size());
-            }
+        adapter = new QRAdapter(options);
 
-            @Override
-            public RecyclerViewHolder onCreateViewHolder(ViewGroup group, int i) {
-                View view = LayoutInflater.from(group.getContext())
-                        .inflate(R.layout.qrcode_profile_view, group, false);
 
-                return new RecyclerViewHolder(view);
-            }
-        };
         //super.onStart(); man idk
         adapter.startListening();
         QRCodeRecyclerView.setAdapter(adapter);
@@ -152,6 +144,20 @@ public class ProfileFragment extends Fragment {
             }
             Log.d(TAG, "num of QR: " + value.size());
             totalQRCodesText.setText(MessageFormat.format("Total number of QR codes: {0}", value.size()));
+        });
+
+        adapter.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(DocumentSnapshot documentSnapshot, int position) {
+
+                QRCode qrCode = documentSnapshot.toObject(QRCode.class);
+                DocumentReference QrReference = documentSnapshot.getReference();
+                String documentId = documentSnapshot.getId();
+
+                System.out.println("click position " + position);
+                new ViewQR(qrCode, QrReference).show(getActivity().getSupportFragmentManager(), "Show QR");
+
+            }
         });
 
         return view;
