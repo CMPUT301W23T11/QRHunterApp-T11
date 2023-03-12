@@ -19,12 +19,12 @@ import io.reactivex.rxjava3.annotations.NonNull;
  * @author Afra, Sarah
  * @reference <a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation</a>
  */
-public class QRAdapter extends FirestoreRecyclerAdapter<QRCode, QRAdapter.RecyclerViewHolder> {
+public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapter.RecyclerViewHolder> {
 
-    //private OnItemClickListener listener;
+
     private OnItemLongClickListener listenerLong;
 
-    public QRAdapter(@NonNull FirestoreRecyclerOptions<QRCode> options) {
+    public QRAdapterClass(@NonNull FirestoreRecyclerOptions<QRCode> options) {
         super(options);
     }
 
@@ -56,15 +56,7 @@ public class QRAdapter extends FirestoreRecyclerAdapter<QRCode, QRAdapter.Recycl
             QRCodePoints = itemView.findViewById(R.id.qrcode_points);
             QRCodeNumComments = itemView.findViewById(R.id.qrcode_numcomments);
 
-//            itemView.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//                    int position = getAdapterPosition();
-//                    if (position != RecyclerView.NO_POSITION && listener != null) {
-//                        listener.onItemClick(getSnapshots().getSnapshot(position), position);
-//                    }
-//                }
-//            });
+
 
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
@@ -79,9 +71,7 @@ public class QRAdapter extends FirestoreRecyclerAdapter<QRCode, QRAdapter.Recycl
         }
     }
 
-//    public void setOnItemClickListener(OnItemClickListener listener) {
-//        this.listener = listener;
-//    }
+
 
     public void setOnItemLongClickListener(OnItemLongClickListener listener) {
         this.listenerLong = listener;
