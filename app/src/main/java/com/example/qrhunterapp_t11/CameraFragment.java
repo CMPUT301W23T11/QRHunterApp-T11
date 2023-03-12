@@ -124,7 +124,8 @@ public class CameraFragment extends Fragment {
                     public void onActivityResult(ActivityResult result) {
                         Intent intent = result.getData();
                         Bundle extras = intent.getExtras();
-                        imageUrl = extras.getString("url");;
+                        imageUrl = extras.getString("url");
+                        ;
                         promptForLocation(); // prompt for location once the TakePhotoActivity has finished
                     }
                 }
@@ -195,11 +196,11 @@ public class CameraFragment extends Fragment {
                         .setCancelable(false)
                         .setPositiveButton("Yes", new
                                 DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                Log.d("PhotoPrompt", "User accepted photo prompt.");
-                                takePhoto();
-                            }
-                        })
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        Log.d("PhotoPrompt", "User accepted photo prompt.");
+                                        takePhoto();
+                                    }
+                                })
                         .setNegativeButton("No", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -217,7 +218,7 @@ public class CameraFragment extends Fragment {
      *
      * @reference Paul Thompson - https://stackoverflow.com/questions/28619113/start-a-new-activity-from-fragment - how to start an activity from within a fragment
      */
-    private void takePhoto(){
+    private void takePhoto() {
         Intent intent = new Intent(getActivity(), TakePhotoActivity.class);
         photoLauncher.launch(intent);
     }
@@ -373,7 +374,7 @@ public class CameraFragment extends Fragment {
     /**
      * Helper function to add QRCode object to QRCodes and Users collections
      */
-    private void addQRCode(){
+    private void addQRCode() {
         String currentUser = prefs.getString("currentUser", null);
         String id = qrCode.getHash();
         QRCodesReference.document(id).set(qrCode);

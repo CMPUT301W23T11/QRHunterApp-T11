@@ -8,7 +8,7 @@
     <group
         android:name="layer1"
         android:translateX="27.653225"
-        android:translateY="-16.911289">
+        android:translateY="-14.911289">
         <path
             android:name="path277"
             android:fillColor="#000000"

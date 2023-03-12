@@ -14,6 +14,6 @@
     <string name="your_total_score_text">Your total score:</string>
     <string name="your_top_qr_code_text">Your top QR code:</string>
     <string name="your_lowest_qr_code_text">Your lowest QR code:</string>
-    <string name="your_total_qr_codes_text">Your total QR codes:</string>
+    <string name="your_total_qr_codes_text">Your total QR Codes:</string>
     <string name="collection_header">COLLECTION</string>
 </resources>
