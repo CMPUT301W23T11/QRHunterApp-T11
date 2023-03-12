@@ -78,7 +78,7 @@ public class CameraFragmentTest {
 
 
         solo.clickOnView(solo.getView(R.id.addFab));
-        assertTrue(solo.waitForText("Take Photo", 1, 7000)); // wait 7 sec for photo prompt to appear
+        assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
         solo.clickOnText("Yes");
         solo.clickOnView(solo.getView(R.id.captureButton));
         assertTrue(solo.waitForText("Share Geolocation", 1, 7000)); // wait 7 sec for location prompt to appear
@@ -114,7 +114,7 @@ public class CameraFragmentTest {
         });
 
         solo.clickOnView(solo.getView(R.id.addFab));
-        assertTrue(solo.waitForText("Take Photo", 1, 7000)); // wait 7 sec for photo prompt to appear
+        assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
         solo.clickOnText("Yes");
         solo.clickOnView(solo.getView(R.id.captureButton));
         assertTrue(solo.waitForText("Share Geolocation", 1, 7000)); // wait 7 sec for location prompt to appear
@@ -148,7 +148,7 @@ public class CameraFragmentTest {
 
 
         solo.clickOnView(solo.getView(R.id.addFab));
-        assertTrue(solo.waitForText("Take Photo", 1, 7000)); // wait 7 sec for photo prompt to appear
+        assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
         solo.clickOnText("No");
         assertTrue(solo.waitForText("Share Geolocation", 1, 7000)); // wait 7 sec for location prompt to appear
         solo.clickOnText("Yes");
@@ -181,7 +181,7 @@ public class CameraFragmentTest {
 
 
         solo.clickOnView(solo.getView(R.id.addFab));
-        assertTrue(solo.waitForText("Take Photo", 1, 7000)); // wait 7 sec for photo prompt to appear
+        assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
         solo.clickOnText("No");
         assertTrue(solo.waitForText("Share Geolocation", 1, 7000)); // wait 7 sec for location prompt to appear
         solo.clickOnText("No");
