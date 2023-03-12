@@ -165,8 +165,6 @@ public class ProfileFragment extends Fragment {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
-                QRCode qrCode = documentSnapshot.toObject(QRCode.class);
-                DocumentReference QrReference = documentSnapshot.getReference();
                 String documentId = documentSnapshot.getId();
 
                 builder
@@ -175,7 +173,7 @@ public class ProfileFragment extends Fragment {
                         .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-
+                                usersReference.document(username).collection("QR Codes").document(documentId).delete();
                             }
                         })
                         .create();
