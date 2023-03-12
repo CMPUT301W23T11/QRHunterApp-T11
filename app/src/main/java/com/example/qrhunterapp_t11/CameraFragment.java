@@ -125,7 +125,6 @@ public class CameraFragment extends Fragment {
                         Intent intent = result.getData();
                         Bundle extras = intent.getExtras();
                         imageUrl = extras.getString("url");
-                        ;
                         promptForLocation(); // prompt for location once the TakePhotoActivity has finished
                     }
                 }
@@ -379,6 +378,7 @@ public class CameraFragment extends Fragment {
         String id = qrCode.getHash();
         QRCodesReference.document(id).set(qrCode);
         usersReference.document(currentUser).collection("QR Codes").document(id).set(qrCode);
+        usersReference.document(currentUser).collection("QR Codes").document(qrCode.getHash()).update("photoList", FieldValue.arrayUnion(imageUrl));
         QRCodesReference.document(qrCode.getHash()).update("photoList", FieldValue.arrayUnion(imageUrl));
 
     }

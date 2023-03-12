@@ -68,9 +68,10 @@ public class ProfileFragment extends Fragment {
         TextView loginUsernameTextView = view.findViewById(R.id.profile_name);
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
-        String username = prefs.getString("currentUserDisplayName", null);
+        String usernameDisplay = prefs.getString("currentUserDisplayName", null);
+        String username = prefs.getString("currentUser", null);
 
-        loginUsernameTextView.setText(username);
+        loginUsernameTextView.setText(usernameDisplay);
 
         TextView totalScoreText = view.findViewById(R.id.totalScoreText);
         TextView topQRCodeText = view.findViewById(R.id.topQRText);
@@ -81,7 +82,7 @@ public class ProfileFragment extends Fragment {
             public void noCodes(boolean noCodes) {
                 userHasNoCodes = noCodes;
 
-                if (userHasNoCodes) {
+                if (!userHasNoCodes) {
                     CollectionReference QRColl = usersReference.document(username).collection("QR Codes");
 
                     QRCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);

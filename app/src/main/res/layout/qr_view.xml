@@ -82,45 +82,11 @@
                     app:srcCompat="@drawable/eyebrows1" />
 
                 <TextView
-                    android:id="@+id/pointsTV1"
+                    android:id="@+id/pointsTV"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="3dp"
                     android:text="Points:"
-                    android:textSize="20dp"
-                    android:textColor="#000000"
-                    app:layout_constraintBottom_toTopOf="@+id/scannedBy2"
-                    app:layout_constraintStart_toEndOf="@+id/imageColour" />
-
-                <TextView
-                    android:id="@+id/pointsTV2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="3dp"
-                    android:text="TextView"
-                    android:textSize="20dp"
-                    android:textColor="#000000"
-                    app:layout_constraintBottom_toTopOf="@+id/scannedBy2"
-                    app:layout_constraintStart_toEndOf="@+id/pointsTV1" />
-
-                <TextView
-                    android:id="@+id/scannedBy1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="3dp"
-                    android:text="3"
-                    android:textSize="20dp"
-                    android:textColor="#000000"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/scannedBy2"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/scannedBy2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="3dp"
-                    android:text="Total scans:"
                     android:textColor="#000000"
                     android:textSize="20dp"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -132,13 +98,12 @@
         </androidx.appcompat.widget.LinearLayoutCompat>
 
         <ImageView
-            android:id="@+id/imageView4"
+            android:id="@+id/imagePhoto"
             android:layout_width="284dp"
             android:layout_height="258dp"
             android:layout_marginTop="15dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:alpha=".50"
             app:layout_constraintTop_toBottomOf="@+id/linearLayoutCompat"
             app:srcCompat="@drawable/add_image" />
 
@@ -152,7 +117,7 @@
             android:padding="15dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageView4">
+            app:layout_constraintTop_toBottomOf="@+id/imagePhoto">
 
             <ListView
                 android:id="@+id/commentListView"
