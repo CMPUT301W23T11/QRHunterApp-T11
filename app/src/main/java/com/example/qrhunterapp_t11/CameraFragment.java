@@ -269,7 +269,7 @@ public class CameraFragment extends Fragment {
                         double longitude = location.getLongitude();
                         Log.d("LocationPrompt", "Latitude: " + latitude + ", Longitude: " + longitude);
                         //set location and store
-                        qrCode.setLocation(location);
+                        //qrCode.setLocation(location);
                         addQRCode();
                         returnToProfile();
                     } else {

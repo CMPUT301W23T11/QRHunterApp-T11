@@ -64,7 +64,7 @@ public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterCl
                         listener.onItemClick(getSnapshots().getSnapshot(position), position);
                     }
                 }
-           });
+            });
 
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
@@ -82,7 +82,6 @@ public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterCl
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
-
 
 
     public void setOnItemLongClickListener(OnItemLongClickListener listener) {
