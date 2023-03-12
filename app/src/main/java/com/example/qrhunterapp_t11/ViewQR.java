@@ -35,35 +35,39 @@ public class ViewQR extends DialogFragment {
     private CommentAdapter commentAdapter;
     private ImageView commentIV;
     private EditText commentET;
-    public ViewQR(){
+
+    public ViewQR() {
         super();
     }
 
-    public ViewQR(QRCode qrCode, DocumentReference qrReference){
+    public ViewQR(QRCode qrCode, DocumentReference qrReference) {
         super();
         this.qrCode = qrCode;
     }
 
-    public ViewQR(QRCode qrCode ,Integer pos){
+    public ViewQR(QRCode qrCode, Integer pos) {
         super();
         this.qrCode = qrCode;
-        this.pos=pos;
+        this.pos = pos;
     }
+
     interface ViewQRDialogListener {
         void ViewCode(QRCode qrCode);
     }
+
     private ViewQR.ViewQRDialogListener listener;
     private ImageView eyesImageView, faceImageView, colourImageView, noseImageView, mouthImageView, eyebrowsImageView;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        if (context instanceof ViewQR.ViewQRDialogListener){
+        if (context instanceof ViewQR.ViewQRDialogListener) {
             listener = (ViewQR.ViewQRDialogListener) context;
         } else {
             throw new RuntimeException(context + " must implement DialogListener");
         }
     }
+
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -106,9 +110,9 @@ public class ViewQR extends DialogFragment {
             }
         });
 
-         //This OnTouchListener code block came from Moisés Olmedo to make a list view be scrollable within a scrollview.
-         //Link: https://stackoverflow.com/questions/6210895/listview-inside-scrollview-is-not-scrolling-on-android/17503823#17503823
-         //License: CC BY-SA 3.0
+        //This OnTouchListener code block came from Moisés Olmedo to make a list view be scrollable within a scrollview.
+        //Link: https://stackoverflow.com/questions/6210895/listview-inside-scrollview-is-not-scrolling-on-android/17503823#17503823
+        //License: CC BY-SA 3.0
         commentListView.setOnTouchListener(new ListView.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {

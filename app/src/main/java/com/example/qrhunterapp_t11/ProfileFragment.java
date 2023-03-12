@@ -28,6 +28,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Objects;
 
 
@@ -55,8 +56,6 @@ public class ProfileFragment extends Fragment {
     public ProfileFragment(FirebaseFirestore db) {
         this.usersReference = db.collection("Users");
     }
-
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -157,6 +156,31 @@ public class ProfileFragment extends Fragment {
                 System.out.println("click position " + position);
                 new ViewQR(qrCode, QrReference).show(getActivity().getSupportFragmentManager(), "Show QR");
 
+            }
+        });
+
+        adapter.setOnItemLongClickListener(new OnItemLongClickListener() {
+            @Override
+            public void onItemLongClick(DocumentSnapshot documentSnapshot, int position) {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+
+                QRCode qrCode = documentSnapshot.toObject(QRCode.class);
+                DocumentReference QrReference = documentSnapshot.getReference();
+                String documentId = documentSnapshot.getId();
+
+                builder
+                        .setTitle("Delete QR Code?")
+                        .setNegativeButton("Cancel", null)
+                        .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                            }
+                        })
+                        .create();
+
+                builder.show();
             }
         });
 

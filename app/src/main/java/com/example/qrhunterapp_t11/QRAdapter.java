@@ -15,9 +15,10 @@ import io.reactivex.rxjava3.annotations.NonNull;
 
 public class QRAdapter extends FirestoreRecyclerAdapter<QRCode, QRAdapter.RecyclerViewHolder> {
 
-    private  OnItemClickListener listener;
+    private OnItemClickListener listener;
+    private OnItemLongClickListener listenerLong;
 
-    public QRAdapter(@NonNull FirestoreRecyclerOptions<QRCode> options){
+    public QRAdapter(@NonNull FirestoreRecyclerOptions<QRCode> options) {
         super(options);
     }
 
@@ -36,6 +37,7 @@ public class QRAdapter extends FirestoreRecyclerAdapter<QRCode, QRAdapter.Recycl
 
         return new RecyclerViewHolder(view);
     }
+
     public class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
         public TextView QRCodeName;
@@ -52,17 +54,31 @@ public class QRAdapter extends FirestoreRecyclerAdapter<QRCode, QRAdapter.Recycl
                 @Override
                 public void onClick(View view) {
                     int position = getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION && listener != null){
+                    if (position != RecyclerView.NO_POSITION && listener != null) {
                         listener.onItemClick(getSnapshots().getSnapshot(position), position);
                     }
+                }
+            });
+
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION && listener != null) {
+                        listenerLong.onItemLongClick(getSnapshots().getSnapshot(position), position);
+                    }
+                    return true;
                 }
             });
         }
     }
 
-    public void setOnItemClickListener(OnItemClickListener listener){
+    public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
 
+    public void setOnItemLongClickListener(OnItemLongClickListener listener) {
+        this.listenerLong = listener;
+    }
 
 }
