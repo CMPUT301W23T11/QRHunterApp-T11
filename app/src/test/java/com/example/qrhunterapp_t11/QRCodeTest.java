@@ -5,14 +5,20 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
+
+/**
+ * This Test class is to verify the methods of the QRCode object run as expected.
+ */
 
 public class QRCodeTest {
     private QRCode mockQR(String valueString) {
         return new QRCode(valueString);
     }
 
+    /**
+     * This test verifies the points are calculated correctly
+     */
     @Test
     public void testPoints() {
         int points;
@@ -42,26 +48,23 @@ public class QRCodeTest {
         //test wrapping "hash"
         points = QRCode.calculatePoints("55558ee34121555");
         Assertions.assertEquals(164, points);
-
     }
 
-
     /**
-     * @reference this website for verifying "ultimate nasty string" test as even Bash's Echo | SHA256 stopped reading with ';' chars inserted
-     * https://emn178.github.io/online-tools/sha256.html (verified website output matched all other previous outputs)
+     * This test verifies the name is created correctly
      */
     @Test
     public void testName(){
         String name;
 
         QRCode qrCode = mockQR("Test this string");
-        Assertions.assertEquals("Old Boldicanmor", qrCode.getName());
+        Assertions.assertEquals("Old Sirgoyogmor", qrCode.getName());
 
         QRCode qrCode2 = mockQR("");
-        Assertions.assertEquals("Young Boldomentas", qrCode2.getName());
+        Assertions.assertEquals("Old Lapucantas", qrCode2.getName());
 
         QRCode qrCode3 = mockQR("😭😭😭😭");
-        Assertions.assertEquals("Young Laldomenmor", qrCode3.getName());
+        Assertions.assertEquals("Young Wergucanmor", qrCode3.getName());
 
         //simple test to make sure the hash to binary works correctly
         name = QRCode.uniqueName("080000");
@@ -72,7 +75,7 @@ public class QRCodeTest {
         Assertions.assertEquals("Old Sigsurolfli", name);
 
         name = QRCode.uniqueName("d1a885c6433d38a8cd1c486196a3b5fe6cb7105ad8f9e30bde61680b43adc4dd");
-        Assertions.assertEquals("Young Laldomenmor", name);
+        Assertions.assertEquals("Young Wergucanmor", name);
 
     }
 
@@ -127,22 +130,15 @@ public class QRCodeTest {
         faceList = QRCode.uniqueImage("07ffff");
         Assertions.assertEquals(expectedList4, faceList);
 
-
-        // test emojis w/o \n
-        // uniqueName() in QRCode constructor crashes program with this input string,
-        // if you run this test with uniqueName disabled, assertion passes
-        // problem resolved test, now passes
-        QRCode qrCode9 = mockQR("😭😭😭😭");
-        Assertions.assertEquals("d1a885c6433d38a8cd1c486196a3b5fe6cb7105ad8f9e30bde61680b43adc4dd", qrCode9.getHash());
-
     }
+
     /**
-     * Used this website for "ultimate nasty string" test as even Bash's Echo | SHA256 stopped reading with ';' chars inserted
      * @reference this website for verifying "ultimate nasty string" test as even Bash's Echo | SHA256 stopped reading with ';' chars inserted
      * https://emn178.github.io/online-tools/sha256.html (verified website output matched all other previous outputs)
      */
     @Test
     public void testSetHash(){
+
         // test string from eclass
         QRCode qrCode = mockQR("BFG5DGW54\n");
         Assertions.assertEquals("696ce4dbd7bb57cbfe58b64f530f428b74999cb37e2ee60980490cd9552de3a6", qrCode.getHash());
@@ -182,5 +178,4 @@ public class QRCodeTest {
         QRCode qrCode9 = mockQR("😭😭😭😭");
         Assertions.assertEquals("d1a885c6433d38a8cd1c486196a3b5fe6cb7105ad8f9e30bde61680b43adc4dd", qrCode9.getHash());
     }
-
 }

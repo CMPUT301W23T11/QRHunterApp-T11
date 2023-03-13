@@ -18,6 +18,9 @@ import io.reactivex.rxjava3.annotations.NonNull;
  *
  * @author Afra, Sarah
  * @reference <a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation</a>
+ * @reference https://www.youtube.com/watch?v=3WR4QAiVuCw by Coding in Flow for adding OnClick functionality to the recyclerView CC BY
+ * @reference https://www.youtube.com/watch?v=JLW7z_AaUHA by Akshay Jhajhra for more help with the OnClick CC BY
+ * @reference https://www.youtube.com/watch?v=k7GR3h5OsXk by Technical Skillz for FirebaseRecyclerOptions help
  */
 public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterClass.RecyclerViewHolder> {
     private OnItemClickListener listener;
@@ -43,6 +46,9 @@ public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterCl
         return new RecyclerViewHolder(view);
     }
 
+    /**
+     * Holds the layout and Click functionalities for each item in the recyclerView
+     */
     public class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
         public TextView QRCodeName;
@@ -55,6 +61,7 @@ public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterCl
             QRCodePoints = itemView.findViewById(R.id.qrcode_points);
             QRCodeNumComments = itemView.findViewById(R.id.qrcode_numcomments);
 
+            // This click listener responds to clicks done on an item in the recyclerview
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -78,6 +85,10 @@ public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterCl
         }
     }
 
+    /**
+     * Sets the OnClickListener
+     * @param listener - OnItemClickListener
+     */
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
