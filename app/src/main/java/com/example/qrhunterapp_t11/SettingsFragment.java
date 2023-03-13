@@ -25,6 +25,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -110,25 +111,31 @@ public class SettingsFragment extends Fragment {
 
     public void usernameCheck(String usernameString, EditText usernameEditText, final settingsCallback usernameValid) {
 
-        // Check if field is empty
+        // Check if username matches Firestore document ID guidelines
         if (usernameString.length() == 0) {
             usernameEditText.setError("Field cannot be blank");
+        }
+        else if (usernameString.contains("/")) {
+            usernameEditText.setError("Invalid character: '/'");
+        }
+        else if (usernameString.equals(".") || usernameString.equals("..")) {
+            usernameEditText.setError("Invalid username");
+        }
+        else if (usernameString.equals("__.*__")) {
+            usernameEditText.setError("Invalid username");
         }
 
         // Check if username exists already
         else {
-            DocumentReference usernameReference = usersReference.document(usernameString);
-            usernameReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            usersReference.whereEqualTo("Display Name", usernameString).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
                     if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-
-                        if (document.exists()) {
+                        if (task.getResult().isEmpty()) {
+                            usernameValid.usernameValid(true);
+                        } else {
                             usernameEditText.setError("Username is not unique");
                             usernameValid.usernameValid(false);
-                        } else {
-                            usernameValid.usernameValid(true);
                         }
                     }
                 }

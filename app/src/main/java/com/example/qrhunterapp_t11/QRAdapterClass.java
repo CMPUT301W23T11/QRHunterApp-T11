@@ -49,6 +49,7 @@ public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterCl
     /**
      * Holds the layout and Click functionalities for each item in the recyclerView
      */
+
     public class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
         public TextView QRCodeName;
@@ -62,6 +63,7 @@ public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterCl
             QRCodeNumComments = itemView.findViewById(R.id.qrcode_numcomments);
 
             // This click listener responds to clicks done on an item in the recyclerview
+
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -72,6 +74,7 @@ public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterCl
                 }
             });
 
+            // Long click listener for deletion
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
@@ -93,6 +96,12 @@ public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterCl
         this.listener = listener;
     }
 
+    /**
+     * Constructor for OnItemLongClickListener
+     *
+     * @param listener OnItemLongClickListener object
+     * @see OnItemLongClickListener
+     */
     public void setOnItemLongClickListener(OnItemLongClickListener listener) {
         this.listenerLong = listener;
     }

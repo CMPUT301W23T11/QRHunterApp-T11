@@ -1,9 +1,16 @@
 package com.example.qrhunterapp_t11;
 
+import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
+
 import androidx.annotation.NonNull;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Point;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -15,6 +22,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.robotium.solo.Solo;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,12 +32,15 @@ import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
 /**
  * Intent tests for the camera fragment.
  *
  * @author Aidan Lynch - writing the tests.
  * @author afra - set up querying information from the database.
- *
  * @reference code mostly repurposed from lab 7.
  */
 public class CameraFragmentTest {
@@ -38,22 +49,66 @@ public class CameraFragmentTest {
     }
 
     private Solo solo;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private CollectionReference QRCodesReference = db.collection("QRCodes");
-    private boolean docexists;
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final CollectionReference usersReference = db.collection("Users");
+    private final CollectionReference QRCodesReference = db.collection("QRCodes");
+    private boolean docExists;
+    private SharedPreferences prefs;
+    private final Random rand = new Random();
+    private final String testUser = "testUser" + rand.nextInt(1000);
 
     @Rule
-    public ActivityTestRule<MainActivity> rule =
-            new ActivityTestRule<>(MainActivity.class, true, true);
+    public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
+
+        // Set SharedPreferences to initialize a new user before the activity is launched
+        @Override
+        protected void beforeActivityLaunched() {
+            super.beforeActivityLaunched();
+            prefs = getApplicationContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+            String username;
+            String displayName;
+
+            prefs.edit().clear().commit();
+            prefs.edit().putBoolean("LoggedIn", true).commit();
+            prefs.edit().putString("currentUser", testUser).commit();
+            prefs.edit().putString("currentUserDisplayName", testUser).commit();
+
+            username = prefs.getString("currentUser", null);
+            displayName = prefs.getString("currentUserDisplayName", null);
+
+            assertEquals(testUser, username);
+            assertEquals(testUser, displayName);
+        }
+    };
 
     /**
      * Runs before all tests and creates solo instance.
-     *
-     * @throws Exception
      */
     @Before
-    public void setUp() throws Exception {
-        solo = new Solo(InstrumentationRegistry.getInstrumentation(), rule.getActivity());
+    public final void setUp() {
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        rule.launchActivity(intent);
+        Activity activity = rule.getActivity();
+
+        Map<String, Object> user = new HashMap<>();
+        user.put("Username", testUser);
+        user.put("Display Name", testUser);
+
+        usersReference.document(testUser).set(user);
+
+        solo = new Solo(InstrumentationRegistry.getInstrumentation(), activity);
+    }
+
+    /**
+     * Clear SharedPreferences and close the activity after each test
+     */
+    @After
+    public final void tearDown() {
+        Activity activity = rule.getActivity();
+        prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        prefs.edit().clear().commit();
+        usersReference.document(testUser).delete();
+        solo.finishOpenedActivities();
     }
 
     //TODO add start function that accepts initial prompts or something, hopefully that is enough
@@ -70,14 +125,17 @@ public class CameraFragmentTest {
 
         checkDocExists(testHash, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
-                docexists = valid;
-                assertFalse(docexists);
+                docExists = valid;
+                assertFalse(docExists);
 
             }
         });
 
 
         solo.clickOnView(solo.getView(R.id.addFab));
+        solo.sleep(3000);
+        solo.clickOnText("While using the app");
+        solo.sleep(6000);
         assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
         solo.clickOnText("Yes");
         solo.clickOnView(solo.getView(R.id.captureButton));
@@ -87,13 +145,10 @@ public class CameraFragmentTest {
 
         checkDocExists(testHash, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
-                docexists = valid;
-                assertTrue(docexists);
+                docExists = valid;
+                assertTrue(docExists);
             }
         });
-
-
-
     }
 
     /**
@@ -107,8 +162,8 @@ public class CameraFragmentTest {
 
         checkDocExists(testHash, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
-                docexists = valid;
-                assertFalse(docexists);
+                docExists = valid;
+                assertFalse(docExists);
 
             }
         });
@@ -123,8 +178,8 @@ public class CameraFragmentTest {
 
         checkDocExists(testHash, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
-                docexists = valid;
-                assertTrue(docexists);
+                docExists = valid;
+                assertTrue(docExists);
             }
         });
     }
@@ -140,8 +195,8 @@ public class CameraFragmentTest {
 
         checkDocExists(testHash, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
-                docexists = valid;
-                assertFalse(docexists);
+                docExists = valid;
+                assertFalse(docExists);
 
             }
         });
@@ -156,8 +211,8 @@ public class CameraFragmentTest {
 
         checkDocExists(testHash, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
-                docexists = valid;
-                assertTrue(docexists);
+                docExists = valid;
+                assertTrue(docExists);
             }
         });
     }
@@ -173,8 +228,8 @@ public class CameraFragmentTest {
 
         checkDocExists(testHash, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
-                docexists = valid;
-                assertFalse(docexists);
+                docExists = valid;
+                assertFalse(docExists);
 
             }
         });
@@ -189,27 +244,17 @@ public class CameraFragmentTest {
 
         checkDocExists(testHash, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
-                docexists = valid;
-                assertTrue(docexists);
+                docExists = valid;
+                assertTrue(docExists);
             }
         });
-    }
-
-    /**
-     * Closes the activity after each test
-     *
-     * @throws Exception
-     */
-    @After
-    public void tearDown() throws Exception {
-        solo.finishOpenedActivities();
     }
 
     /**
      * Helper function to delete the test QR code document
      *
      * @param docToDelete document that should be deleted
-     * @param cr CollectionReference to the collection being accessed
+     * @param cr          CollectionReference to the collection being accessed
      * @reference https://firebase.google.com/docs/firestore/manage-data/delete-data - used without major modification
      */
     public void deleteDoc(String docToDelete, CollectionReference cr) {
@@ -233,7 +278,7 @@ public class CameraFragmentTest {
      * Helper function to check if a QR code document exists
      *
      * @param docToCheck document that should be checked for
-     * @param cr CollectionReference to the collection being accessed
+     * @param cr         CollectionReference to the collection being accessed
      * @reference https://firebase.google.com/docs/firestore/query-data/get-data - used without major modification
      */
     public void checkDocExists(String docToCheck, CollectionReference cr, final Callback dataValid) {
@@ -256,7 +301,4 @@ public class CameraFragmentTest {
             }
         });
     }
-
 }
-
-
