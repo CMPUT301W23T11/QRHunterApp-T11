@@ -1,9 +1,12 @@
 package com.example.qrhunterapp_t11;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.widget.EditText;
@@ -20,15 +23,21 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.robotium.solo.Solo;
 
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SettingsFragmentTest {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");
     private Solo solo;
+    private boolean uniqueUser;
     private SharedPreferences prefs;
 
     @Rule
@@ -41,20 +50,34 @@ public class SettingsFragmentTest {
      * @throws Exception
      */
     @Before
-    public void setUp() throws Exception {
+    public final void setUp() throws Exception {
         solo = new Solo(InstrumentationRegistry.getInstrumentation(), rule.getActivity());
+        Activity activity = rule.getActivity();
+        prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        //setPrefs();
     }
 
+    /**
+     * Runs after tests and clears SharedPreferences and removes user from database.
+     */
+    @After
+    public final void cleanUp() {
+        //prefs.edit().clear().commit();
+        checkUniqueUsername("testUser", new testCallback() {
+            public void uniqueUsername(boolean unique) {
+
+                if (!unique) {
+                    usersReference.document("testUser").delete();
+                }
+            }
+        });
+    }
+
+    /**
+     * Test behaviour when attempting to leave username field blank
+     */
     @Test
-    public void testUsernameChange() {
-        MainActivity activity = (MainActivity) solo.getCurrentActivity();
-        prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
-
-        setPrefs();
-
-        String username = prefs.getString("currentUser", null);
-        String displayName = prefs.getString("currentUserDisplayName", null);
-
+    public void testUsernameChangeBlank() {
         solo.clickOnView(solo.getView(R.id.settings));
 
         solo.clickOnView(solo.getView(R.id.username_edit_edittext));
@@ -62,12 +85,33 @@ public class SettingsFragmentTest {
         solo.enterText(0, "");
 
         solo.clickOnView(solo.getView(R.id.settings_confirm_button));
+
         EditText usernameEditText = solo.getEditText(0);
         assertEquals("Field cannot be blank", usernameEditText.getError());
 
         solo.enterText(0, "testUser");
+    }
 
+    /**
+     * Test behaviour when attempting to change to a taken username
+     */
+    @Test
+    public void testUsernameChangeNotUnique() {
+        solo.clickOnView(solo.getView(R.id.settings));
 
+        solo.clickOnView(solo.getView(R.id.username_edit_edittext));
+        solo.clearEditText(0);
+
+        String testUser = "testUser";
+
+        addTestUserToDB(testUser);
+        assertTrue(uniqueUser);
+
+        solo.enterText(0, testUser);
+        solo.clickOnView(solo.getView(R.id.settings_confirm_button));
+
+        EditText usernameEditText = solo.getEditText(0);
+        assertEquals("Username is not unique", usernameEditText.getError());
     }
 
     /**
@@ -90,9 +134,27 @@ public class SettingsFragmentTest {
      * Adds a test user to the database.
      * testUser should always be a new addition to the database
      */
-    public void addTestUserToDB() {
+    public void addTestUserToDB(String username) {
+        checkUniqueUsername(username, new testCallback() {
+            public void uniqueUsername(boolean unique) {
+                uniqueUser = unique;
+                System.out.println("wooooooooooooooo " + unique);
+                if (uniqueUser) {
+                    Map<String, Object> user = new HashMap<>();
+                    user.put("Username", username);
+                    user.put("Display Name", username);
 
+                    usersReference.document(username).set(user);
 
+                    // Make sure user was successfully added
+                    checkUniqueUsername(username, new testCallback() {
+                        public void uniqueUsername(boolean unique) {
+                            assertFalse(unique);
+                        }
+                    });
+                }
+            }
+        });
     }
 
     /**
@@ -119,10 +181,11 @@ public class SettingsFragmentTest {
 
     /**
      * Callback for querying database
+     *
      * @author Afra
      */
     public interface testCallback {
-        void uniqueUsername(boolean valid);
+        void uniqueUsername(boolean unique);
     }
 }
 
