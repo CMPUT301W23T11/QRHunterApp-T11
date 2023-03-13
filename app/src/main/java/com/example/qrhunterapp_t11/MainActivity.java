@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
     private int numUsers;
 
     @Override
-    public void ViewCode(@NonNull QRCode qrCode) {
+    public void viewCode(@NonNull QRCode qrCode) {
     }
 
     /**
