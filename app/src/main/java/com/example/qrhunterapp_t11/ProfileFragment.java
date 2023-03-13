@@ -119,11 +119,12 @@ public class ProfileFragment extends Fragment {
 
                         assert value != null;
                         for (QueryDocumentSnapshot document : value) {
-                            int points = Objects.requireNonNull(document.getLong("points")).intValue();
-                            total += points;
+                            total += Objects.requireNonNull(document.getLong("points")).intValue();
+
                         }
-                        totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
                         Log.d(tag, "Total Score: " + total);
+                        totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
+
                     });
 
                     // Orders the QR collection from biggest to smallest, then returns the first QR Code
