@@ -69,7 +69,7 @@ public class CameraFragmentTest {
             String displayName;
 
             prefs.edit().clear().commit();
-            prefs.edit().putBoolean("LoggedIn", true);
+            prefs.edit().putBoolean("LoggedIn", true).commit();
             prefs.edit().putString("currentUser", testUser).commit();
             prefs.edit().putString("currentUserDisplayName", testUser).commit();
 
