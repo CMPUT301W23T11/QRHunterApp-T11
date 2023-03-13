@@ -41,7 +41,7 @@ public class SettingsFragmentTest {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");
     private final Random rand = new Random();
-    private final String testUser = "testUser" + rand.nextInt(1000);
+    private final String testUser = "testUser" + rand.nextInt(10000);
     private Solo solo;
     private boolean uniqueUser;
     private SharedPreferences prefs;

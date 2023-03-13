@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
      *                           recently supplied in {@link #onSaveInstanceState}.  <b><i>Note: Otherwise it is null.</i></b>
      */
     @Override
-    protected void onCreate(@NonNull Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
 
         // If the user is logging in for the first time, create a new user
         if (!prefs.getBoolean("LoggedIn", false)) {
-            firstTimeLaunch(new mainActivityCallback() {
+            firstTimeLaunch(new MainActivityCallback() {
                 public void setNumUsers(int numUsers) {
 
                     String username = "user" + (numUsers + 1);
@@ -134,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
      *
      * @param setNumUsers Callback that will set numUsers to the number of users in the database
      */
-    public void firstTimeLaunch(final @NonNull mainActivityCallback setNumUsers) {
+    public void firstTimeLaunch(final @NonNull MainActivityCallback setNumUsers) {
         AggregateQuery countQuery = usersReference.count();
         countQuery.get(AggregateSource.SERVER).addOnCompleteListener(new OnCompleteListener<AggregateQuerySnapshot>() {
             @Override
@@ -153,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
      *
      * @author Afra
      */
-    public interface mainActivityCallback {
+    public interface MainActivityCallback {
         void setNumUsers(int numUsers);
     }
 }

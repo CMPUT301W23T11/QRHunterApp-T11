@@ -31,7 +31,7 @@ public class ToolbarTest {
     private final CollectionReference usersReference = db.collection("Users");
     private final Random rand = new Random();
     private Solo solo;
-    private final String testUser = "testUser" + rand.nextInt(1000);
+    private final String testUser = "testUser" + rand.nextInt(10000);
     private SharedPreferences prefs;
     @Rule
     public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {

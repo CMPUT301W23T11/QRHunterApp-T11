@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageCapture;
@@ -58,7 +59,7 @@ public class TakePhotoActivity extends AppCompatActivity {
     private Uri mImageUri;
     private String imageUrl;
     private String msTime;
-    CollectionReference uploadsReference = FirebaseFirestore.getInstance().collection("uploads");
+    private final CollectionReference uploadsReference = FirebaseFirestore.getInstance().collection("uploads");
 
     /**
      * Checks whether a permission is granted; in this case permission to access and write to the phone's storage.
@@ -87,7 +88,7 @@ public class TakePhotoActivity extends AppCompatActivity {
      *                           recently supplied in {@link #onSaveInstanceState}.  <b><i>Note: Otherwise it is null.</i></b>
      */
     @Override
-    protected void onCreate(@NonNull Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_take_photo);
 

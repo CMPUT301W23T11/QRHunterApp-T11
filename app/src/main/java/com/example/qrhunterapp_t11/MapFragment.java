@@ -59,7 +59,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
      * @param savedInstanceState Bundle object containing the instance state of the fragment.
      */
     @Override
-    public void onCreate(@NonNull Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map);
         if (mapFragment == null) {
@@ -81,7 +81,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
      */
     @NonNull
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container, @NonNull Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
         MapsInitializer.initialize(getActivity().getApplicationContext(), MapsInitializer.Renderer.LATEST, this);
         return view;

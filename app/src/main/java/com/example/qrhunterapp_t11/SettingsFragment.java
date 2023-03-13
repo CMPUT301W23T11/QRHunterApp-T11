@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -29,10 +30,10 @@ import com.google.firebase.firestore.QuerySnapshot;
 public class SettingsFragment extends Fragment {
 
     private final CollectionReference usersReference;
-    EditText usernameEditText;
-    EditText emailEditText;
-    String usernameString;
-    String emailString;
+    private EditText usernameEditText;
+    private EditText emailEditText;
+    private String usernameString;
+    private String emailString;
     private boolean validUsername;
 
     public SettingsFragment(@NonNull FirebaseFirestore db) {
@@ -41,8 +42,8 @@ public class SettingsFragment extends Fragment {
 
     @NonNull
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container,
-                             @NonNull Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
@@ -64,7 +65,7 @@ public class SettingsFragment extends Fragment {
                 emailString = emailEditText.getText().toString();
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                usernameCheck(usernameString, usernameEditText, new settingsCallback() {
+                usernameCheck(usernameString, usernameEditText, new SettingsCallback() {
                     public void usernameValid(boolean valid) {
                         validUsername = valid;
 
@@ -96,7 +97,14 @@ public class SettingsFragment extends Fragment {
         return view;
     }
 
-    public void usernameCheck(@NonNull String usernameString, @NonNull EditText usernameEditText, final @NonNull settingsCallback usernameValid) {
+    /**
+     * Checks to see if username is valid and unique
+     *
+     * @param usernameString   Entered username
+     * @param usernameEditText EditText for entered username
+     * @param usernameValid    Callback for query
+     */
+    public void usernameCheck(@NonNull String usernameString, @NonNull EditText usernameEditText, final @NonNull SettingsCallback usernameValid) {
 
         // Check if username matches Firestore document ID guidelines
         if (usernameString.length() == 0) {
@@ -127,7 +135,12 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-    public interface settingsCallback {
+    /**
+     * Callback for querying the database
+     *
+     * @author Afra
+     */
+    public interface SettingsCallback {
         void usernameValid(boolean valid);
     }
 }

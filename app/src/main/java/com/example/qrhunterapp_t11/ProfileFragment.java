@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -71,7 +72,7 @@ public class ProfileFragment extends Fragment {
      */
     @NonNull
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container, @NonNull Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
         TextView loginUsernameTextView = view.findViewById(R.id.profile_name);
@@ -88,7 +89,7 @@ public class ProfileFragment extends Fragment {
         TextView totalQRCodesText = view.findViewById(R.id.totalQRText);
 
         // If the user has at least one QR code, initialize RecyclerView
-        noQRCodesCheck(username, new profileCallback() {
+        noQRCodesCheck(username, new ProfileCallback() {
             public void noCodes(boolean noCodes) {
                 userHasNoCodes = noCodes;
 
@@ -198,7 +199,6 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-
         return view;
     }
 
@@ -208,7 +208,7 @@ public class ProfileFragment extends Fragment {
      * @param username Current user's username
      * @param noCodes  Callback function
      */
-    public void noQRCodesCheck(@NonNull String username, final @NonNull profileCallback noCodes) {
+    public void noQRCodesCheck(@NonNull String username, final @NonNull ProfileCallback noCodes) {
 
         usersReference.document(username).collection("QR Codes")
                 .get()
@@ -216,13 +216,7 @@ public class ProfileFragment extends Fragment {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            if (task.getResult().size() > 0) {
-                                for (DocumentSnapshot document : task.getResult()) {
-                                    noCodes.noCodes(false);
-                                }
-                            } else {
-                                noCodes.noCodes(true);
-                            }
+                            noCodes.noCodes(task.getResult().size() <= 0);
                         }
                     }
                 });
@@ -233,7 +227,7 @@ public class ProfileFragment extends Fragment {
      *
      * @author Afra
      */
-    public interface profileCallback {
+    public interface ProfileCallback {
         void noCodes(boolean noCodes);
     }
 }

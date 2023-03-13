@@ -30,7 +30,7 @@ public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterCl
     }
 
     @Override
-    protected void onBindViewHolder(@androidx.annotation.NonNull RecyclerViewHolder holder, int position, @androidx.annotation.NonNull QRCode model) {
+    protected void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position, @NonNull QRCode model) {
         // Bind the QRCode object to the RecyclerViewHolder
         holder.QRCodeName.setText(model.getName());
 
@@ -79,7 +79,7 @@ public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterCl
         private final TextView QRCodePoints;
         private final TextView QRCodeNumComments;
 
-        public RecyclerViewHolder(@androidx.annotation.NonNull View itemView) {
+        public RecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
             QRCodeName = itemView.findViewById(R.id.qrcode_name);
             QRCodePoints = itemView.findViewById(R.id.qrcode_points);

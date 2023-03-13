@@ -77,9 +77,10 @@ public class CameraFragment extends Fragment {
      *                           from a previous saved state as given here.
      * @return a View containing the inflated layout.
      */
+    @NonNull
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         //FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
         return inflater.inflate(R.layout.fragment_camera, container, false);
