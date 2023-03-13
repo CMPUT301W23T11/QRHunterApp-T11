@@ -130,7 +130,7 @@ public class ViewQR extends DialogFragment {
                 String commentString = commentET.getText().toString();
 
                 if (!commentString.isEmpty()) {
-                    String currentUser = prefs.getString("currentUser", null);
+                    String currentUser = prefs.getString("currentUserDisplayName", null);
                     Comment c = new Comment(commentString, currentUser);
                     commentList.add(c);
                     qrCode.setCommentList(commentList);
@@ -179,6 +179,6 @@ public class ViewQR extends DialogFragment {
      * Listener for the ViewQR dialog
      */
     interface ViewQRDialogListener {
-        void ViewCode(QRCode qrCode);
+        void viewCode(QRCode qrCode);
     }
 }
