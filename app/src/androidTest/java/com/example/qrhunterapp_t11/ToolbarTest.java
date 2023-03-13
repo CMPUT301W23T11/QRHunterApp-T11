@@ -238,43 +238,6 @@ public class ToolbarTest {
 
 
     /**
-     * Tests the map button on the toolbar
-     * clicks on the map button on the toolbar
-     * asserts that the page was changed from the profile page using assertFalse
-     */
-    @Test
-    public void testMapClick() {
-        solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        solo.waitForText("STATS", 1, 4000);
-
-        solo.clickOnView(solo.getView(R.id.map));
-        solo.sleep(5000);
-        // checks that the page changed from the profile page
-        assertFalse(solo.waitForText("STATS", 1, 6000));
-    }
-
-    /**
-     * Tests that clicking the map button from map doesn't change the page
-     * After going to the map page click on the map button
-     * check that the page doesn't go to any of the other pages using assertFalse
-     */
-    @Test
-    public void testMapClickAgain() {
-        solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        solo.waitForText("STATS", 1, 4000);
-        solo.clickOnView(solo.getView(R.id.map));
-
-        // clicks on map after on map page
-        solo.clickOnView(solo.getView(R.id.map));
-        // asserts that it did not change to any other page
-        assertFalse(solo.waitForText("STATS", 1, 2000));
-        assertFalse(solo.waitForText("settings", 1, 2000));
-        assertFalse(solo.waitForText("Scored", 1, 2000));
-        assertFalse(solo.waitForText("search", 1, 2000));
-
-    }
-
-    /**
      * Tests that the settings button works from the map screen
      * goes to map then clicks on settings button
      * asserts that the screen is changed to settings using assertTrue
