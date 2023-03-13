@@ -19,8 +19,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
@@ -32,26 +30,21 @@ import java.util.ArrayList;
  * # of points, photo, and implements comments.
  *
  * @author Sarah Thomson
- * @reference https://stackoverflow.com/questions/6210895/listview-inside-scrollview-is-not-scrolling-on-android/17503823#17503823 by Moisés Olmedo, License: CC BY-SA 3.0 for scrollable comment box
- * @reference https://www.youtube.com/watch?v=LMdxZ8UC00k by Technical Skillz for the Comment box/comment layout in the qr_view layout, and the comment_box drawable CC BY
- * @reference https://icon-icons.com/icon/send-button/72565 by Icons.com for the send button CC Attribution
- * @reference https://cloud.google.com/firestore/docs/manage-data/add-data for adding comment to db using arrayUnion
- * @reference https://www.svgbackgrounds.com/license/ for liquid_cheese_background CC BY 4.0
+ * @reference <a href="https://stackoverflow.com/questions/6210895/listview-inside-scrollview-is-not-scrolling-on-android/17503823#17503823">by Moisés Olmedo for scrollable comment box</a>
+ * @reference <a href="https://www.youtube.com/watch?v=LMdxZ8UC00k">by Technical Skillz for the Comment box/comment layout in the qr_view layout, and the comment_box drawable</a>
+ * @reference <a href="https://icon-icons.com/icon/send-button/72565">by Icons.com for the send button</a>
+ * @reference <a href="https://cloud.google.com/firestore/docs/manage-data/add-data">for adding comment to db using arrayUnion</a>
+ * @references <a href="https://www.svgbackgrounds.com/license/">for liquid_cheese_background</a>
  */
 public class ViewQR extends DialogFragment {
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final CollectionReference QRCodesReference = db.collection("QRCodes");
+    private final CollectionReference usersReference = db.collection("Users");
     private QRCode qrCode;
-    private ListView commentListView;
     private ArrayList<Comment> commentList;
     private CommentAdapter commentAdapter;
-    private ImageView commentIV;
     private EditText commentET;
     private SharedPreferences prefs;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private CollectionReference QRCodesReference = db.collection("QRCodes");
-    private CollectionReference usersReference = db.collection("Users");
-    private ViewQR.ViewQRDialogListener listener;
-    private ImageView eyesImageView, faceImageView, colourImageView, noseImageView, mouthImageView, eyebrowsImageView, photoImageView;
-    private TextView pointsTV;
 
     /**
      * Empty constructor
@@ -62,29 +55,24 @@ public class ViewQR extends DialogFragment {
 
     /**
      * Constructor used when an item in the recyclerview is clicked in the profile
+     *
      * @param qrCode - qrCode object that was clicked
      */
-    public ViewQR(QRCode qrCode) {
+    public ViewQR(@NonNull QRCode qrCode) {
         super();
         this.qrCode = qrCode;
     }
 
     /**
-     * Listener for the ViewQR dialog
-     */
-    interface ViewQRDialogListener {
-        void ViewCode(QRCode qrCode);
-    }
-
-    /**
      * Called when dialog is first attached to context
+     *
      * @param context - Context should be instance of ViewQR.ViewQRDialogListener
      */
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (context instanceof ViewQR.ViewQRDialogListener) {
-            listener = (ViewQR.ViewQRDialogListener) context;
+            ViewQRDialogListener listener = (ViewQRDialogListener) context;
         } else {
             throw new RuntimeException(context + " must implement DialogListener");
         }
@@ -105,21 +93,22 @@ public class ViewQR extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
         commentET = view.findViewById(R.id.editTextComment);
-        commentIV = view.findViewById(R.id.imageViewSend);
-        commentListView = view.findViewById(R.id.commentListView);
-        pointsTV = view.findViewById(R.id.pointsTV);
-        eyesImageView = view.findViewById(R.id.imageEyes);
-        colourImageView = view.findViewById(R.id.imageColour);
-        faceImageView = view.findViewById(R.id.imageFace);
-        noseImageView = view.findViewById(R.id.imageNose);
-        mouthImageView = view.findViewById(R.id.imageMouth);
-        eyebrowsImageView = view.findViewById(R.id.imageEyebrows);
-        photoImageView = view.findViewById(R.id.imagePhoto);
+        ImageView commentIV = view.findViewById(R.id.imageViewSend);
+        ListView commentListView = view.findViewById(R.id.commentListView);
+        TextView pointsTV = view.findViewById(R.id.pointsTV);
+        ImageView eyesImageView = view.findViewById(R.id.imageEyes);
+        ImageView colourImageView = view.findViewById(R.id.imageColour);
+        ImageView faceImageView = view.findViewById(R.id.imageFace);
+        ImageView noseImageView = view.findViewById(R.id.imageNose);
+        ImageView mouthImageView = view.findViewById(R.id.imageMouth);
+        ImageView eyebrowsImageView = view.findViewById(R.id.imageEyebrows);
+        ImageView photoImageView = view.findViewById(R.id.imagePhoto);
 
         commentList = qrCode.getCommentList();
         commentAdapter = new CommentAdapter(getContext(), commentList);
         commentListView.setAdapter(commentAdapter);
-        pointsTV.setText("Points: " + String.valueOf(qrCode.getPoints()));
+        String points = "Points: " + qrCode.getPoints();
+        pointsTV.setText(points);
 
         // Creates the appearance of the qrCode based on the drawable ids stored in its faceList array
         colourImageView.setImageResource((qrCode.getFaceList()).get(2));
@@ -130,8 +119,8 @@ public class ViewQR extends DialogFragment {
         eyebrowsImageView.setImageResource((qrCode.getFaceList()).get(5));
 
         // If the QRCode has an associated photo, use Picasso to load it into the photoImageView (Rotated for some reason)
-        if (!qrCode.getPhotoList().isEmpty()){
-            if (qrCode.getPhotoList().get(0) != null){
+        if (!qrCode.getPhotoList().isEmpty()) {
+            if (qrCode.getPhotoList().get(0) != null) {
                 Picasso.with(getContext()).load(qrCode.getPhotoList().get(0)).into(photoImageView);
             }
         }
@@ -186,5 +175,12 @@ public class ViewQR extends DialogFragment {
                     }
                 })
                 .create();
+    }
+
+    /**
+     * Listener for the ViewQR dialog
+     */
+    interface ViewQRDialogListener {
+        void ViewCode(QRCode qrCode);
     }
 }

@@ -1,5 +1,7 @@
 package com.example.qrhunterapp_t11;
 
+import androidx.annotation.NonNull;
+
 /**
  * This Class represents a Comment that will belong to a QRCode object. Contains the comment contents and the profile who posted it.
  *
@@ -16,7 +18,7 @@ public class Comment {
      * @param comment - String representing the comment
      * @param profile - String representing the user's profile
      */
-    public Comment(String comment, String profile) {
+    public Comment(@NonNull String comment, @NonNull String profile) {
         this.comment = comment;
         this.profile = profile;
     }
@@ -32,6 +34,7 @@ public class Comment {
      *
      * @return comment - String
      */
+    @NonNull
     public String getComment() {
         return comment;
     }
@@ -41,6 +44,7 @@ public class Comment {
      *
      * @return profile - String
      */
+    @NonNull
     public String getProfile() {
         return profile;
     }

@@ -1,7 +1,5 @@
 package com.example.qrhunterapp_t11;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -54,7 +52,7 @@ public class QRCodeTest {
      * This test verifies the name is created correctly
      */
     @Test
-    public void testName(){
+    public void testName() {
         String name;
 
         QRCode qrCode = mockQR("Test this string");
@@ -80,7 +78,7 @@ public class QRCodeTest {
     }
 
     @Test
-    public void testImage(){
+    public void testImage() {
         ArrayList<Integer> faceList;
         ArrayList<Integer> expectedList = new ArrayList<>();
 
@@ -134,10 +132,10 @@ public class QRCodeTest {
 
     /**
      * @reference this website for verifying "ultimate nasty string" test as even Bash's Echo | SHA256 stopped reading with ';' chars inserted
-     * https://emn178.github.io/online-tools/sha256.html (verified website output matched all other previous outputs)
+     * <a href="https://emn178.github.io/online-tools/sha256.html">verified website output matched all other previous outputs</a>
      */
     @Test
-    public void testSetHash(){
+    public void testSetHash() {
 
         // test string from eclass
         QRCode qrCode = mockQR("BFG5DGW54\n");

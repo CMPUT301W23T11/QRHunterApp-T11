@@ -2,18 +2,17 @@ package com.example.qrhunterapp_t11;
 
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static junit.framework.TestCase.assertTrue;
-
 import static org.junit.Assert.assertEquals;
-
-import androidx.annotation.NonNull;
-import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.test.rule.ActivityTestRule;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.ActivityTestRule;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -31,7 +30,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -41,30 +39,17 @@ import java.util.Random;
  *
  * @author Sarah Thomson, Aidan Lynch
  * @reference code mostly repurposed from Aidan Lynch and lab 7.
- * @reference https://stackoverflow.com/questions/50035752/how-to-get-list-of-documents-from-a-collection-in-firestore-android for help retrieving all documents answer by Ivan Banha CC BY-SA 3.0.
+ * @reference <a href="https://stackoverflow.com/questions/50035752/how-to-get-list-of-documents-from-a-collection-in-firestore-android">for help retrieving all documents answer by Ivan Banha CC BY-SA 3.0.</a>
  */
 public class ProfileTest {
-    private Solo solo;
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");
+    private final Random rand = new Random();
+    private final String testUser = "testUser" + rand.nextInt(1000);
+    private Solo solo;
     private boolean docExists;
     private QRCode qrCode;
     private SharedPreferences prefs;
-    private final Random rand = new Random();
-    private final String testUser = "testUser" + rand.nextInt(1000);
-
-    private QRCode mockQR(String valueString) {
-        return new QRCode(valueString);
-    }
-
-    public interface Callback {
-        void dataValid(boolean valid);
-    }
-
-    public interface Callback2 {
-        void collect(QuerySnapshot querySnapshot);
-    }
-
     @Rule
     public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
 
@@ -88,6 +73,10 @@ public class ProfileTest {
             assertEquals(testUser, displayName);
         }
     };
+
+    private QRCode mockQR(String valueString) {
+        return new QRCode(valueString);
+    }
 
     /**
      * Runs before all tests and creates solo instance.
@@ -161,6 +150,8 @@ public class ProfileTest {
             }
         });
 
+        solo.clickOnView(solo.getView(R.id.settings));
+        solo.clickOnView(solo.getView(R.id.profile));
         //Name of qrCode should appear
         assertTrue(solo.waitForText(name, 1, 10000));
         //Should only be 1 qrCode in collection
@@ -241,7 +232,7 @@ public class ProfileTest {
      *
      * @param docToCheck document that should be checked for
      * @param cr         CollectionReference to the collection being accessed
-     * @reference https://firebase.google.com/docs/firestore/query-data/get-data - used without major modification
+     * @reference <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
      * @reference Aidan Lynch's CameraFragmentTest for this code
      */
 
@@ -283,13 +274,12 @@ public class ProfileTest {
 
     }
 
-
     /**
      * Helper function to delete the test QR code document
      *
      * @param docToDelete document that should be deleted
      * @param cr          CollectionReference to the collection being accessed
-     * @reference https://firebase.google.com/docs/firestore/manage-data/delete-data - used without major modification
+     * @reference <a href="https://firebase.google.com/docs/firestore/manage-data/delete-data">used without major modification</a>
      */
     public void deleteDoc(String docToDelete, CollectionReference cr) {
         cr.document(docToDelete)
@@ -308,18 +298,17 @@ public class ProfileTest {
                 });
     }
 
-
     /**
      * Helper function to add the test QR code document
      *
      * @param qrCode document that should be added
      * @param cr     CollectionReference to the collection being accessed
-     * @reference https://firebase.google.com/docs/firestore/manage-data/delete-data - used without major modification
+     * @reference <a href="https://firebase.google.com/docs/firestore/manage-data/delete-data">used without major modification</a>
      * @reference Aidan Lynch's CameraFragmentTest
      */
     public void addDoc(QRCode qrCode, CollectionReference cr) {
         cr.document(qrCode.getHash()).set(qrCode)
-                .addOnSuccessListener(new OnSuccessListener() {
+                .addOnSuccessListener(new OnSuccessListener<Object>() {
                     @Override
                     public void onSuccess(Object o) {
                         Log.d("AddedDocument", "DocumentSnapshot successfully added!");
@@ -331,5 +320,15 @@ public class ProfileTest {
                         Log.w("AddedDocument", "Error adding document", e);
                     }
                 });
+    }
+
+
+    public interface Callback {
+        void dataValid(boolean valid);
+    }
+
+
+    public interface Callback2 {
+        void collect(QuerySnapshot querySnapshot);
     }
 }

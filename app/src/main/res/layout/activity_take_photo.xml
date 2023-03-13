@@ -9,14 +9,14 @@
         <androidx.camera.view.PreviewView
             android:id="@+id/preview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"></androidx.camera.view.PreviewView>
+            android:layout_height="match_parent" />
 
         <Button
             android:id="@+id/captureButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="32dp"
-            android:text="Capture"
+            android:text="@string/edittext_capture"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />

@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,7 +20,6 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -34,17 +34,17 @@ import java.text.MessageFormat;
  * Outputs the users' QR collection and the users' stats
  *
  * @author Afra, Kristina, Sarah
- * @reference Url: <https://stackoverflow.com/questions/74092262/calculate-total-from-values-stored-in-firebase-firestore-database-android> How to calculate the sum of a set of documents</a>
- * @reference Url: <https://firebase.google.com/docs/firestore/query-data/listen> How to get a new snapshot everytime the data is updated</a>
+ * @reference <a href="https://stackoverflow.com/questions/74092262/calculate-total-from-values-stored-in-firebase-firestore-database-android">How to calculate the sum of a set of documents</a>
+ * @reference <a href="https://firebase.google.com/docs/firestore/query-data/listen">How to get a new snapshot everytime the data is updated</a>
  * @reference <a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation for RecyclerView</a>
  */
 public class ProfileFragment extends Fragment {
     private static final String TAG = "ProfileFragment";
     private final CollectionReference usersReference;
-    private RecyclerView QRCodeRecyclerView;
-    private boolean userHasNoCodes;
     QRAdapterClass adapter;
     FirestoreRecyclerOptions<QRCode> options;
+    private RecyclerView QRCodeRecyclerView;
+    private boolean userHasNoCodes;
 
     /**
      * Constructor for profile fragment.
@@ -52,17 +52,8 @@ public class ProfileFragment extends Fragment {
      *
      * @param db Firestore database instance
      */
-    public ProfileFragment(FirebaseFirestore db) {
+    public ProfileFragment(@NonNull FirebaseFirestore db) {
         this.usersReference = db.collection("Users");
-    }
-
-    /**
-     * Callback for querying the database
-     *
-     * @author Afra
-     */
-    public interface profileCallback {
-        void noCodes(boolean noCodes);
     }
 
     /**
@@ -77,9 +68,9 @@ public class ProfileFragment extends Fragment {
      *                           from a previous saved state as given here.
      * @return a View containing the inflated layout.
      */
+    @NonNull
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container, @NonNull Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
         TextView loginUsernameTextView = view.findViewById(R.id.profile_name);
@@ -133,8 +124,8 @@ public class ProfileFragment extends Fragment {
                         Log.d(TAG, "Total Score: " + total);
                     });
 
-                    Query topQR = QRColl.orderBy("points", Query.Direction.DESCENDING).limit(1);
                     // Orders the QR collection from biggest to smallest, then returns the first QR Code
+                    Query topQR = QRColl.orderBy("points", Query.Direction.DESCENDING).limit(1);
                     topQR.addSnapshotListener((value, error) -> {
                         if (error != null) {
                             Log.w(TAG, "Listen FAILED", error);
@@ -147,9 +138,8 @@ public class ProfileFragment extends Fragment {
                         }
                     });
 
-
-                    Query lowQR = QRColl.orderBy("points", Query.Direction.ASCENDING).limit(1);
                     // Orders the QR collection from smallest to largest, then returns the first QR Code
+                    Query lowQR = QRColl.orderBy("points", Query.Direction.ASCENDING).limit(1);
                     lowQR.addSnapshotListener((value, error) -> {
                         if (error != null) {
                             Log.w(TAG, "Listen FAILED", error);
@@ -174,7 +164,7 @@ public class ProfileFragment extends Fragment {
                     // Handles clicking on an item to view the QR Code
                     adapter.setOnItemClickListener(new OnItemClickListener() {
                         @Override
-                        public void onItemClick(DocumentSnapshot documentSnapshot, int position) {
+                        public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
 
                             QRCode qrCode = documentSnapshot.toObject(QRCode.class);
                             new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
@@ -184,7 +174,7 @@ public class ProfileFragment extends Fragment {
                     // Handles long clicking on an item for deletion
                     adapter.setOnItemLongClickListener(new OnItemLongClickListener() {
                         @Override
-                        public void onItemLongClick(DocumentSnapshot documentSnapshot, int position) {
+                        public void onItemLongClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
 
                             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
@@ -218,13 +208,13 @@ public class ProfileFragment extends Fragment {
      * @param username Current user's username
      * @param noCodes  Callback function
      */
-    public void noQRCodesCheck(String username, final profileCallback noCodes) {
+    public void noQRCodesCheck(@NonNull String username, final @NonNull profileCallback noCodes) {
 
         usersReference.document(username).collection("QR Codes")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
-                    public void onComplete(Task<QuerySnapshot> task) {
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             if (task.getResult().size() > 0) {
                                 for (DocumentSnapshot document : task.getResult()) {
@@ -236,5 +226,14 @@ public class ProfileFragment extends Fragment {
                         }
                     }
                 });
+    }
+
+    /**
+     * Callback for querying the database
+     *
+     * @author Afra
+     */
+    public interface profileCallback {
+        void noCodes(boolean noCodes);
     }
 }

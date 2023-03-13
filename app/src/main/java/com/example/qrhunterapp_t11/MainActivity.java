@@ -3,8 +3,6 @@ package com.example.qrhunterapp_t11;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,18 +11,12 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.firestore.AggregateQuery;
 import com.google.firebase.firestore.AggregateQuerySnapshot;
 import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,24 +33,15 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");
-    private BottomNavigationView bottomToolbar;
-    private int numUsers;
     private final ProfileFragment profileFragment = new ProfileFragment(db);
     private final SettingsFragment settingsFragment = new SettingsFragment(db);
     private final CameraFragment cameraFragment = new CameraFragment(db);
     private final MapFragment mapFragment = new MapFragment();
+    private BottomNavigationView bottomToolbar;
+    private int numUsers;
 
     @Override
-    public void ViewCode(QRCode qrCode) {
-    }
-
-    /**
-     * Callback for querying database
-     *
-     * @author Afra
-     */
-    public interface mainActivityCallback {
-        void setNumUsers(int numUsers);
+    public void ViewCode(@NonNull QRCode qrCode) {
     }
 
     /**
@@ -70,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
      *                           recently supplied in {@link #onSaveInstanceState}.  <b><i>Note: Otherwise it is null.</i></b>
      */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@NonNull Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -86,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
             firstTimeLaunch(new mainActivityCallback() {
                 public void setNumUsers(int numUsers) {
 
-                    String username = "user" + String.valueOf(numUsers + 1);
+                    String username = "user" + (numUsers + 1);
 
                     prefs.edit().putString("currentUser", username).commit();
                     prefs.edit().putString("currentUserDisplayName", username).commit();
@@ -151,18 +134,26 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
      *
      * @param setNumUsers Callback that will set numUsers to the number of users in the database
      */
-    public void firstTimeLaunch(final mainActivityCallback setNumUsers) {
+    public void firstTimeLaunch(final @NonNull mainActivityCallback setNumUsers) {
         AggregateQuery countQuery = usersReference.count();
         countQuery.get(AggregateSource.SERVER).addOnCompleteListener(new OnCompleteListener<AggregateQuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<AggregateQuerySnapshot> task) {
                 if (task.isSuccessful()) {
                     AggregateQuerySnapshot snapshot = task.getResult();
-                    snapshot = task.getResult();
                     numUsers = (int) snapshot.getCount();
                     setNumUsers.setNumUsers(numUsers);
                 }
             }
         });
+    }
+
+    /**
+     * Callback for querying database
+     *
+     * @author Afra
+     */
+    public interface mainActivityCallback {
+        void setNumUsers(int numUsers);
     }
 }

@@ -10,35 +10,31 @@ import androidx.test.rule.ActivityTestRule;
 
 import com.robotium.solo.Solo;
 
-import junit.framework.TestCase;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 public class ToolbarTest {
-    private Solo solo;
-
-
     @Rule
     public ActivityTestRule<MainActivity> rule =
             new ActivityTestRule<>(MainActivity.class, true, true);
+    private Solo solo;
 
     /**
      * Runs before all tests and creates solo instance.
-     * @throws Exception
      */
     @Before
-    public void setUp() throws Exception{
-        solo = new Solo(InstrumentationRegistry.getInstrumentation(),rule.getActivity());
+    public void setUp() {
+        solo = new Solo(InstrumentationRegistry.getInstrumentation(), rule.getActivity());
     }
+
     /**
      * Gets the Activity
-     * @throws Exception
+     *
      */
     @Test
-    public void start() throws Exception{
+    public void start() {
         Activity activity = rule.getActivity();
     }
 
@@ -53,7 +49,7 @@ public class ToolbarTest {
         // asserts that the activity starts on the main activity
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         // asserts that the page starts on the profile page
-        assertTrue(solo.waitForText("STATS",1, 6000));
+        assertTrue(solo.waitForText("STATS", 1, 6000));
 
         solo.clickOnView(solo.getView(R.id.profile));
         // asserts that the page stays on the profile page
@@ -68,7 +64,7 @@ public class ToolbarTest {
     @Test
     public void testSettingsClick() {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        solo.waitForText("STATS",1, 4000);
+        solo.waitForText("STATS", 1, 4000);
 
         solo.clickOnView(solo.getView(R.id.settings));
         // asserts that settings button works
@@ -156,7 +152,7 @@ public class ToolbarTest {
     @Test
     public void testAddFromSettingsClick() {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        solo.waitForText("STATS",1, 4000);
+        solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.settings));
         solo.waitForText("Settings", 1, 4000);
 
@@ -179,7 +175,7 @@ public class ToolbarTest {
     @Test
     public void testSearchClick() {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        solo.waitForText("STATS",1, 4000);
+        solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.search));
         assertTrue(solo.waitForText("STATS", 1, 6000));
     }
@@ -193,12 +189,12 @@ public class ToolbarTest {
     @Test
     public void testMapClick() {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        solo.waitForText("STATS",1, 4000);
+        solo.waitForText("STATS", 1, 4000);
 
         solo.clickOnView(solo.getView(R.id.map));
         solo.sleep(5000);
         // checks that the page changed from the profile page
-        assertFalse(solo.waitForText("STATS",1, 6000));
+        assertFalse(solo.waitForText("STATS", 1, 6000));
     }
 
     /**
@@ -209,7 +205,7 @@ public class ToolbarTest {
     @Test
     public void testMapClickAgain() {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        solo.waitForText("STATS",1, 4000);
+        solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.map));
 
         // clicks on map after on map page
@@ -282,7 +278,7 @@ public class ToolbarTest {
     @Test
     public void testAddFromMapClick() {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        solo.waitForText("STATS",1, 4000);
+        solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.map));
 
         // checks that the add button works
@@ -305,7 +301,7 @@ public class ToolbarTest {
     @Test
     public void testCameraClick() {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        solo.waitForText("STATS",1, 4000);
+        solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.addFab));
         // gotten from CameraFragmentTest.java
         assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
@@ -318,10 +314,10 @@ public class ToolbarTest {
 
     /**
      * Closes the activity after each test
-     * @throws Exception
+     *
      */
     @After
-    public void tearDown() throws Exception{
+    public void tearDown() {
         solo.finishOpenedActivities();
     }
 }

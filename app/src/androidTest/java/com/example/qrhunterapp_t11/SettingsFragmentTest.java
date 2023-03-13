@@ -1,10 +1,7 @@
 package com.example.qrhunterapp_t11;
 
-import static androidx.test.InstrumentationRegistry.getTargetContext;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
@@ -14,8 +11,6 @@ import android.content.SharedPreferences;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
-import androidx.test.core.app.ActivityScenario;
-import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
@@ -27,13 +22,9 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.robotium.solo.Solo;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestName;
-import org.junit.rules.TestRule;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -49,12 +40,11 @@ public class SettingsFragmentTest {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");
+    private final Random rand = new Random();
+    private final String testUser = "testUser" + rand.nextInt(1000);
     private Solo solo;
     private boolean uniqueUser;
     private SharedPreferences prefs;
-    private final Random rand = new Random();
-    private final String testUser = "testUser" + rand.nextInt(1000);
-
     @Rule
     public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
 
@@ -183,11 +173,7 @@ public class SettingsFragmentTest {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
-                    if (task.getResult().isEmpty()) {
-                        uniqueUsername.uniqueDisplayName(true);
-                    } else {
-                        uniqueUsername.uniqueDisplayName(false);
-                    }
+                    uniqueUsername.uniqueDisplayName(task.getResult().isEmpty());
                 }
             }
         });
