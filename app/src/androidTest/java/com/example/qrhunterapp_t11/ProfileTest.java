@@ -156,6 +156,7 @@ public class ProfileTest {
         assertTrue(solo.waitForText(String.valueOf(qrCode.getPoints()), 4, 10000));
         solo.clickInRecyclerView(0);
         // wait for "Add Comment" to know the qrView dialog has opened
+        solo.scrollDown();
         assertTrue(solo.waitForText("Add Comment", 1, 10000));
         // should display the qRCode name as a header
         assertTrue(solo.waitForText(name, 1, 10000));
