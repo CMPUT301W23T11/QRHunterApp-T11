@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Point;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -134,6 +135,7 @@ public class CameraFragmentTest {
         solo.clickOnView(solo.getView(R.id.addFab));
         solo.sleep(3000);
         solo.clickOnText("While using the app");
+        solo.sleep(6000);
         assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
         solo.clickOnText("Yes");
         solo.clickOnView(solo.getView(R.id.captureButton));
