@@ -1,5 +1,6 @@
 package com.example.qrhunterapp_t11;
 
+import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static junit.framework.TestCase.assertTrue;
 
 import static org.junit.Assert.assertEquals;
@@ -10,6 +11,7 @@ import androidx.test.rule.ActivityTestRule;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 
@@ -64,17 +66,37 @@ public class ProfileTest {
     }
 
     @Rule
-    public ActivityTestRule<MainActivity> rule =
-            new ActivityTestRule<>(MainActivity.class, true, true);
+    public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
+
+        // Set SharedPreferences to initialize a new user before the activity is launched
+        @Override
+        protected void beforeActivityLaunched() {
+            super.beforeActivityLaunched();
+            prefs = getApplicationContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+            String username;
+            String displayName;
+
+            prefs.edit().clear().commit();
+            prefs.edit().putBoolean("LoggedIn", true);
+            prefs.edit().putString("currentUser", testUser).commit();
+            prefs.edit().putString("currentUserDisplayName", testUser).commit();
+
+            username = prefs.getString("currentUser", null);
+            displayName = prefs.getString("currentUserDisplayName", null);
+
+            assertEquals(testUser, username);
+            assertEquals(testUser, displayName);
+        }
+    };
 
     /**
      * Runs before all tests and creates solo instance.
      */
     @Before
-    public void setUp() {
+    public final void setUp() {
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        rule.launchActivity(intent);
         Activity activity = rule.getActivity();
-        prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
-        setPrefs();
 
         Map<String, Object> user = new HashMap<>();
         user.put("Username", testUser);
@@ -89,7 +111,7 @@ public class ProfileTest {
      * Clear SharedPreferences and close the activity after each test
      */
     @After
-    public final void clearPrefs() {
+    public final void tearDown() {
         Activity activity = rule.getActivity();
         prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
         prefs.edit().clear().commit();
@@ -309,20 +331,5 @@ public class ProfileTest {
                         Log.w("AddedDocument", "Error adding document", e);
                     }
                 });
-    }
-
-    /**
-     * Sets SharedPreferences strings for username and display name
-     */
-    public void setPrefs() {
-        prefs.edit().clear().commit();
-        String username;
-        String displayName;
-        prefs.edit().putString("currentUser", testUser).commit();
-        prefs.edit().putString("currentUserDisplayName", testUser).commit();
-        username = prefs.getString("currentUser", null);
-        displayName = prefs.getString("currentUserDisplayName", null);
-        assertEquals(testUser, username);
-        assertEquals(testUser, displayName);
     }
 }
