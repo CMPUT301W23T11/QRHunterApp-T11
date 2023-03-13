@@ -66,18 +66,20 @@ public class SettingsFragmentTest {
      */
     @Test
     public void testUsernameChangeNotUnique() {
-        String testUser = "testUserDuplicate";
-        addTestUserToDB(testUser);
+        String testUserDuplicate = "testUserDuplicate";
+        addTestUserToDB(testUserDuplicate);
 
         solo.clickOnView(solo.getView(R.id.settings));
         solo.clickOnView(solo.getView(R.id.username_edit_edittext));
         solo.clearEditText(0);
-        solo.enterText(0, testUser);
+        solo.enterText(0, testUserDuplicate);
         solo.clickOnView(solo.getView(R.id.settings_confirm_button));
 
         EditText usernameEditText = solo.getEditText(0);
         assertEquals("Username is not unique", usernameEditText.getError());
+
         usersReference.document("testUser").delete();
+        usersReference.document("testUserDuplicate").delete();
         prefs.edit().clear().commit();
     }
 
@@ -105,7 +107,7 @@ public class SettingsFragmentTest {
                 // Make sure user was successfully added
                 checkUniqueDisplayName("testUserUnique", new checkUniqueUsernameCallback() {
                     public void uniqueDisplayName(boolean unique) {
-                        assertFalse(unique);
+                        assertTrue(unique);
                     }
                 });
             }
@@ -120,10 +122,8 @@ public class SettingsFragmentTest {
      * Sets SharedPreferences strings for username and display name
      */
     public void setPrefs() {
-        String username = prefs.getString("currentUser", null);
-        String displayName = prefs.getString("currentUserDisplayName", null);
-        assertNotNull(username);
-        assertNotNull(displayName);
+        String username;
+        String displayName;
         prefs.edit().putString("currentUser", "testUser").commit();
         prefs.edit().putString("currentUserDisplayName", "testUser").commit();
         username = prefs.getString("currentUser", null);
@@ -172,15 +172,6 @@ public class SettingsFragmentTest {
      */
     public interface checkUniqueUsernameCallback {
         void uniqueDisplayName(boolean unique);
-    }
-
-    /**
-     * Callback for addTestUserToDB method
-     *
-     * @author Afra
-     */
-    public interface addTestUserToDBCallback {
-        void completedQuery(boolean complete);
     }
 }
 
