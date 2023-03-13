@@ -27,6 +27,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.robotium.solo.Solo;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,6 +53,8 @@ public class ProfileTest {
     private SharedPreferences prefs;
     private final Random rand = new Random();
     private final String testUser = "testUser" + rand.nextInt(1000);
+
+    private String name;
 
     private QRCode mockQR(String valueString) {
         return new QRCode(valueString);
@@ -101,8 +104,22 @@ public class ProfileTest {
         Map<String, Object> user = new HashMap<>();
         user.put("Username", testUser);
         user.put("Display Name", testUser);
-
         usersReference.document(testUser).set(user);
+
+        // add new QR code
+        final int randomNum = new Random().nextInt(10000);
+        qrCode = mockQR(String.valueOf(randomNum));
+        name = qrCode.getName();
+        CollectionReference qrReference = usersReference.document(testUser).collection("QR Codes");
+        addDoc(qrCode, qrReference);
+
+        // check if new QrCode was added
+        checkDocExists(qrCode.getHash(), qrReference, new ProfileTest.Callback() {
+            public void dataValid(boolean valid) {
+                docExists = valid;
+                assertTrue(docExists);
+            }
+        });
 
         solo = new Solo(InstrumentationRegistry.getInstrumentation(), activity);
     }
@@ -126,113 +143,120 @@ public class ProfileTest {
     public void checkListClick() {
         // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        CollectionReference qrReference = usersReference.document(testUser).collection("QR Codes");
-        final int randomNum = new Random().nextInt(10000);
-        qrCode = mockQR(String.valueOf(randomNum));
-        String name = qrCode.getName();
 
         // Check that current user exists
         checkDocExists(testUser, usersReference, new ProfileTest.Callback() {
             public void dataValid(boolean valid) {
+                System.out.println("here");
                 docExists = valid;
                 assertTrue(docExists);
             }
         });
 
-        // Delete all of the user's current qrCodes
-        getAll(qrCode.getHash(), qrReference, new Callback2() {
-            @Override
-            public void collect(QuerySnapshot querySnapshot) {
-                for (DocumentSnapshot documentSnapshot : querySnapshot) {
-                    deleteDoc(documentSnapshot.getId(), qrReference);
-                }
-            }
+        // Refresh the profile
+        solo.clickOnView(solo.getView(R.id.settings));
+        Assert.assertTrue(solo.waitForText("Settings", 1, 1000));
+        solo.clickOnView(solo.getView(R.id.profile));
 
-        });
-
-        // add new QR code
-        addDoc(qrCode, qrReference);
-
-        // check if new QrCode was added
-        checkDocExists(qrCode.getHash(), qrReference, new ProfileTest.Callback() {
-            public void dataValid(boolean valid) {
-                docExists = valid;
-                assertTrue(docExists);
-            }
-        });
-
-        //Name of qrCode should appear
-        assertTrue(solo.waitForText(name, 1, 10000));
-        //Should only be 1 qrCode in collection
+        solo.sleep(20);
+        // Name of qrCode should appear
+        assertTrue(solo.waitForText(name, 1, 2000));
+        // There should only be 1 qrCode in collection
         assertTrue(solo.waitForText("1", 1, 10000));
-        //points should appear 1. in recycler view 2. in highest score QR 3. in lowest score QR 4. total points
+        // Points should appear 1. in recycler view 2. in highest score QR 3. in lowest score QR 4. in total points
         assertTrue(solo.waitForText(String.valueOf(qrCode.getPoints()), 4, 10000));
         solo.clickInRecyclerView(0);
         // wait for "Add Comment" to know the qrView dialog has opened
         assertTrue(solo.waitForText("Add Comment", 1, 10000));
         // should display the qRCode name as a header
-        //assertTrue(solo.waitForText(name,1, 10000));
+        assertTrue(solo.waitForText(name,1, 10000));
         // points should be displayed in dialog
-        //assertTrue(solo.waitForText(String.valueOf(qrCode.getPoints()),1, 10000));
-        /*
-        For some reason robotium does not recognize the positive button on the dialog
-         */
-        //solo.clickOnView(solo.getView(android.R.id.button1));
-        //
-        //solo.clickOnButton("OK");
-        //solo.clickOnText("OK");
-        //Thread.sleep(250);
-        //solo.goBack();
-        //solo.clickOnView(solo.getButton("OK"));
-        //assertTrue(solo.waitForText("Highest",1, 10000));
+        assertTrue(solo.waitForText(String.valueOf(qrCode.getPoints()),1, 10000));
+        // click OK
+        solo.clickOnText("OK");
     }
 
     @Test
     public void checkCommentAdd() {
-
         // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-
-        CollectionReference qrReference = usersReference.document(testUser).collection("QR Codes");
-        final int randomNum = new Random().nextInt(10000);
-        qrCode = mockQR(String.valueOf(randomNum));
-        String name = qrCode.getName();
 
         // Check that current user exists
         checkDocExists(testUser, usersReference, new ProfileTest.Callback() {
             public void dataValid(boolean valid) {
+                System.out.println("here");
                 docExists = valid;
                 assertTrue(docExists);
             }
         });
 
-        // Delete all of the user's current qrCodes
-        getAll(qrCode.getHash(), qrReference, new Callback2() {
-            @Override
-            public void collect(QuerySnapshot querySnapshot) {
-                for (DocumentSnapshot documentSnapshot : querySnapshot) {
-                    deleteDoc(documentSnapshot.getId(), qrReference);
-                }
-            }
+        // Refresh the profile
+        solo.clickOnView(solo.getView(R.id.settings));
+        Assert.assertTrue(solo.waitForText("Settings", 1, 1000));
+        solo.clickOnView(solo.getView(R.id.profile));
 
-        });
-
-        // add new QR code
-        addDoc(qrCode, qrReference);
-
-        // check if new QrCode was added
-        checkDocExists(qrCode.getHash(), qrReference, new ProfileTest.Callback() {
-            public void dataValid(boolean valid) {
-                docExists = valid;
-                assertTrue(docExists);
-            }
-        });
-
+        solo.sleep(20);
+        // Name of qrCode should appear
+        assertTrue(solo.waitForText(name, 1, 2000));
+        // There should only be 1 qrCode in collection
+        assertTrue(solo.waitForText("1", 1, 10000));
         solo.clickInRecyclerView(0);
+        // wait for "Add Comment" to know the qrView dialog has opened
         assertTrue(solo.waitForText("Add Comment", 1, 10000));
+        solo.enterText(0, "great catch king 😂");
+        solo.clickOnView(solo.getView(R.id.imageViewSend));
+        solo.enterText(0, "great catch king 😂");
+        solo.clickOnView(solo.getView(R.id.imageViewSend));
+        // Verify comments have been sent to the comment box
+        assertTrue(solo.waitForText("great catch king 😂",2, 10000));
+        // click OK
+        solo.clickOnText("OK");
 
-        solo.enterText(0, "hello");
+    }
 
+    @Test
+    public void checkPointAddition(){
+        // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”
+        solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
+        CollectionReference qrReference = usersReference.document(testUser).collection("QR Codes");
+
+        // Check that current user exists
+        checkDocExists(testUser, usersReference, new ProfileTest.Callback() {
+            public void dataValid(boolean valid) {
+                System.out.println("here");
+                docExists = valid;
+                assertTrue(docExists);
+            }
+        });
+
+        // Refresh the profile
+        solo.clickOnView(solo.getView(R.id.settings));
+        Assert.assertTrue(solo.waitForText("Settings", 1, 1000));
+        solo.clickOnView(solo.getView(R.id.profile));
+
+        solo.sleep(20);
+        // Name of qrCode should appear
+        assertTrue(solo.waitForText(name, 1, 2000));
+        // There should only be 1 qrCode in collection
+        assertTrue(solo.waitForText("1", 1, 10000));
+        // Points should appear 1. in recycler view 2. in highest score QR 3. in lowest score QR 4. in total points
+        assertTrue(solo.waitForText(String.valueOf(qrCode.getPoints()), 4, 10000));
+
+        QRCode qrCode1 = mockQR("Test");
+        addDoc(qrCode1, qrReference);
+        solo.clickOnView(solo.getView(R.id.settings));
+        Assert.assertTrue(solo.waitForText("Settings", 1, 1000));
+        solo.clickOnView(solo.getView(R.id.profile));
+        assertTrue(solo.waitForText(String.valueOf(qrCode1.getPoints() + qrCode.getPoints()), 1, 10000));
+        if(qrCode1.getPoints() != qrCode.getPoints()){
+            assertTrue(solo.waitForText(String.valueOf(Math.max(qrCode1.getPoints() , qrCode.getPoints())), 1, 10000));
+            assertTrue(solo.waitForText(String.valueOf(Math.min(qrCode1.getPoints() , qrCode.getPoints())), 1, 10000));
+        }
+
+        //
+        assertTrue(solo.waitForText("2", 1, 10000));
+        // Click OK
+        solo.clickOnText("OK");
 
     }
 
@@ -280,7 +304,6 @@ public class ProfileTest {
                         }
                     }
                 });
-
     }
 
 
