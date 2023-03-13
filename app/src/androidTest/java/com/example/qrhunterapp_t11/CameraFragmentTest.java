@@ -38,7 +38,7 @@ import java.util.Random;
  * Intent tests for the camera fragment.
  *
  * @author Aidan Lynch - writing the tests.
- * @author afra - set up querying information from the database.
+ * @author Afra - set up querying information from the database, setUp(), tearDown(), ActivityTestRule initialization.
  * @reference code mostly repurposed from lab 7.
  */
 public class CameraFragmentTest {

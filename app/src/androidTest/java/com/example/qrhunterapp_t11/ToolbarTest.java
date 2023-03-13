@@ -26,6 +26,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+/**
+ * Toolbar tests
+ *
+ * @author Kristina
+ * @reference Afra - setUp(), tearDown(), ActivityTestRule initialization
+ */
 public class ToolbarTest {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");

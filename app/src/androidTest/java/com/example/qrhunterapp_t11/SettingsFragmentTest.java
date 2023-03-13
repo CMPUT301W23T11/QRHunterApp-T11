@@ -34,7 +34,7 @@ import java.util.Random;
  * Test class for the settings fragment.
  *
  * @author Afra
- * @reference Aidan's CameraFragmentTest class
+ * @reference <a href="https://stackoverflow.com/questions/37101241/how-to-listen-android-activitytestrules-beforeactivitylaunched-method-in-an-and">The journey to this answer took me to the 5th circle of hell and back</a>
  */
 public class SettingsFragmentTest {
 
