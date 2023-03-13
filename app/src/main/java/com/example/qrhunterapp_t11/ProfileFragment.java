@@ -119,7 +119,6 @@ public class ProfileFragment extends Fragment {
 
             }
         });
-
         Query lowQR = QRColl.orderBy("points", Query.Direction.ASCENDING).limit(1);
         // Orders the QR collection from smallest to largest, then returns the first QR Code
         lowQR.addSnapshotListener((value, error) -> {
@@ -150,7 +149,6 @@ public class ProfileFragment extends Fragment {
 
                 QRCode qrCode = documentSnapshot.toObject(QRCode.class);
                 new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
-
             }
         });
 

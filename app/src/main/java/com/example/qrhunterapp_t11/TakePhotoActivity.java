@@ -66,7 +66,7 @@ public class TakePhotoActivity extends AppCompatActivity {
     private String imageUrl;
     private String msTime;
     private static final int REQUEST = 112; // leave here?
-    private Context mContext= TakePhotoActivity.this;
+    private Context mContext = TakePhotoActivity.this;
 
     /**
      * Called when activity launches; starts by intializing the storage references for firebase, the preview view, capture button
@@ -107,7 +107,7 @@ public class TakePhotoActivity extends AppCompatActivity {
                 if (Build.VERSION.SDK_INT >= 23 && Build.VERSION.SDK_INT <= 29) {
                     String[] PERMISSIONS = {android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
                     if (!hasPermissions(mContext, PERMISSIONS)) {
-                        ActivityCompat.requestPermissions((Activity) mContext, PERMISSIONS, REQUEST );
+                        ActivityCompat.requestPermissions((Activity) mContext, PERMISSIONS, REQUEST);
                     } else {
                         capturePhoto();
                     }
@@ -121,7 +121,7 @@ public class TakePhotoActivity extends AppCompatActivity {
     /**
      * Checks whether a permission is granted; in this case permission to access and write to the phone's storage.
      *
-     * @param context Interface for global information about application environment.
+     * @param context     Interface for global information about application environment.
      * @param permissions Vararg of permission strings.
      * @return Whether the permission has been granted.
      */
@@ -140,12 +140,11 @@ public class TakePhotoActivity extends AppCompatActivity {
     /**
      * Handler for when the user accepts or rejects the initial prompt for storage access.
      *
-     * @param requestCode The request code passed in.
-     * @param permissions The requested permissions. Never null.
+     * @param requestCode  The request code passed in.
+     * @param permissions  The requested permissions. Never null.
      * @param grantResults The grant results for the corresponding permissions
-     *     which is either {@link android.content.pm.PackageManager#PERMISSION_GRANTED}
-     *     or {@link android.content.pm.PackageManager#PERMISSION_DENIED}. Never null.
-     *
+     *                     which is either {@link android.content.pm.PackageManager#PERMISSION_GRANTED}
+     *                     or {@link android.content.pm.PackageManager#PERMISSION_DENIED}. Never null.
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -165,7 +164,7 @@ public class TakePhotoActivity extends AppCompatActivity {
      * Method that deals with capturing the photo, storing it intermediately on the device, and then uploading it to Firebase database (document containing photo name and url), and Firebase storage (the actual .jpeg).
      * TODO currently the images are not compressed, but that's a detail that can be added in the later stages; apparently firebase can do this automatically?
      */
-    private void capturePhoto(){
+    private void capturePhoto() {
         long timestamp = System.currentTimeMillis(); //NOTE: this doesn't currently correspond to the same msTime that will be set for the photo on firebase; but since this is only for storing the image locally, it may not really matter
 
         ContentValues contentValues = new ContentValues();
@@ -257,7 +256,7 @@ public class TakePhotoActivity extends AppCompatActivity {
      *
      * @reference https://stackoverflow.com/questions/51086755/java-android-how-to-call-onsuccess-method from Fangming, Jun 28 2018, CC BY-SA 4.0.
      */
-    public interface OnUploadListener{
+    public interface OnUploadListener {
         void onUpload(String url);
     }
 

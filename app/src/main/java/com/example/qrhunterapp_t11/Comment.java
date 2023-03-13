@@ -13,8 +13,8 @@ public class Comment {
     /**
      * Constructor for Comment
      *
-     * @param comment
-     * @param profile
+     * @param comment - String representing the comment
+     * @param profile - String representing the user's profile
      */
     public Comment(String comment, String profile) {
         this.comment = comment;
