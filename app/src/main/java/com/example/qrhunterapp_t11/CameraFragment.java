@@ -54,17 +54,17 @@ import java.util.TimerTask;
  * @author Josh Lucas and Afra - methods for creating a new QR object
  */
 public class CameraFragment extends Fragment {
-    ActivityResultLauncher<ScanOptions> barLauncher;
-    ActivityResultLauncher<Intent> photoLauncher;
-    QRCode qrCode;
+    private ActivityResultLauncher<ScanOptions> barLauncher;
+    private ActivityResultLauncher<Intent> photoLauncher;
+    private QRCode qrCode;
 
-    String imageUrl;
-    SharedPreferences prefs;
-
-    //https://firebase.google.com/docs/firestore/manage-data/add-data //TODO put this in a javadoc somewhere as an @reference?
-    FirebaseFirestore db;
-    CollectionReference QRCodesReference;
-    CollectionReference usersReference;
+    private String imageUrl;
+    private SharedPreferences prefs;
+    private FirebaseFirestore db;
+    private CollectionReference QRCodesReference;
+    private CollectionReference usersReference;
+    private static final int PERMISSIONS_REQUEST_LOCATION = 100;
+    private GoogleApiClient googleApiClient;
 
     public CameraFragment(FirebaseFirestore db) {
         this.db = db;
@@ -139,8 +139,7 @@ public class CameraFragment extends Fragment {
         barLauncher = registerForActivityResult(new ScanContract(), result -> {
             if (result.getContents() != null) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext()); // create a builder for the alert dialog
-                String resultString = result.getContents(); // how to access QR code contents; score dialog shows placeholder value for now
-                // resultString is a string of whatever was in the QR code; supply it as an argument into your hash function/constructor
+                String resultString = result.getContents(); // access QR code contents
 
                 // object instantiated
                 qrCode = new QRCode(resultString);
@@ -148,10 +147,10 @@ public class CameraFragment extends Fragment {
                 // create custom dialog to display QR score
                 LayoutInflater inflater = this.getLayoutInflater();
                 View dialogView = inflater.inflate(R.layout.qr_scored_dialog, null);
-                TextView scoredTV = dialogView.findViewById(R.id.scoredTV); // NEW ADDITION
+                TextView scoredTV = dialogView.findViewById(R.id.scoredTV);
                 builder.setView(dialogView);
                 builder.setCancelable(false);
-                scoredTV.setText("Scored " + String.valueOf(qrCode.getPoints()) + " Points"); // NEW ADDITION
+                scoredTV.setText("Scored " + String.valueOf(qrCode.getPoints()) + " Points");
 
                 final AlertDialog alertDialog = builder.create();
                 alertDialog.show(); // create and display the dialog
@@ -229,8 +228,7 @@ public class CameraFragment extends Fragment {
     }
 
 
-    private static final int PERMISSIONS_REQUEST_LOCATION = 100; //TODO move to top of class for cleanliness?
-    private GoogleApiClient googleApiClient; //TODO move to top of class for cleanliness?
+
 
     /**
      * Connects the GoogleApiClient and initiates the permissions check
@@ -275,7 +273,7 @@ public class CameraFragment extends Fragment {
                         double longitude = location.getLongitude();
                         Log.d("LocationPrompt", "Latitude: " + latitude + ", Longitude: " + longitude);
                         //set location and store
-                        qrCode.setLocation(location);
+                        //qrCode.setLocation(location);
                         addQRCode();
                         returnToProfile();
                     } else {

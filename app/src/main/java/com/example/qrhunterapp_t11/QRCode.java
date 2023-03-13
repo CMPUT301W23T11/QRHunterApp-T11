@@ -50,6 +50,10 @@ public class QRCode {
     public QRCode() {
     }
 
+    /**
+     * Getter for QRCode's points attribute
+     * @return points - integer amount of points
+     */
     public int getPoints() {
         return points;
     }
@@ -118,11 +122,6 @@ public class QRCode {
         this.commentList = commentList;
     }
 
-    // TODO still need this one?
-    public void setHashDebug(String hash) {
-        this.hash = hash;
-    }
-
     /**
      * Setter for QRCode Object's hash attribute
      * takes a string and runs it though Java's built in SHA256 hash algorithm
@@ -150,9 +149,6 @@ public class QRCode {
         for (int i = 0; i < digest.length; i++) {
             hexString.append(String.format("%02x", (0xFF & digest[i])));
         }
-        // print to console log, can be removed later
-        System.out.println(hexString);
-
         // convert to immutable string and return output
         String output = hexString.toString();
         return output;
@@ -170,19 +166,19 @@ public class QRCode {
      * calculatePoints uses the hash value of the QRCode to calculate the points value of the QRCode
      * Static to increase testability
      *
-     * @param hash String hash value of the QR code
-     * @return grandTotal int
+     * @param hash - String hash value of the QR code
+     * @return grandTotal - int
      * @reference Oracle's documentation on string manipulation https://docs.oracle.com/javase/tutorial/java/data/manipstrings.html
      */
     public static int calculatePoints(String hash) {
 
-        // L of possible chars in the hash, other than 0, each corresponds to their base number of points
+        // List of possible chars in the hash, other than 0, each corresponds to their base number of points
         Character[] values = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
         int pointMultiplier = 1;
         int totalPoints = 0;
         int numberOfZero = 0;
 
-        // Iterate through hash string and count every 0
+        // Iterate through hash string and count every 0 in variable numberOfZero
         for (int k = 0; k < hash.length(); k++) {
             Character hashChar = hash.charAt(k);
             if (hashChar.equals('0')) {
@@ -202,37 +198,37 @@ public class QRCode {
                 // If a character in the hash string equals the current value char as well as is equal to the previous char in the hash, increase the point multiplier.
                 if ((hashChar.equals(values[i])) && (hashChar.equals(previousChar))) {
                     pointMultiplier++;
-                    //System.out.println("digit " + values[i] + "points multiplier: " + pointMultiplier);
 
                     // Edge case for the final iteration: calculate based on current pointMultiplier and return pointMultiplier to 1
                     if ((j == (hash.length() - 1))) {
                         if (i == 0) {
                             totalPoints += Math.pow(20, pointMultiplier - 1);
+                            // if there are may 0s in a row, subtract the duplicates from numberOfZero to get only the number of single 0s
                             numberOfZero -= pointMultiplier;
                         } else {
                             totalPoints += Math.pow(i, pointMultiplier - 1);
-                            //System.out.println(totalPoints);
                         }
                         pointMultiplier = 1;
                     }
-                } else {
+                }
+                // Calculate updated total based on current pointMultiplier and return pointMultiplier to 1
+                // if a character in the hash string does not equal the current value char or is not equal to the previous char in the hash
+                else {
                     if (pointMultiplier > 1) {
                         if (i == 0) {
                             totalPoints += Math.pow(20, pointMultiplier - 1);
                             numberOfZero -= pointMultiplier;
                         } else {
                             totalPoints += Math.pow(i, pointMultiplier - 1);
-                            //System.out.println(totalPoints);
                         }
                         pointMultiplier = 1;
                     }
                 }
+                // move previous char forwards
                 previousChar = hashChar;
             }
         }
-        // System.out.println(totalPoints + " at end");
-        //  System.out.println(numberOfZero + " at end");
-        // System.out.println(numberOfZero + totalPoints + " at end");
+        // add single 0s to the total
         int grandTotal = (totalPoints + numberOfZero);
 
         //Max points will be 1E9
@@ -245,14 +241,16 @@ public class QRCode {
 
     /**
      * uniqueImage uses the 6 bits of a shortened hash function to determine which drawables will be used to make the unique image
+     * Static to increase testability
      *
-     * @param hash String hash value of the QR code
-     * @return faceList ArrayList of drawables to form the image
+     * @param hash - String hash value of the QR code
+     * @return faceList - ArrayList of drawables to form the image
      * @reference educative.io https://www.educative.io/answers/how-to-convert-an-integer-to-binary-in-java for converting integer to binary, License: Creative Commons-Attribution-ShareAlike 4.0 (CC-BY-SA 4.0)
      * @reference techiedelight.com https://www.techiedelight.com/convert-hex-string-to-integer-java/ for converting string to hexadecimal integer
      */
     public static ArrayList<Integer> uniqueImage(String hash) {
 
+        //Lists of possible drawables for each part of the face
         int eyesNumbers[] = {
                 R.drawable.eyes1,
                 R.drawable.eyes2
@@ -278,12 +276,12 @@ public class QRCode {
                 R.drawable.face2
         };
 
-        int hashSmall = Integer.parseInt(hash.substring(0, 5), 16);
-
         ArrayList<Integer> faceList = new ArrayList<>();
-
+        // Shorten hash and convert it to binary, remove the first 1 from the binary string
+        int hashSmall = Integer.parseInt(hash.substring(0, 5), 16);
         String hashBinary = Integer.toBinaryString(hashSmall).substring(1);
 
+        // Choose what element in each face list to add to the complete faceList array
         faceList.add(eyesNumbers[hashBinary.charAt(0) - '0']);
         faceList.add(eyebrowsNumbers[hashBinary.charAt(1) - '0']);
         faceList.add(colourNumbers[hashBinary.charAt(2) - '0']);
@@ -295,10 +293,10 @@ public class QRCode {
 
     /**
      * Uses the 6 bits of a shortened hash function to determine which drawables will be used to make the unique image
-     * static to increase testability
+     * Static to increase testability
      *
-     * @param hash String hash value of the QR code
-     * @return newName String
+     * @param hash - String hash value of the QR code
+     * @return newName - String of the QRCode's name
      */
     public static String uniqueName(String hash) {
 
@@ -335,13 +333,12 @@ public class QRCode {
         };
 
         String newName = "";
+        // Shorten hash and convert it to binary, remove the first 1 from the binary string
         Integer hashSmall = Integer.parseInt(hash.substring(0, 6), 16);
         String hashBinary = Integer.toBinaryString(hashSmall).substring(1);
 
+        // iterate through binary in groups of 2, selecting name parts based on the permutation of the 2 bits. j holds the place of the name group within nameParts
         for (int i = 0,j = 0; i< 12; i+=2, j+=4){
-
-            //Integer num = Integer.parseInt(String.valueOf(hashBinary.charAt(i))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i + 1))) + Integer.parseInt(String.valueOf(hashBinary.charAt(i + 2)));
-            System.out.println("hash " + hashBinary);
 
             if ((hashBinary.charAt(i) == '0') && (hashBinary.charAt(i+1) == '0') ) {
                 newName = newName + nameParts[j];
