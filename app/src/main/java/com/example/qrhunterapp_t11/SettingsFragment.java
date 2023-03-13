@@ -114,13 +114,13 @@ public class SettingsFragment extends Fragment {
         if (usernameString.length() == 0) {
             usernameEditText.setError("Field cannot be blank");
         }
-        if (usernameString.contains("/")) {
+        else if (usernameString.contains("/")) {
             usernameEditText.setError("Invalid character: '/'");
         }
-        if (usernameString.equals(".") || usernameString.equals("..")) {
+        else if (usernameString.equals(".") || usernameString.equals("..")) {
             usernameEditText.setError("Invalid username");
         }
-        if (usernameString.equals("__.*__")) {
+        else if (usernameString.equals("__.*__")) {
             usernameEditText.setError("Invalid username");
         }
 
