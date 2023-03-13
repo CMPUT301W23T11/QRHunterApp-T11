@@ -1,17 +1,19 @@
 package com.example.qrhunterapp_t11;
 
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
-
-import androidx.annotation.NonNull;
-import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.test.rule.ActivityTestRule;
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Point;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.ActivityTestRule;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -28,10 +30,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -40,23 +38,18 @@ import java.util.Random;
  * Intent tests for the camera fragment.
  *
  * @author Aidan Lynch - writing the tests.
- * @author afra - set up querying information from the database.
+ * @author Afra - set up querying information from the database, setUp(), tearDown(), ActivityTestRule initialization.
  * @reference code mostly repurposed from lab 7.
  */
 public class CameraFragmentTest {
-    public interface Callback {
-        void dataValid(boolean valid);
-    }
-
-    private Solo solo;
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");
     private final CollectionReference QRCodesReference = db.collection("QRCodes");
+    private final Random rand = new Random();
+    private final String testUser = "testUser" + rand.nextInt(10000);
+    private Solo solo;
     private boolean docExists;
     private SharedPreferences prefs;
-    private final Random rand = new Random();
-    private final String testUser = "testUser" + rand.nextInt(1000);
-
     @Rule
     public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
 
@@ -111,9 +104,6 @@ public class CameraFragmentTest {
         solo.finishOpenedActivities();
     }
 
-    //TODO add start function that accepts initial prompts or something, hopefully that is enough
-    //TODO initial QR setting for camera?
-
     /**
      * Attempt to scan a QR code, take a photo, and share location.
      */
@@ -150,6 +140,9 @@ public class CameraFragmentTest {
             }
         });
     }
+
+    //TODO add start function that accepts initial prompts or something, hopefully that is enough
+    //TODO initial QR setting for camera?
 
     /**
      * Attempt to scan a QR code, take a photo, and reject location.
@@ -255,7 +248,7 @@ public class CameraFragmentTest {
      *
      * @param docToDelete document that should be deleted
      * @param cr          CollectionReference to the collection being accessed
-     * @reference https://firebase.google.com/docs/firestore/manage-data/delete-data - used without major modification
+     * @reference <a href="https://firebase.google.com/docs/firestore/manage-data/delete-data">used without major modification</a>
      */
     public void deleteDoc(String docToDelete, CollectionReference cr) {
         cr.document(docToDelete)
@@ -279,7 +272,7 @@ public class CameraFragmentTest {
      *
      * @param docToCheck document that should be checked for
      * @param cr         CollectionReference to the collection being accessed
-     * @reference https://firebase.google.com/docs/firestore/query-data/get-data - used without major modification
+     * @reference <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
      */
     public void checkDocExists(String docToCheck, CollectionReference cr, final Callback dataValid) {
         DocumentReference docRef = cr.document(docToCheck);
@@ -300,5 +293,9 @@ public class CameraFragmentTest {
                 }
             }
         });
+    }
+
+    public interface Callback {
+        void dataValid(boolean valid);
     }
 }

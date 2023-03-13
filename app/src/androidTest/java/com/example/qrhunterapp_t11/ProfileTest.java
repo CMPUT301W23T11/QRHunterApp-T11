@@ -2,19 +2,18 @@ package com.example.qrhunterapp_t11;
 
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static junit.framework.TestCase.assertTrue;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-
-import androidx.annotation.NonNull;
-import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.test.rule.ActivityTestRule;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.ActivityTestRule;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -33,7 +32,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -43,32 +41,18 @@ import java.util.Random;
  *
  * @author Sarah Thomson, Aidan Lynch, Afra
  * @reference code mostly repurposed from Aidan Lynch and lab 7.
- * @reference https://stackoverflow.com/questions/50035752/how-to-get-list-of-documents-from-a-collection-in-firestore-android for help retrieving all documents answer by Ivan Banha CC BY-SA 3.0.
+ * @reference Afra - setUp(), tearDown(), ActivityTestRule initialization
+ * @reference <a href="https://stackoverflow.com/questions/50035752/how-to-get-list-of-documents-from-a-collection-in-firestore-android">for help retrieving all documents answer by Ivan Banha CC BY-SA 3.0.</a>
  */
 public class ProfileTest {
-    private Solo solo;
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");
+    private final Random rand = new Random();
+    private final String testUser = "testUser" + rand.nextInt(10000);
+    private Solo solo;
     private boolean docExists;
     private QRCode qrCode;
     private SharedPreferences prefs;
-    private final Random rand = new Random();
-    private final String testUser = "testUser" + rand.nextInt(1000);
-
-    private String name;
-
-    private QRCode mockQR(String valueString) {
-        return new QRCode(valueString);
-    }
-
-    public interface Callback {
-        void dataValid(boolean valid);
-    }
-
-    public interface Callback2 {
-        void collect(QuerySnapshot querySnapshot);
-    }
-
     @Rule
     public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
 
@@ -92,6 +76,11 @@ public class ProfileTest {
             assertEquals(testUser, displayName);
         }
     };
+    private String name;
+
+    private QRCode mockQR(String valueString) {
+        return new QRCode(valueString);
+    }
 
     /**
      * Runs before all tests and creates solo instance.
@@ -169,9 +158,9 @@ public class ProfileTest {
         // wait for "Add Comment" to know the qrView dialog has opened
         assertTrue(solo.waitForText("Add Comment", 1, 10000));
         // should display the qRCode name as a header
-        assertTrue(solo.waitForText(name,1, 10000));
+        assertTrue(solo.waitForText(name, 1, 10000));
         // points should be displayed in dialog
-        assertTrue(solo.waitForText(String.valueOf(qrCode.getPoints()),1, 10000));
+        assertTrue(solo.waitForText(String.valueOf(qrCode.getPoints()), 1, 10000));
         // click OK
         solo.clickOnText("OK");
     }
@@ -210,8 +199,8 @@ public class ProfileTest {
         solo.enterText(0, "great catch king 😂");
         solo.clickOnView(solo.getView(R.id.imageViewSend));
         // Verify comments have been sent to the comment box
-        assertTrue(solo.waitForText("great catch king 😂",2, 10000));
-        assertTrue(solo.waitForText(testUser,2, 10000));
+        assertTrue(solo.waitForText("great catch king 😂", 2, 10000));
+        assertTrue(solo.waitForText(testUser, 2, 10000));
         // click OK
         solo.clickOnText("OK");
     }
@@ -220,7 +209,7 @@ public class ProfileTest {
      * Verifies scoreboard is updated accordingly when a new QR Code is added
      */
     @Test
-    public void checkPointAddition(){
+    public void checkPointAddition() {
         // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         CollectionReference qrReference = usersReference.document(testUser).collection("QR Codes");
@@ -252,10 +241,10 @@ public class ProfileTest {
 
         // Check if the total has been updated
         assertTrue(solo.waitForText(String.valueOf(qrCode1.getPoints() + qrCode.getPoints()), 1, 10000));
-        if(qrCode1.getPoints() != qrCode.getPoints()){
+        if (qrCode1.getPoints() != qrCode.getPoints()) {
             // Check if highest and lowest have been updated
-            assertTrue(solo.waitForText(String.valueOf(Math.max(qrCode1.getPoints() , qrCode.getPoints())), 1, 10000));
-            assertTrue(solo.waitForText(String.valueOf(Math.min(qrCode1.getPoints() , qrCode.getPoints())), 1, 10000));
+            assertTrue(solo.waitForText(String.valueOf(Math.max(qrCode1.getPoints(), qrCode.getPoints())), 1, 10000));
+            assertTrue(solo.waitForText(String.valueOf(Math.min(qrCode1.getPoints(), qrCode.getPoints())), 1, 10000));
         }
 
         // Check if there are now 2 QRCodes shown on scoreboard
@@ -267,7 +256,7 @@ public class ProfileTest {
      * TODO make this test not fail
      */
     @Test
-    public void deleteLongClickPositive(){
+    public void deleteLongClickPositive() {
         // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         CollectionReference qrReference = usersReference.document(testUser).collection("QR Codes");
@@ -304,7 +293,7 @@ public class ProfileTest {
      * TODO make this test not fail
      */
     @Test
-    public void deleteLongClickNegative(){
+    public void deleteLongClickNegative() {
         // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         CollectionReference qrReference = usersReference.document(testUser).collection("QR Codes");
@@ -345,7 +334,7 @@ public class ProfileTest {
      *
      * @param docToCheck document that should be checked for
      * @param cr         CollectionReference to the collection being accessed
-     * @reference https://firebase.google.com/docs/firestore/query-data/get-data - used without major modification
+     * @reference <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
      * @reference Aidan Lynch's CameraFragmentTest for this code
      */
     public void checkDocExists(String docToCheck, CollectionReference cr, final ProfileTest.Callback dataValid) {
@@ -374,12 +363,12 @@ public class ProfileTest {
      *
      * @param qrCode document that should be added
      * @param cr     CollectionReference to the collection being accessed
-     * @reference https://firebase.google.com/docs/firestore/manage-data/delete-data - used without major modification
+     * @reference <a href="https://firebase.google.com/docs/firestore/manage-data/delete-data">used without major modification</a>
      * @reference Aidan Lynch's CameraFragmentTest
      */
     public void addDoc(QRCode qrCode, CollectionReference cr) {
         cr.document(qrCode.getHash()).set(qrCode)
-                .addOnSuccessListener(new OnSuccessListener() {
+                .addOnSuccessListener(new OnSuccessListener<Object>() {
                     @Override
                     public void onSuccess(Object o) {
                         Log.d("AddedDocument", "DocumentSnapshot successfully added!");
@@ -391,5 +380,13 @@ public class ProfileTest {
                         Log.w("AddedDocument", "Error adding document", e);
                     }
                 });
+    }
+
+    public interface Callback {
+        void dataValid(boolean valid);
+    }
+
+    public interface Callback2 {
+        void collect(QuerySnapshot querySnapshot);
     }
 }

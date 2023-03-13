@@ -1,18 +1,5 @@
 package com.example.qrhunterapp_t11;
 
-import androidx.activity.result.ActivityResultCallback;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.camera.core.CameraSelector;
-import androidx.camera.core.ImageCapture;
-import androidx.camera.core.ImageCaptureException;
-import androidx.camera.core.Preview;
-import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.view.PreviewView;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.lifecycle.LifecycleOwner;
-
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -29,18 +16,25 @@ import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageCaptureException;
+import androidx.camera.core.Preview;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
@@ -51,70 +45,21 @@ import java.util.concurrent.Executor;
  * The activity responsible for taking a photo of the QR object or location, and then uploading it to Firebase.
  *
  * @author Aidan Lynch
- * @reference Coding Reel - https://www.youtube.com/watch?v=IrwhjDtpIU0 - how configure Camera X for taking photos
- * @reference Coding in Flow - https://youtu.be/lPfQN-Sfnjw - how to upload images to Firebase database and storage
+ * @reference <a href="https://www.youtube.com/watch?v=IrwhjDtpIU0">how configure Camera X for taking photos</a>
+ * @reference <a href="https://youtu.be/lPfQN-Sfnjw">how to upload images to Firebase database and storage</a>
  */
 public class TakePhotoActivity extends AppCompatActivity {
+    private static final int request = 112; // leave here?
+    private static final String photoUpload = "PhotoUpload";
+    private final Context mContext = TakePhotoActivity.this;
+    public ImageCapture imageCapture;
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
     private PreviewView previewView;
-    private Button captureButton;
-    public ImageCapture imageCapture;
-    //FB upload
     private StorageReference mStorageRef;
-    CollectionReference uploadsReference = FirebaseFirestore.getInstance().collection("uploads");
     private Uri mImageUri;
     private String imageUrl;
     private String msTime;
-    private static final int REQUEST = 112; // leave here?
-    private Context mContext = TakePhotoActivity.this;
-
-    /**
-     * Called when activity launches; starts by intializing the storage references for firebase, the preview view, capture button
-     * and camera provider.
-     *
-     * @param savedInstanceState If the activity is being re-initialized after
-     *                           previously being shut down then this Bundle contains the data it most
-     *                           recently supplied in {@link #onSaveInstanceState}.  <b><i>Note: Otherwise it is null.</i></b>
-     */
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_take_photo);
-
-        // initialize FB references
-        mStorageRef = FirebaseStorage.getInstance().getReference("uploads"); // StorageReference points to a collection called "uploads" on DB
-
-        // initialize camera views
-        previewView = findViewById(R.id.preview);
-        captureButton = findViewById(R.id.captureButton);
-
-        // initialize camera
-        cameraProviderFuture = ProcessCameraProvider.getInstance(this);
-        cameraProviderFuture.addListener(() -> {
-            try {
-                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
-                startCameraX(cameraProvider);
-            } catch (ExecutionException | InterruptedException e) {
-                e.printStackTrace();
-            }
-        }, getExecutor());
-
-        captureButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) { // when the capture button is clicked, take the photo
-                if (Build.VERSION.SDK_INT >= 23 && Build.VERSION.SDK_INT <= 29) {
-                    String[] PERMISSIONS = {android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
-                    if (!hasPermissions(mContext, PERMISSIONS)) {
-                        ActivityCompat.requestPermissions((Activity) mContext, PERMISSIONS, REQUEST);
-                    } else {
-                        capturePhoto();
-                    }
-                } else {
-                    capturePhoto();
-                }
-            }
-        });
-    }
+    private final CollectionReference uploadsReference = FirebaseFirestore.getInstance().collection("uploads");
 
     /**
      * Checks whether a permission is granted; in this case permission to access and write to the phone's storage.
@@ -134,6 +79,53 @@ public class TakePhotoActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Called when activity launches; starts by intializing the storage references for firebase, the preview view, capture button
+     * and camera provider.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after
+     *                           previously being shut down then this Bundle contains the data it most
+     *                           recently supplied in {@link #onSaveInstanceState}.  <b><i>Note: Otherwise it is null.</i></b>
+     */
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_take_photo);
+
+        // initialize FB references
+        mStorageRef = FirebaseStorage.getInstance().getReference("uploads"); // StorageReference points to a collection called "uploads" on DB
+
+        // initialize camera views
+        previewView = findViewById(R.id.preview);
+        Button captureButton = findViewById(R.id.captureButton);
+
+        // initialize camera
+        cameraProviderFuture = ProcessCameraProvider.getInstance(this);
+        cameraProviderFuture.addListener(() -> {
+            try {
+                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+                startCameraX(cameraProvider);
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }, getExecutor());
+
+        captureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) { // when the capture button is clicked, take the photo
+                if (Build.VERSION.SDK_INT >= 23 && Build.VERSION.SDK_INT <= 29) {
+                    String[] permissions = {android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
+                    if (!hasPermissions(mContext, permissions)) {
+                        ActivityCompat.requestPermissions((Activity) mContext, permissions, request);
+                    } else {
+                        capturePhoto();
+                    }
+                } else {
+                    capturePhoto();
+                }
+            }
+        });
+    }
 
     /**
      * Handler for when the user accepts or rejects the initial prompt for storage access.
@@ -147,13 +139,11 @@ public class TakePhotoActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case REQUEST: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    capturePhoto();
-                } else {
-                    Toast.makeText(mContext, "The app was not allowed to write in your storage", Toast.LENGTH_LONG).show();
-                }
+        if (requestCode == request) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                capturePhoto();
+            } else {
+                Toast.makeText(mContext, "The app was not allowed to write in your storage", Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -184,7 +174,7 @@ public class TakePhotoActivity extends AppCompatActivity {
                         uploadFile(new OnUploadListener() {
                             //use OnUploadListener to retrieve url String from uploadFile method
                             @Override
-                            public void onUpload(String url) {
+                            public void onUpload(@NonNull String url) {
                                 Intent intent = new Intent();
                                 intent.putExtra("url", imageUrl);
                                 setResult(Activity.RESULT_OK, intent); // send url String back to the CameraFragment
@@ -234,7 +224,7 @@ public class TakePhotoActivity extends AppCompatActivity {
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .build();
 
-        cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageCapture);
+        cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture);
     }
 
     /**
@@ -250,18 +240,9 @@ public class TakePhotoActivity extends AppCompatActivity {
     }
 
     /**
-     * A listener interface used to retrieve the url string after the photo has been uploaded to the db
-     *
-     * @reference https://stackoverflow.com/questions/51086755/java-android-how-to-call-onsuccess-method from Fangming, Jun 28 2018, CC BY-SA 4.0.
-     */
-    public interface OnUploadListener {
-        void onUpload(String url);
-    }
-
-    /**
      * Function for uploading the image to Firebase database and storage.
      *
-     * @reference Wilmer Villca - https://stackoverflow.com/a/55503926/14445107 - using a successListener to get the image url of the uploaded photo
+     * @reference <a href="https://stackoverflow.com/a/55503926/14445107">Wilmer Villca - using a successListener to get the image url of the uploaded photo</a>
      */
     private void uploadFile(final OnUploadListener listener) {
         if (mImageUri != null) { // if the image exists, upload it
@@ -272,40 +253,47 @@ public class TakePhotoActivity extends AppCompatActivity {
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) { // when file is successfully uploaded
-                            Toast.makeText(TakePhotoActivity.this, "Photo uploaded", Toast.LENGTH_SHORT);
-                            Log.d("PhotoUpload", "Photo upload was successful.");
+                            Toast.makeText(TakePhotoActivity.this, "Photo uploaded", Toast.LENGTH_SHORT).show();
+                            Log.d(photoUpload, "Photo upload was successful.");
 
-                            if (taskSnapshot.getMetadata() != null) {
-                                if (taskSnapshot.getMetadata().getReference() != null) {
-                                    Task<Uri> result = taskSnapshot.getStorage().getDownloadUrl();
-                                    result.addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                        @Override
-                                        public void onSuccess(Uri uri) { // retrieve image url of photo upload
-                                            Log.d("UrlRetrieved", "Image url successfully retrieved: " + imageUrl); //TODO remove redundant key and attribute (in database collection?)
-                                            imageUrl = uri.toString(); // this is *NOT* the image uri used earlier
-                                            PhotoUploader upload = new PhotoUploader(msTime, imageUrl);
-                                            listener.onUpload(imageUrl);
-                                            // make entry in database, that contains the name and url of our image upload
-                                            uploadsReference.document(upload.getName()).set(upload);
-                                        }
-                                    }).addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            Log.d("UrlRetrieved", "Image url FAILED to retrieve.");
-                                        }
-                                    });
-                                }
+                            if ((taskSnapshot.getMetadata() != null) && (taskSnapshot.getMetadata().getReference() != null)) {
+                                Task<Uri> result = taskSnapshot.getStorage().getDownloadUrl();
+                                result.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) { // retrieve image url of photo upload
+                                        Log.d("UrlRetrieved", "Image url successfully retrieved: " + imageUrl); //TODO remove redundant key and attribute (in database collection?)
+                                        imageUrl = uri.toString(); // this is *NOT* the image uri used earlier
+                                        PhotoUploader upload = new PhotoUploader(msTime, imageUrl);
+                                        listener.onUpload(imageUrl);
+                                        // make entry in database, that contains the name and url of our image upload
+                                        uploadsReference.document(upload.getName()).set(upload);
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.d("UrlRetrieved", "Image url FAILED to retrieve.");
+                                    }
+                                });
                             }
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) { // when file fails to upload
-                            Log.d("PhotoUpload", "Something went wrong uploading the photo: " + e.getMessage());
+                            Log.d(photoUpload, "Something went wrong uploading the photo: " + e.getMessage());
                         }
                     });
         } else {
-            Log.d("PhotoUpload", "Something went wrong uploading the photo; no mImageUri?");
+            Log.d(photoUpload, "Something went wrong uploading the photo; no mImageUri?");
         }
+    }
+
+    /**
+     * A listener interface used to retrieve the url string after the photo has been uploaded to the db
+     *
+     * @reference <a href="https://stackoverflow.com/questions/51086755/java-android-how-to-call-onsuccess-method">from Fangming</a>
+     */
+    public interface OnUploadListener {
+        void onUpload(@NonNull String url);
     }
 }

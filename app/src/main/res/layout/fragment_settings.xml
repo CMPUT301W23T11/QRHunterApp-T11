@@ -23,8 +23,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="76dp"
-            android:text="Change Email:"
-            android:textSize="30dp"
+            android:text="@string/edittext_change_email"
+            android:textSize="30sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/username_edit_edittext" />
 
@@ -34,8 +34,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="112dp"
-            android:text="Change Username:"
-            android:textSize="30dp"
+            android:text="@string/edittext_change_username"
+            android:textSize="30sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -45,9 +45,11 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
+            android:autofillHints="username"
             android:ems="10"
+            android:hint="@string/edittext_username"
             android:inputType="textPersonName"
-            android:text="Username"
+            android:text="@string/edittext_username"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/username_edit_textview" />
 
@@ -57,9 +59,11 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
+            android:autofillHints="emailAddress"
             android:ems="10"
+            android:hint="@string/edittext_email"
             android:inputType="textEmailAddress"
-            android:text="Email"
+            android:text="@string/edittext_email"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/email_edit_textview" />
 
@@ -69,7 +73,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="116dp"
-            android:text="Confirm"
+            android:text="@string/edittext_confirm"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/email_edit_edittext" />
     </androidx.constraintlayout.widget.ConstraintLayout>

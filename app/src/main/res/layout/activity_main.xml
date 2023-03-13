@@ -10,38 +10,38 @@
         android:id="@+id/main_screen"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/bottomAppBar"
-        />
+        android:layout_above="@id/bottomAppBar" />
 
 
     <com.google.android.material.bottomappbar.BottomAppBar
+        android:id="@+id/bottomAppBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/bottomAppBar"
-        android:backgroundTint="@color/toolbar"
         android:layout_gravity="bottom"
+        android:backgroundTint="@color/toolbar"
         app:fabCradleMargin="8dp"
         app:fabCradleRoundedCornerRadius="15dp"
 
         >
+
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottomToolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/transparent_background"
             android:layout_marginEnd="16dp"
+            android:background="@drawable/transparent_background"
             app:itemIconTint="@drawable/selector"
             app:itemTextColor="@drawable/selector"
             app:menu="@menu/bottom_toolbar_menu" />
     </com.google.android.material.bottomappbar.BottomAppBar>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/addFab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/addFab"
         android:backgroundTint="@color/green"
+        android:contentDescription="@string/adds_a_qr_code"
         android:src="@drawable/add_icon"
-        app:layout_anchor="@id/bottomAppBar"
-        android:contentDescription="@string/adds_a_qr_code" />
+        app:layout_anchor="@id/bottomAppBar" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

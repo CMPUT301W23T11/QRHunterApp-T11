@@ -1,45 +1,96 @@
 package com.example.qrhunterapp_t11;
 
+import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.robotium.solo.Solo;
-
-import junit.framework.TestCase;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+/**
+ * Toolbar tests
+ *
+ * @author Kristina
+ * @reference Afra - setUp(), tearDown(), ActivityTestRule initialization
+ */
 public class ToolbarTest {
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final CollectionReference usersReference = db.collection("Users");
+    private final Random rand = new Random();
     private Solo solo;
-
-
+    private final String testUser = "testUser" + rand.nextInt(10000);
+    private SharedPreferences prefs;
     @Rule
-    public ActivityTestRule<MainActivity> rule =
-            new ActivityTestRule<>(MainActivity.class, true, true);
+    public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
+
+        // Set SharedPreferences to initialize a new user before the activity is launched
+        @Override
+        protected void beforeActivityLaunched() {
+            super.beforeActivityLaunched();
+            prefs = getApplicationContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+            String username;
+            String displayName;
+
+            prefs.edit().clear().commit();
+            prefs.edit().putBoolean("LoggedIn", true).commit();
+            prefs.edit().putString("currentUser", testUser).commit();
+            prefs.edit().putString("currentUserDisplayName", testUser).commit();
+
+            username = prefs.getString("currentUser", null);
+            displayName = prefs.getString("currentUserDisplayName", null);
+
+            assertEquals(testUser, username);
+            assertEquals(testUser, displayName);
+        }
+    };
 
     /**
      * Runs before all tests and creates solo instance.
-     * @throws Exception
      */
     @Before
-    public void setUp() throws Exception{
-        solo = new Solo(InstrumentationRegistry.getInstrumentation(),rule.getActivity());
-    }
-    /**
-     * Gets the Activity
-     * @throws Exception
-     */
-    @Test
-    public void start() throws Exception{
+    public final void setUp() {
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        rule.launchActivity(intent);
         Activity activity = rule.getActivity();
+
+        Map<String, Object> user = new HashMap<>();
+        user.put("Username", testUser);
+        user.put("Display Name", testUser);
+
+        usersReference.document(testUser).set(user);
+
+        solo = new Solo(InstrumentationRegistry.getInstrumentation(), activity);
+    }
+
+    /**
+     * Clear SharedPreferences and close the activity after each test
+     */
+    @After
+    public final void tearDown() {
+        Activity activity = rule.getActivity();
+        prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        prefs.edit().clear().commit();
+        usersReference.document(testUser).delete();
+        solo.finishOpenedActivities();
     }
 
     /**
@@ -53,7 +104,7 @@ public class ToolbarTest {
         // asserts that the activity starts on the main activity
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         // asserts that the page starts on the profile page
-        assertTrue(solo.waitForText("STATS",1, 6000));
+        assertTrue(solo.waitForText("STATS", 1, 6000));
 
         solo.clickOnView(solo.getView(R.id.profile));
         // asserts that the page stays on the profile page
@@ -68,7 +119,7 @@ public class ToolbarTest {
     @Test
     public void testSettingsClick() {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        solo.waitForText("STATS",1, 4000);
+        solo.waitForText("STATS", 1, 4000);
 
         solo.clickOnView(solo.getView(R.id.settings));
         // asserts that settings button works
@@ -156,7 +207,7 @@ public class ToolbarTest {
     @Test
     public void testAddFromSettingsClick() {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        solo.waitForText("STATS",1, 4000);
+        solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.settings));
         solo.waitForText("Settings", 1, 4000);
 
@@ -179,7 +230,7 @@ public class ToolbarTest {
     @Test
     public void testSearchClick() {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        solo.waitForText("STATS",1, 4000);
+        solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.search));
         assertTrue(solo.waitForText("STATS", 1, 6000));
     }
@@ -193,12 +244,12 @@ public class ToolbarTest {
     @Test
     public void testMapClick() {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        solo.waitForText("STATS",1, 4000);
+        solo.waitForText("STATS", 1, 4000);
 
         solo.clickOnView(solo.getView(R.id.map));
         solo.sleep(5000);
         // checks that the page changed from the profile page
-        assertFalse(solo.waitForText("STATS",1, 6000));
+        assertFalse(solo.waitForText("STATS", 1, 6000));
     }
 
     /**
@@ -209,7 +260,7 @@ public class ToolbarTest {
     @Test
     public void testMapClickAgain() {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        solo.waitForText("STATS",1, 4000);
+        solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.map));
 
         // clicks on map after on map page
@@ -282,7 +333,7 @@ public class ToolbarTest {
     @Test
     public void testAddFromMapClick() {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        solo.waitForText("STATS",1, 4000);
+        solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.map));
 
         // checks that the add button works
@@ -305,7 +356,7 @@ public class ToolbarTest {
     @Test
     public void testCameraClick() {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        solo.waitForText("STATS",1, 4000);
+        solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.addFab));
         // gotten from CameraFragmentTest.java
         assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
@@ -316,12 +367,4 @@ public class ToolbarTest {
         solo.waitForText("STATS", 1, 7000);
     }
 
-    /**
-     * Closes the activity after each test
-     * @throws Exception
-     */
-    @After
-    public void tearDown() throws Exception{
-        solo.finishOpenedActivities();
-    }
 }
