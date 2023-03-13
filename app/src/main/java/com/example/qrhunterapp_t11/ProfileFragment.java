@@ -28,6 +28,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.MessageFormat;
+import java.util.Objects;
 
 
 /**
@@ -118,7 +119,7 @@ public class ProfileFragment extends Fragment {
 
                         assert value != null;
                         for (QueryDocumentSnapshot document : value) {
-                            int points = document.getLong("points").intValue();
+                            int points = Objects.requireNonNull(document.getLong("points")).intValue();
                             total += points;
                         }
                         totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
@@ -131,12 +132,14 @@ public class ProfileFragment extends Fragment {
                         if (error != null) {
                             Log.w(tag, listenFailed, error);
                         }
+                        double total = 0;
                         assert value != null;
                         for (QueryDocumentSnapshot document : value) {
-                            topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", document.get("points")));
-                            Log.d(tag, "top QR code: " + document.get("points"));
+                            total += Objects.requireNonNull(document.getLong("points")).intValue();
 
                         }
+                        Log.d(tag, "top QR code: " + total);
+                        topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", total));
                     });
 
                     // Orders the QR collection from smallest to largest, then returns the first QR Code
@@ -145,12 +148,15 @@ public class ProfileFragment extends Fragment {
                         if (error != null) {
                             Log.w(tag, listenFailed, error);
                         }
+                        double total = 0;
                         assert value != null;
                         for (QueryDocumentSnapshot document : value) {
-                            lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", document.get("points")));
-                            Log.d(tag, "lowest QR code: " + document.get("points"));
+                            total += Objects.requireNonNull(document.getLong("points")).intValue();
 
                         }
+                        Log.d(tag, "lowest QR code: " + total);
+                        lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", total));
+
                     });
 
                     // Gets the size of the amount of QR codes there are
