@@ -110,9 +110,18 @@ public class SettingsFragment extends Fragment {
 
     public void usernameCheck(String usernameString, EditText usernameEditText, final settingsCallback usernameValid) {
 
-        // Check if field is empty
+        // Check if username matches Firestore document ID guidelines
         if (usernameString.length() == 0) {
             usernameEditText.setError("Field cannot be blank");
+        }
+        if (usernameString.contains("/")) {
+            usernameEditText.setError("Invalid character: '/'");
+        }
+        if (usernameString.equals(".") || usernameString.equals("..")) {
+            usernameEditText.setError("Invalid username");
+        }
+        if (usernameString.equals("__.*__")) {
+            usernameEditText.setError("Invalid username");
         }
 
         // Check if username exists already

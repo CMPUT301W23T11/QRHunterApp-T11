@@ -24,7 +24,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.robotium.solo.Solo;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -63,7 +62,7 @@ public class SettingsFragmentTest {
     @After
     public final void cleanUp() {
         //prefs.edit().clear().commit();
-        checkUniqueUsername("testUser", new testCallback() {
+        checkUniqueUsername("testUser", new checkUniqueUsernameCallback() {
             public void uniqueUsername(boolean unique) {
 
                 if (!unique) {
@@ -104,15 +103,56 @@ public class SettingsFragmentTest {
 
         String testUser = "testUser";
 
-        addTestUserToDB(testUser);
-        assertTrue(uniqueUser);
+        addTestUserToDB(testUser, new addTestUserToDBCallback() {
+            @Override
+            public void completedQuery(boolean complete) {
+                assertTrue(complete);
+                assertTrue(uniqueUser);
 
-        solo.enterText(0, testUser);
-        solo.clickOnView(solo.getView(R.id.settings_confirm_button));
+                solo.enterText(0, testUser);
+                solo.clickOnView(solo.getView(R.id.settings_confirm_button));
 
-        EditText usernameEditText = solo.getEditText(0);
-        assertEquals("Username is not unique", usernameEditText.getError());
+                EditText usernameEditText = solo.getEditText(0);
+                assertEquals("Username is not unique", usernameEditText.getError());
+            }
+        });
     }
+
+    /**
+     * Test behaviour when attempting to change to a unique username
+     */
+    @Test
+    public void testUsernameChange() {
+        solo.clickOnView(solo.getView(R.id.settings));
+
+        solo.clickOnView(solo.getView(R.id.username_edit_edittext));
+        solo.clearEditText(0);
+
+        solo.enterText(0, "testUserUnique");
+        solo.clickOnView(solo.getView(R.id.settings_confirm_button));
+        solo.clickOnText("Confirm");
+
+        checkUniqueUsername("testUserUnique", new checkUniqueUsernameCallback() {
+            public void uniqueUsername(boolean unique) {
+                uniqueUser = unique;
+                assertTrue(uniqueUser);
+
+                Map<String, Object> user = new HashMap<>();
+                user.put("Username", "testUserUnique");
+                user.put("Display Name", "testUserUnique");
+
+                usersReference.document("testUserUnique").set(user);
+
+                // Make sure user was successfully added
+                checkUniqueUsername("testUserUnique", new checkUniqueUsernameCallback() {
+                    public void uniqueUsername(boolean unique) {
+                        assertFalse(unique);
+                    }
+                });
+            }
+        });
+    }
+
 
     /**
      * Sets SharedPreferences strings for username and display name
@@ -134,8 +174,8 @@ public class SettingsFragmentTest {
      * Adds a test user to the database.
      * testUser should always be a new addition to the database
      */
-    public void addTestUserToDB(String username) {
-        checkUniqueUsername(username, new testCallback() {
+    public void addTestUserToDB(String username, final addTestUserToDBCallback completedQuery) {
+        checkUniqueUsername(username, new checkUniqueUsernameCallback() {
             public void uniqueUsername(boolean unique) {
                 uniqueUser = unique;
                 System.out.println("wooooooooooooooo " + unique);
@@ -147,9 +187,10 @@ public class SettingsFragmentTest {
                     usersReference.document(username).set(user);
 
                     // Make sure user was successfully added
-                    checkUniqueUsername(username, new testCallback() {
+                    checkUniqueUsername(username, new checkUniqueUsernameCallback() {
                         public void uniqueUsername(boolean unique) {
                             assertFalse(unique);
+                            completedQuery.completedQuery(true);
                         }
                     });
                 }
@@ -160,7 +201,7 @@ public class SettingsFragmentTest {
     /**
      * Checks if the given username exists in the database.
      */
-    public void checkUniqueUsername(String username, final testCallback uniqueUsername) {
+    public void checkUniqueUsername(String username, final checkUniqueUsernameCallback uniqueUsername) {
         DocumentReference usernameReference = usersReference.document(username);
         usernameReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -180,12 +221,21 @@ public class SettingsFragmentTest {
     }
 
     /**
-     * Callback for querying database
+     * Callback for checkUniqueUsername query
      *
      * @author Afra
      */
-    public interface testCallback {
+    public interface checkUniqueUsernameCallback {
         void uniqueUsername(boolean unique);
+    }
+
+    /**
+     * Callback for addTestUserToDB method
+     *
+     * @author Afra
+     */
+    public interface addTestUserToDBCallback {
+        void completedQuery(boolean complete);
     }
 }
 
