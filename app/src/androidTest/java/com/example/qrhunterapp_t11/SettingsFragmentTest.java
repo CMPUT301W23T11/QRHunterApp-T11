@@ -67,13 +67,15 @@ public class SettingsFragmentTest {
     }
 
     /**
-     * Clear SharedPreferences after each test
+     * Clear SharedPreferences and close the activity after each test
      */
     @After
     public final void clearPrefs() {
         Activity activity = rule.getActivity();
         prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
         prefs.edit().clear().commit();
+        usersReference.document("testUser").delete();
+        solo.finishOpenedActivities();
     }
 
     /**
@@ -93,7 +95,6 @@ public class SettingsFragmentTest {
         EditText usernameEditText = solo.getEditText(0);
         assertEquals("Username is not unique", usernameEditText.getError());
 
-        usersReference.document("testUser").delete();
         usersReference.document("testUserDuplicate").delete();
     }
 
@@ -126,7 +127,6 @@ public class SettingsFragmentTest {
                 });
             }
         });
-        usersReference.document("testUser").delete();
         usersReference.document("testUserUnique").delete();
     }
 

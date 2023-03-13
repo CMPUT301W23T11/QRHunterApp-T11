@@ -84,13 +84,15 @@ public class ProfileTest {
     }
 
     /**
-     * Clear SharedPreferences after each test
+     * Clear SharedPreferences and close the activity after each test
      */
     @After
     public final void clearPrefs() {
         Activity activity = rule.getActivity();
         prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
         prefs.edit().clear().commit();
+        usersReference.document("testUser").delete();
+        solo.finishOpenedActivities();
     }
 
     /**
@@ -162,7 +164,7 @@ public class ProfileTest {
         //assertTrue(solo.waitForText("Highest",1, 10000));
     }
 
-    //@Test
+    @Test
     public void checkCommentAdd() {
 
         // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”

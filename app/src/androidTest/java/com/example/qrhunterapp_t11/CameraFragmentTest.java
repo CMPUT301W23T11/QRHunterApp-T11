@@ -4,6 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -15,6 +18,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.robotium.solo.Solo;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,12 +28,14 @@ import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Intent tests for the camera fragment.
  *
  * @author Aidan Lynch - writing the tests.
  * @author afra - set up querying information from the database.
- *
  * @reference code mostly repurposed from lab 7.
  */
 public class CameraFragmentTest {
@@ -38,9 +44,11 @@ public class CameraFragmentTest {
     }
 
     private Solo solo;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private CollectionReference QRCodesReference = db.collection("QRCodes");
-    private boolean docexists;
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final CollectionReference usersReference = db.collection("Users");
+    private final CollectionReference QRCodesReference = db.collection("QRCodes");
+    private boolean docExists;
+    SharedPreferences prefs;
 
     @Rule
     public ActivityTestRule<MainActivity> rule =
@@ -48,12 +56,32 @@ public class CameraFragmentTest {
 
     /**
      * Runs before all tests and creates solo instance.
-     *
-     * @throws Exception
      */
     @Before
-    public void setUp() throws Exception {
-        solo = new Solo(InstrumentationRegistry.getInstrumentation(), rule.getActivity());
+    public final void setUp() {
+        Activity activity = rule.getActivity();
+        prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        setPrefs();
+
+        Map<String, Object> user = new HashMap<>();
+        user.put("Username", "testUser");
+        user.put("Display Name", "testUser");
+
+        usersReference.document("testUser").set(user);
+
+        solo = new Solo(InstrumentationRegistry.getInstrumentation(), activity);
+    }
+
+    /**
+     * Clear SharedPreferences and close the activity after each test
+     */
+    @After
+    public final void clearPrefs() {
+        Activity activity = rule.getActivity();
+        prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        prefs.edit().clear().commit();
+        usersReference.document("testUser").delete();
+        solo.finishOpenedActivities();
     }
 
     //TODO add start function that accepts initial prompts or something, hopefully that is enough
@@ -70,14 +98,16 @@ public class CameraFragmentTest {
 
         checkDocExists(testHash, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
-                docexists = valid;
-                assertFalse(docexists);
+                docExists = valid;
+                assertFalse(docExists);
 
             }
         });
 
 
         solo.clickOnView(solo.getView(R.id.addFab));
+        solo.sleep(3000);
+        solo.clickOnText("While using the app");
         assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
         solo.clickOnText("Yes");
         solo.clickOnView(solo.getView(R.id.captureButton));
@@ -87,13 +117,10 @@ public class CameraFragmentTest {
 
         checkDocExists(testHash, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
-                docexists = valid;
-                assertTrue(docexists);
+                docExists = valid;
+                assertTrue(docExists);
             }
         });
-
-
-
     }
 
     /**
@@ -107,8 +134,8 @@ public class CameraFragmentTest {
 
         checkDocExists(testHash, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
-                docexists = valid;
-                assertFalse(docexists);
+                docExists = valid;
+                assertFalse(docExists);
 
             }
         });
@@ -123,8 +150,8 @@ public class CameraFragmentTest {
 
         checkDocExists(testHash, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
-                docexists = valid;
-                assertTrue(docexists);
+                docExists = valid;
+                assertTrue(docExists);
             }
         });
     }
@@ -140,8 +167,8 @@ public class CameraFragmentTest {
 
         checkDocExists(testHash, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
-                docexists = valid;
-                assertFalse(docexists);
+                docExists = valid;
+                assertFalse(docExists);
 
             }
         });
@@ -156,8 +183,8 @@ public class CameraFragmentTest {
 
         checkDocExists(testHash, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
-                docexists = valid;
-                assertTrue(docexists);
+                docExists = valid;
+                assertTrue(docExists);
             }
         });
     }
@@ -173,8 +200,8 @@ public class CameraFragmentTest {
 
         checkDocExists(testHash, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
-                docexists = valid;
-                assertFalse(docexists);
+                docExists = valid;
+                assertFalse(docExists);
 
             }
         });
@@ -189,27 +216,17 @@ public class CameraFragmentTest {
 
         checkDocExists(testHash, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
-                docexists = valid;
-                assertTrue(docexists);
+                docExists = valid;
+                assertTrue(docExists);
             }
         });
-    }
-
-    /**
-     * Closes the activity after each test
-     *
-     * @throws Exception
-     */
-    @After
-    public void tearDown() throws Exception {
-        solo.finishOpenedActivities();
     }
 
     /**
      * Helper function to delete the test QR code document
      *
      * @param docToDelete document that should be deleted
-     * @param cr CollectionReference to the collection being accessed
+     * @param cr          CollectionReference to the collection being accessed
      * @reference https://firebase.google.com/docs/firestore/manage-data/delete-data - used without major modification
      */
     public void deleteDoc(String docToDelete, CollectionReference cr) {
@@ -233,7 +250,7 @@ public class CameraFragmentTest {
      * Helper function to check if a QR code document exists
      *
      * @param docToCheck document that should be checked for
-     * @param cr CollectionReference to the collection being accessed
+     * @param cr         CollectionReference to the collection being accessed
      * @reference https://firebase.google.com/docs/firestore/query-data/get-data - used without major modification
      */
     public void checkDocExists(String docToCheck, CollectionReference cr, final Callback dataValid) {
@@ -257,6 +274,18 @@ public class CameraFragmentTest {
         });
     }
 
+    /**
+     * Sets SharedPreferences strings for username and display name
+     */
+    public void setPrefs() {
+        prefs.edit().clear().commit();
+        String username;
+        String displayName;
+        prefs.edit().putString("currentUser", "testUser").commit();
+        prefs.edit().putString("currentUserDisplayName", "testUser").commit();
+        username = prefs.getString("currentUser", null);
+        displayName = prefs.getString("currentUserDisplayName", null);
+        assertEquals("testUser", username);
+        assertEquals("testUser", displayName);
+    }
 }
-
-
