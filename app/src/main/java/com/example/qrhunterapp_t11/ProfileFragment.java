@@ -39,6 +39,7 @@ import java.text.MessageFormat;
  * @reference <a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation for RecyclerView</a>
  */
 public class ProfileFragment extends Fragment {
+    private static final String TAG = "ProfileFragment";
     private final CollectionReference usersReference;
     private RecyclerView QRCodeRecyclerView;
     private boolean userHasNoCodes;
@@ -64,12 +65,23 @@ public class ProfileFragment extends Fragment {
         void noCodes(boolean noCodes);
     }
 
+    /**
+     * Inflates the layout for the camera fragment.
+     *
+     * @param inflater           The LayoutInflater object that can be used to inflate
+     *                           any views in the fragment,
+     * @param container          If non-null, this is the parent view that the fragment's
+     *                           UI should be attached to.  The fragment should not add the view itself,
+     *                           but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     *                           from a previous saved state as given here.
+     * @return a View containing the inflated layout.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        String TAG = "Profile";
         TextView loginUsernameTextView = view.findViewById(R.id.profile_name);
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
