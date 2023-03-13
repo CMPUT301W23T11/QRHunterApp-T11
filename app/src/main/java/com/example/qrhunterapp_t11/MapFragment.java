@@ -50,6 +50,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
     public static final int errorDialogRequest = 9001;
     public static final int permissionsRequestEnableGPS = 9002;
     public static final int permissionsRequestAccessFineLocation = 9003;
+    public static final int permissionsRequestAccessCoarseLocation = 9004;
+
     private GoogleMap mMap;
     private boolean mLocationPermissionGranted = false;
 
@@ -145,7 +147,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
      *@return true if the app has permission to access fine location, false otherwise.
      */
     public boolean isLocationEnabled() {
-        if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             getLocationPermission();
             Log.d(TAG, "isLocationEnabled: No");
             return false;
@@ -163,16 +166,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
      */
     private void getLocationPermission() {
         Log.d(TAG, "getLocationPermission");
-        if (ContextCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mLocationPermissionGranted = true;
             displayMap();
         } else {
-            requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, permissionsRequestAccessFineLocation);
+            requestPermissions(new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}, permissionsRequestAccessFineLocation);
         }
     }
 
     /**
-     *Handles the result of a permission request by the user for enabling GPS or accessing fine location.
+     *Handles the result of a permission request by the user for enabling GPS or accessing fine/coarse location.
      *
      *@param requestCode the code used for the request
      *@param permissions the requested permissions
@@ -190,13 +194,22 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                     Log.d(TAG, "onRequestPermissionsResult: GPS permission denied");
                 }
                 break;
+            case permissionsRequestAccessCoarseLocation:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    mLocationPermissionGranted = true;
+                    Log.d(TAG, "onRequestPermissionsResult: Coarse Location permission granted");
+                    displayMap();
+                } else {
+                    Log.d(TAG, "onRequestPermissionsResult: Coarse Location permission denied");
+                }
+                break;
             case permissionsRequestAccessFineLocation:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "onRequestPermissionsResult: Location permission granted");
+                    Log.d(TAG, "onRequestPermissionsResult: Fine Location permission granted");
                     mLocationPermissionGranted = true;
                     displayMap();
                 } else {
-                    Log.d(TAG, "onRequestPermissionsResult: Location permission denied");
+                    Log.d(TAG, "onRequestPermissionsResult: Fine Location permission denied");
                 }
                 break;
         }
