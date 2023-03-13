@@ -194,6 +194,7 @@ public class ProfileTest {
         assertTrue(solo.waitForText("1", 1, 10000));
         solo.clickInRecyclerView(0);
         // wait for "Add Comment" to know the qrView dialog has opened
+        solo.drag(250, 250, 400, 0, 10);
         assertTrue(solo.waitForText("Add Comment", 1, 10000));
         solo.enterText(0, "great catch king 😂");
         solo.clickOnView(solo.getView(R.id.imageViewSend));
