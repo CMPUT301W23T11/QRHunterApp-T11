@@ -79,11 +79,11 @@ public class CommentAdapter extends BaseAdapter {
 
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View commentView = inflater.inflate(R.layout.individual_comment, viewGroup, false);
-        TextView profile_tv = commentView.findViewById(R.id.profile_tv);
-        TextView comment_tv = commentView.findViewById(R.id.comment_tv);
+        TextView profileTV = commentView.findViewById(R.id.profile_tv);
+        TextView commentTV = commentView.findViewById(R.id.comment_tv);
         Comment c = this.getItem(i);
-        profile_tv.setText(c.getProfile());
-        comment_tv.setText(c.getComment());
+        profileTV.setText(c.getProfile());
+        commentTV.setText(c.getComment());
         return commentView;
     }
 }

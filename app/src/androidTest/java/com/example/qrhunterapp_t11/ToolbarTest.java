@@ -1,13 +1,20 @@
 package com.example.qrhunterapp_t11;
 
+import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.robotium.solo.Solo;
 
 import org.junit.After;
@@ -15,27 +22,69 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
 public class ToolbarTest {
-    @Rule
-    public ActivityTestRule<MainActivity> rule =
-            new ActivityTestRule<>(MainActivity.class, true, true);
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final CollectionReference usersReference = db.collection("Users");
+    private final Random rand = new Random();
     private Solo solo;
+    private final String testUser = "testUser" + rand.nextInt(1000);
+    private SharedPreferences prefs;
+    @Rule
+    public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
+
+        // Set SharedPreferences to initialize a new user before the activity is launched
+        @Override
+        protected void beforeActivityLaunched() {
+            super.beforeActivityLaunched();
+            prefs = getApplicationContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+            String username;
+            String displayName;
+
+            prefs.edit().clear().commit();
+            prefs.edit().putBoolean("LoggedIn", true).commit();
+            prefs.edit().putString("currentUser", testUser).commit();
+            prefs.edit().putString("currentUserDisplayName", testUser).commit();
+
+            username = prefs.getString("currentUser", null);
+            displayName = prefs.getString("currentUserDisplayName", null);
+
+            assertEquals(testUser, username);
+            assertEquals(testUser, displayName);
+        }
+    };
 
     /**
      * Runs before all tests and creates solo instance.
      */
     @Before
-    public void setUp() {
-        solo = new Solo(InstrumentationRegistry.getInstrumentation(), rule.getActivity());
+    public final void setUp() {
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        rule.launchActivity(intent);
+        Activity activity = rule.getActivity();
+
+        Map<String, Object> user = new HashMap<>();
+        user.put("Username", testUser);
+        user.put("Display Name", testUser);
+
+        usersReference.document(testUser).set(user);
+
+        solo = new Solo(InstrumentationRegistry.getInstrumentation(), activity);
     }
 
     /**
-     * Gets the Activity
-     *
+     * Clear SharedPreferences and close the activity after each test
      */
-    @Test
-    public void start() {
+    @After
+    public final void tearDown() {
         Activity activity = rule.getActivity();
+        prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        prefs.edit().clear().commit();
+        usersReference.document(testUser).delete();
+        solo.finishOpenedActivities();
     }
 
     /**
@@ -312,12 +361,4 @@ public class ToolbarTest {
         solo.waitForText("STATS", 1, 7000);
     }
 
-    /**
-     * Closes the activity after each test
-     *
-     */
-    @After
-    public void tearDown() {
-        solo.finishOpenedActivities();
-    }
 }

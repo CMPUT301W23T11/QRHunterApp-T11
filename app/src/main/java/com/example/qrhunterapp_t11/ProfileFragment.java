@@ -39,11 +39,12 @@ import java.text.MessageFormat;
  * @reference <a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation for RecyclerView</a>
  */
 public class ProfileFragment extends Fragment {
-    private static final String TAG = "ProfileFragment";
+    private static final String tag = "ProfileFragment";
     private final CollectionReference usersReference;
-    QRAdapterClass adapter;
-    FirestoreRecyclerOptions<QRCode> options;
+    private static final String listenFailed = "listenFailed";
+    private QRAdapterClass adapter;
     private RecyclerView QRCodeRecyclerView;
+    private FirestoreRecyclerOptions<QRCode> options;
     private boolean userHasNoCodes;
 
     /**
@@ -96,9 +97,8 @@ public class ProfileFragment extends Fragment {
 
                     QRCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
 
-                    Query query = usersReference.document(username).collection("QR Codes");
                     options = new FirestoreRecyclerOptions.Builder<QRCode>()
-                            .setQuery(query, QRCode.class)
+                            .setQuery(QRColl, QRCode.class)
                             .build();
 
                     adapter = new QRAdapterClass(options);
@@ -111,7 +111,7 @@ public class ProfileFragment extends Fragment {
                     // Gets the sum of points from all the QR Code documents
                     QRColl.addSnapshotListener((value, error) -> {
                         if (error != null) {
-                            Log.w(TAG, "Listen FAILED", error);
+                            Log.w(tag, listenFailed, error);
                         }
                         double total = 0;
 
@@ -121,19 +121,19 @@ public class ProfileFragment extends Fragment {
                             total += points;
                         }
                         totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
-                        Log.d(TAG, "Total Score: " + total);
+                        Log.d(tag, "Total Score: " + total);
                     });
 
                     // Orders the QR collection from biggest to smallest, then returns the first QR Code
                     Query topQR = QRColl.orderBy("points", Query.Direction.DESCENDING).limit(1);
                     topQR.addSnapshotListener((value, error) -> {
                         if (error != null) {
-                            Log.w(TAG, "Listen FAILED", error);
+                            Log.w(tag, listenFailed, error);
                         }
                         assert value != null;
                         for (QueryDocumentSnapshot document : value) {
                             topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", document.get("points")));
-                            Log.d(TAG, "top QR code: " + document.get("points"));
+                            Log.d(tag, "top QR code: " + document.get("points"));
 
                         }
                     });
@@ -142,12 +142,12 @@ public class ProfileFragment extends Fragment {
                     Query lowQR = QRColl.orderBy("points", Query.Direction.ASCENDING).limit(1);
                     lowQR.addSnapshotListener((value, error) -> {
                         if (error != null) {
-                            Log.w(TAG, "Listen FAILED", error);
+                            Log.w(tag, listenFailed, error);
                         }
                         assert value != null;
                         for (QueryDocumentSnapshot document : value) {
                             lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", document.get("points")));
-                            Log.d(TAG, "lowest QR code: " + document.get("points"));
+                            Log.d(tag, "lowest QR code: " + document.get("points"));
 
                         }
                     });
@@ -155,9 +155,9 @@ public class ProfileFragment extends Fragment {
                     // Gets the size of the amount of QR codes there are
                     QRColl.addSnapshotListener((value, error) -> {
                         if (error != null) {
-                            Log.w(TAG, "Listen FAILED", error);
+                            Log.w(tag, listenFailed, error);
                         }
-                        Log.d(TAG, "num of QR: " + value.size());
+                        Log.d(tag, "num of QR: " + value.size());
                         totalQRCodesText.setText(MessageFormat.format("Total number of QR codes: {0}", value.size()));
                     });
 

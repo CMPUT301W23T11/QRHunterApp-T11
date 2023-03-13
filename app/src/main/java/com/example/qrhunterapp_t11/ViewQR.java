@@ -119,10 +119,8 @@ public class ViewQR extends DialogFragment {
         eyebrowsImageView.setImageResource((qrCode.getFaceList()).get(5));
 
         // If the QRCode has an associated photo, use Picasso to load it into the photoImageView (Rotated for some reason)
-        if (!qrCode.getPhotoList().isEmpty()) {
-            if (qrCode.getPhotoList().get(0) != null) {
-                Picasso.with(getContext()).load(qrCode.getPhotoList().get(0)).into(photoImageView);
-            }
+        if ((!qrCode.getPhotoList().isEmpty()) && (qrCode.getPhotoList().get(0) != null)) {
+            Picasso.with(getContext()).load(qrCode.getPhotoList().get(0)).into(photoImageView);
         }
 
         // When the send image arrow ImageView is clicked, if a comment has been made it will be added to the QRCode object's saved array of comments and appear in the comment box with the associated user

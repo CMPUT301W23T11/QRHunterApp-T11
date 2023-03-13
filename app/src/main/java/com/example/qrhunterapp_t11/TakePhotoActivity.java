@@ -48,7 +48,8 @@ import java.util.concurrent.Executor;
  * @reference <a href="https://youtu.be/lPfQN-Sfnjw">how to upload images to Firebase database and storage</a>
  */
 public class TakePhotoActivity extends AppCompatActivity {
-    private static final int REQUEST = 112; // leave here?
+    private static final int request = 112; // leave here?
+    private static final String photoUpload = "PhotoUpload";
     private final Context mContext = TakePhotoActivity.this;
     public ImageCapture imageCapture;
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
@@ -112,9 +113,9 @@ public class TakePhotoActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) { // when the capture button is clicked, take the photo
                 if (Build.VERSION.SDK_INT >= 23 && Build.VERSION.SDK_INT <= 29) {
-                    String[] PERMISSIONS = {android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
-                    if (!hasPermissions(mContext, PERMISSIONS)) {
-                        ActivityCompat.requestPermissions((Activity) mContext, PERMISSIONS, REQUEST);
+                    String[] permissions = {android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
+                    if (!hasPermissions(mContext, permissions)) {
+                        ActivityCompat.requestPermissions((Activity) mContext, permissions, request);
                     } else {
                         capturePhoto();
                     }
@@ -137,7 +138,7 @@ public class TakePhotoActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST) {
+        if (requestCode == request) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 capturePhoto();
             } else {
@@ -252,39 +253,37 @@ public class TakePhotoActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) { // when file is successfully uploaded
                             Toast.makeText(TakePhotoActivity.this, "Photo uploaded", Toast.LENGTH_SHORT).show();
-                            Log.d("PhotoUpload", "Photo upload was successful.");
+                            Log.d(photoUpload, "Photo upload was successful.");
 
-                            if (taskSnapshot.getMetadata() != null) {
-                                if (taskSnapshot.getMetadata().getReference() != null) {
-                                    Task<Uri> result = taskSnapshot.getStorage().getDownloadUrl();
-                                    result.addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                        @Override
-                                        public void onSuccess(Uri uri) { // retrieve image url of photo upload
-                                            Log.d("UrlRetrieved", "Image url successfully retrieved: " + imageUrl); //TODO remove redundant key and attribute (in database collection?)
-                                            imageUrl = uri.toString(); // this is *NOT* the image uri used earlier
-                                            PhotoUploader upload = new PhotoUploader(msTime, imageUrl);
-                                            listener.onUpload(imageUrl);
-                                            // make entry in database, that contains the name and url of our image upload
-                                            uploadsReference.document(upload.getName()).set(upload);
-                                        }
-                                    }).addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            Log.d("UrlRetrieved", "Image url FAILED to retrieve.");
-                                        }
-                                    });
-                                }
+                            if ((taskSnapshot.getMetadata() != null) && (taskSnapshot.getMetadata().getReference() != null)) {
+                                Task<Uri> result = taskSnapshot.getStorage().getDownloadUrl();
+                                result.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) { // retrieve image url of photo upload
+                                        Log.d("UrlRetrieved", "Image url successfully retrieved: " + imageUrl); //TODO remove redundant key and attribute (in database collection?)
+                                        imageUrl = uri.toString(); // this is *NOT* the image uri used earlier
+                                        PhotoUploader upload = new PhotoUploader(msTime, imageUrl);
+                                        listener.onUpload(imageUrl);
+                                        // make entry in database, that contains the name and url of our image upload
+                                        uploadsReference.document(upload.getName()).set(upload);
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.d("UrlRetrieved", "Image url FAILED to retrieve.");
+                                    }
+                                });
                             }
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) { // when file fails to upload
-                            Log.d("PhotoUpload", "Something went wrong uploading the photo: " + e.getMessage());
+                            Log.d(photoUpload, "Something went wrong uploading the photo: " + e.getMessage());
                         }
                     });
         } else {
-            Log.d("PhotoUpload", "Something went wrong uploading the photo; no mImageUri?");
+            Log.d(photoUpload, "Something went wrong uploading the photo; no mImageUri?");
         }
     }
 

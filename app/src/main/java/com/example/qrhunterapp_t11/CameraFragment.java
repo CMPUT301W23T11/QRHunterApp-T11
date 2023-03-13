@@ -47,7 +47,7 @@ import java.util.TimerTask;
  * @author Josh Lucas and Afra - methods for creating a new QR object
  */
 public class CameraFragment extends Fragment {
-    private static final int PERMISSIONS_REQUEST_LOCATION = 100;
+    private static final int permissionsRequestLocation = 100;
     private ActivityResultLauncher<ScanOptions> barLauncher;
     private ActivityResultLauncher<Intent> photoLauncher;
     private QRCode qrCode;
@@ -56,6 +56,7 @@ public class CameraFragment extends Fragment {
     private final FirebaseFirestore db;
     private final CollectionReference QRCodesReference;
     private final CollectionReference usersReference;
+    private static final String locationPrompt = "LocationPrompt";
 
     public CameraFragment(FirebaseFirestore db) {
         this.db = db;
@@ -79,7 +80,7 @@ public class CameraFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
+        //FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
         return inflater.inflate(R.layout.fragment_camera, container, false);
     }
@@ -262,14 +263,14 @@ public class CameraFragment extends Fragment {
                         // Location data is available
                         double latitude = location.getLatitude();
                         double longitude = location.getLongitude();
-                        Log.d("LocationPrompt", "Latitude: " + latitude + ", Longitude: " + longitude);
+                        Log.d(locationPrompt, "Latitude: " + latitude + ", Longitude: " + longitude);
                         //set location and store
                         //qrCode.setLocation(location);
                         addQRCode();
                         returnToProfile();
                     } else {
                         // Location data is not available
-                        Log.d("LocationPrompt", "ERROR Location data is not available.");
+                        Log.d(locationPrompt, "ERROR Location data is not available.");
                         //stores QRCode into db with just hash as document id and location = null
                         addQRCode();
                         returnToProfile();
@@ -285,15 +286,15 @@ public class CameraFragment extends Fragment {
     private void permissions() {
         if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             // Permission is already granted
-            Log.d("LocationPrompt", "PERMISSION ALREADY GAVE.");
+            Log.d(locationPrompt, "PERMISSION ALREADY GAVE.");
             getCurrentLocation();
         } else {
             // Permission is not granted
             // Ask for the permission, calls onRequestPermissionsResult after selection
-            Log.d("LocationPrompt", "ASKING FOR PERMISSION.");
+            Log.d(locationPrompt, "ASKING FOR PERMISSION.");
             requestPermissions(
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSIONS_REQUEST_LOCATION);
+                    permissionsRequestLocation);
         }
     }
 
@@ -307,14 +308,14 @@ public class CameraFragment extends Fragment {
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == PERMISSIONS_REQUEST_LOCATION) {
+        if (requestCode == permissionsRequestLocation) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission is granted
-                Log.d("LocationPrompt", "Execute if permission granted.");
+                Log.d(locationPrompt, "Execute if permission granted.");
                 getCurrentLocation();
             } else {
                 // Permission is not granted
-                Log.d("LocationPrompt", "Execute if permission not granted.");
+                Log.d(locationPrompt, "Execute if permission not granted.");
                 //stores QRCode into db with just hash as document id and location = null
                 addQRCode();
                 returnToProfile();
@@ -336,14 +337,14 @@ public class CameraFragment extends Fragment {
                 .setCancelable(false)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.d("LocationPrompt", "User accepted geolocation prompt.");
+                        Log.d(locationPrompt, "User accepted geolocation prompt.");
                         permissions();
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.d("LocationPrompt", "User rejected geolocation prompt.");
+                        Log.d(locationPrompt, "User rejected geolocation prompt.");
                         //stores QRCode into db with just hash as document id and location = null
                         addQRCode();
 
