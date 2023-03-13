@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
     private final SettingsFragment settingsFragment = new SettingsFragment(db);
     private final CameraFragment cameraFragment = new CameraFragment(db);
     private final MapFragment mapFragment = new MapFragment();
+    private final SearchFragment searchFragment = new SearchFragment();
     private BottomNavigationView bottomToolbar;
     private int numUsers;
 
@@ -119,7 +120,10 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
 
                     return true;
 
-                // use 'case R.id.search:' for search/leaderboard fragment
+                case R.id.search:
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, searchFragment).commit();
+
+                    return true;
 
             }
             /*
