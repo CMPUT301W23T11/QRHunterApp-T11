@@ -10,25 +10,39 @@ public class Comment {
     private String comment;
     private String profile;
 
+    /**
+     * Constructor for Comment
+     *
+     * @param comment - String representing the comment
+     * @param profile - String representing the user's profile
+     */
     public Comment(String comment, String profile) {
         this.comment = comment;
         this.profile = profile;
     }
 
-    // For the database
+    /**
+     * Empty constructor for the db
+     */
     public Comment() {
     }
 
+    /**
+     * Getter for the comment String
+     *
+     * @return comment - String
+     */
     public String getComment() {
         return comment;
     }
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
+
+    /**
+     * Getter for the profile String
+     *
+     * @return profile - String
+     */
     public String getProfile() {
         return profile;
     }
-    public void setProfile(String profile) {
-        this.profile = profile;
-    }
+
 }
