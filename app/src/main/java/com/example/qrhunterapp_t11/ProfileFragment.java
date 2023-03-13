@@ -165,12 +165,7 @@ public class ProfileFragment extends Fragment {
                         public void onItemClick(DocumentSnapshot documentSnapshot, int position) {
 
                             QRCode qrCode = documentSnapshot.toObject(QRCode.class);
-                            DocumentReference QrReference = documentSnapshot.getReference();
-                            String documentId = documentSnapshot.getId();
-
-                            System.out.println("click position " + position);
-                            new ViewQR(qrCode, QrReference).show(getActivity().getSupportFragmentManager(), "Show QR");
-
+                            new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
                         }
                     });
 

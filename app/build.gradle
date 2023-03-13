@@ -38,7 +38,8 @@ android {
     }
     buildFeatures {
         viewBinding true
-        dataBinding true // https://stackoverflow.com/questions/66459260/how-to-solve-data-binding-is-not-enabled-error-while-using-view-binding
+        dataBinding true
+        // https://stackoverflow.com/questions/66459260/how-to-solve-data-binding-is-not-enabled-error-while-using-view-binding
     }
     testOptions {
         unitTests.all {
@@ -52,16 +53,20 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.8.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'com.google.firebase:firebase-storage:20.0.1'
-    implementation 'com.google.firebase:firebase-database:20.1.0'
 
+    // Firebase stuff
+    implementation 'com.google.firebase:firebase-storage:20.1.0'
+    implementation 'com.google.firebase:firebase-database:20.1.0'
+    implementation platform('com.google.firebase:firebase-bom:31.2.1')
+    implementation 'com.google.firebase:firebase-firestore'
     implementation 'com.firebaseui:firebase-ui-firestore:8.0.2'
+
+    // Test stuff
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-    implementation platform('com.google.firebase:firebase-bom:31.2.1')
-    implementation 'com.google.firebase:firebase-firestore'
+
     //google services
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
     //google locations
