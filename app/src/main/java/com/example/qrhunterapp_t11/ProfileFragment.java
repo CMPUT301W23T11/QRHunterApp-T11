@@ -46,8 +46,8 @@ public class ProfileFragment extends Fragment {
     FirestoreRecyclerOptions<QRCode> options;
 
     /**
-     * Constructor for registration fragment.
-     * Also instantiates a reference to the Users and QRCodes collections for ease of access.
+     * Constructor for profile fragment.
+     * Also instantiates a reference to the Users collection for ease of access.
      *
      * @param db Firestore database instance
      */
@@ -55,6 +55,11 @@ public class ProfileFragment extends Fragment {
         this.usersReference = db.collection("Users");
     }
 
+    /**
+     * Callback for querying the database
+     *
+     * @author Afra
+     */
     public interface profileCallback {
         void noCodes(boolean noCodes);
     }
@@ -78,6 +83,7 @@ public class ProfileFragment extends Fragment {
         TextView lowQRCodeText = view.findViewById(R.id.lowQRText);
         TextView totalQRCodesText = view.findViewById(R.id.totalQRText);
 
+        // If the user has at least one QR code, initialize RecyclerView
         noQRCodesCheck(username, new profileCallback() {
             public void noCodes(boolean noCodes) {
                 userHasNoCodes = noCodes;
@@ -199,6 +205,12 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Query database to check if user has any QR codes in their collection or not
+     *
+     * @param username Current user's username
+     * @param noCodes  Callback function
+     */
     public void noQRCodesCheck(String username, final profileCallback noCodes) {
 
         usersReference.document(username).collection("QR Codes")

@@ -29,10 +29,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Main app activity. Logged in users will see their player profile screen first, and
- * can click on the toolbar at the bottom to switch to other parts of the app.
+ * Main app activity. Default startup screen is the player profile.
+ * Users can click on the toolbar at the bottom to switch to other parts of the app.
  *
- * @author Afra, Josh, Kristina
+ * @author Afra, Kristina
  * @reference <a href="https://www.geeksforgeeks.org/how-to-create-fragment-using-bottom-navigation-in-social-media-android-app/">How to use fragments with a bottom navigation bar</a>
  * @reference <a href="https://youtu.be/x6-_va1R788">How to set up and align a floating action button on the BottomNavigationView</a>
  * @reference <a href="https://firebase.google.com/docs/firestore/query-data/aggregation-queries#java">For aggregation queries</a>
@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
     private final CollectionReference usersReference = db.collection("Users");
     private BottomNavigationView bottomToolbar;
     private FloatingActionButton addFab;
-    private AggregateQuerySnapshot snapshot;
+    private int numUsers;
     private final ProfileFragment profileFragment = new ProfileFragment(db);
     private final SettingsFragment settingsFragment = new SettingsFragment(db);
     private final CameraFragment cameraFragment = new CameraFragment(db);
@@ -52,8 +52,13 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
     public void ViewCode(QRCode qrCode) {
     }
 
+    /**
+     * Callback for querying database
+     *
+     * @author Afra
+     */
     public interface mainActivityCallback {
-        void querySnapshot(AggregateQuerySnapshot querySnapshot);
+        void setNumUsers(int numUsers);
     }
 
     @Override
@@ -68,13 +73,10 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
 
         SharedPreferences prefs = this.getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
+        // If the user is logging in for the first time, create a new user
         if (!prefs.getBoolean("LoggedIn", false)) {
             firstTimeLaunch(new mainActivityCallback() {
-                public void querySnapshot(AggregateQuerySnapshot querySnapshot) {
-                    snapshot = querySnapshot;
-                    System.out.println(snapshot.getCount());
-
-                    int numUsers = (int) snapshot.getCount();
+                public void setNumUsers(int numUsers) {
 
                     String username = "user" + String.valueOf(numUsers + 1);
 
@@ -135,7 +137,12 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
         });
     }
 
-    public void firstTimeLaunch(final mainActivityCallback querySnapshot) {
+    /**
+     * Counts number of users in database to determine with what name to initialize a new user
+     *
+     * @param setNumUsers Callback that will set numUsers to the number of users in the database
+     */
+    public void firstTimeLaunch(final mainActivityCallback setNumUsers) {
         AggregateQuery countQuery = usersReference.count();
         countQuery.get(AggregateSource.SERVER).addOnCompleteListener(new OnCompleteListener<AggregateQuerySnapshot>() {
             @Override
@@ -143,7 +150,8 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
                 if (task.isSuccessful()) {
                     AggregateQuerySnapshot snapshot = task.getResult();
                     snapshot = task.getResult();
-                    querySnapshot.querySnapshot(snapshot);
+                    numUsers = (int) snapshot.getCount();
+                    setNumUsers.setNumUsers(numUsers);
                 }
             }
         });
