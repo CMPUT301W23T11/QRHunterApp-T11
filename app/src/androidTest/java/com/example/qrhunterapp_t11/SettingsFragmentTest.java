@@ -17,12 +17,12 @@ import androidx.test.rule.ActivityTestRule;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.robotium.solo.Solo;
 
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,15 +50,30 @@ public class SettingsFragmentTest {
 
     /**
      * Runs before all tests and creates solo instance.
-     *
-     * @throws Exception
      */
     @Before
-    public final void setUp() throws Exception {
+    public final void setUp() {
         Activity activity = rule.getActivity();
         prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
         setPrefs();
+
+        Map<String, Object> user = new HashMap<>();
+        user.put("Username", "testUser");
+        user.put("Display Name", "testUser");
+
+        usersReference.document("testUser").set(user);
+
         solo = new Solo(InstrumentationRegistry.getInstrumentation(), activity);
+    }
+
+    /**
+     * Clear SharedPreferences after each test
+     */
+    @After
+    public final void clearPrefs() {
+        Activity activity = rule.getActivity();
+        prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        prefs.edit().clear().commit();
     }
 
     /**
@@ -80,7 +95,6 @@ public class SettingsFragmentTest {
 
         usersReference.document("testUser").delete();
         usersReference.document("testUserDuplicate").delete();
-        prefs.edit().clear().commit();
     }
 
     /**
@@ -114,7 +128,6 @@ public class SettingsFragmentTest {
         });
         usersReference.document("testUser").delete();
         usersReference.document("testUserUnique").delete();
-        prefs.edit().clear().commit();
     }
 
 
@@ -122,6 +135,7 @@ public class SettingsFragmentTest {
      * Sets SharedPreferences strings for username and display name
      */
     public void setPrefs() {
+        prefs.edit().clear().commit();
         String username;
         String displayName;
         prefs.edit().putString("currentUser", "testUser").commit();
@@ -162,7 +176,6 @@ public class SettingsFragmentTest {
                 }
             }
         });
-
     }
 
     /**

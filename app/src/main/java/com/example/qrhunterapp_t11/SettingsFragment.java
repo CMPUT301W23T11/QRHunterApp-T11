@@ -25,6 +25,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -126,18 +127,15 @@ public class SettingsFragment extends Fragment {
 
         // Check if username exists already
         else {
-            DocumentReference usernameReference = usersReference.document(usernameString);
-            usernameReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            usersReference.whereEqualTo("Display Name", usernameString).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
                     if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-
-                        if (document.exists()) {
+                        if (task.getResult().isEmpty()) {
+                            usernameValid.usernameValid(true);
+                        } else {
                             usernameEditText.setError("Username is not unique");
                             usernameValid.usernameValid(false);
-                        } else {
-                            usernameValid.usernameValid(true);
                         }
                     }
                 }
