@@ -123,9 +123,6 @@ public class CameraFragmentTest {
 
 
         solo.clickOnView(solo.getView(R.id.addFab));
-        solo.sleep(3000);
-        solo.clickOnText("While using the app");
-        solo.sleep(6000);
         assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
         solo.clickOnText("Yes");
         solo.clickOnView(solo.getView(R.id.captureButton));
