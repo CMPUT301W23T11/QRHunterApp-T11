@@ -11,10 +11,10 @@
     <string name="adds_a_qr_code">Adds a QR code</string>
     <string name="profile_name_text">Profile Name</string>
     <string name="stats_header">STATS</string>
-    <string name="your_total_score_text">Your total score:</string>
-    <string name="your_top_qr_code_text">Your top QR code:</string>
-    <string name="your_lowest_qr_code_text">Your lowest QR code:</string>
-    <string name="your_total_qr_codes_text">Your total QR Codes:</string>
+    <string name="your_total_score_text">Your total score: 0</string>
+    <string name="your_top_qr_code_text">Your top QR code: 0</string>
+    <string name="your_lowest_qr_code_text">Your lowest QR code: 0</string>
+    <string name="your_total_qr_codes_text">Your total QR Codes: 0</string>
     <string name="collection_header">COLLECTION</string>
     <string name="edittext_email">Email</string>
     <string name="edittext_username">Username</string>

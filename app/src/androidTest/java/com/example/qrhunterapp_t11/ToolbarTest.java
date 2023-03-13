@@ -27,7 +27,8 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * Toolbar tests
+ * Toolbar button tests
+ * Tests every button on the toolbar and their interactions with the main screen
  *
  * @author Kristina
  * @reference Afra - setUp(), tearDown(), ActivityTestRule initialization
@@ -339,7 +340,7 @@ public class ToolbarTest {
         // checks that the add button works
         solo.clickOnView(solo.getView(R.id.addFab));
         // gotten from CameraFragmentTest.java
-        assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
+        assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 10 sec for photo prompt to appear
         solo.clickOnText("Yes");
         solo.clickOnView(solo.getView(R.id.captureButton));
         solo.waitForText("Share Geolocation", 1, 7000); // wait 7 sec for location prompt to appear
@@ -359,7 +360,7 @@ public class ToolbarTest {
         solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.addFab));
         // gotten from CameraFragmentTest.java
-        assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
+        assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 10 sec for photo prompt to appear
         solo.clickOnText("Yes");
         solo.clickOnView(solo.getView(R.id.captureButton));
         solo.waitForText("Share Geolocation", 1, 7000); // wait 7 sec for location prompt to appear
