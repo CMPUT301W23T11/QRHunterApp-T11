@@ -102,8 +102,6 @@ public class TakePhotoActivity extends AppCompatActivity {
         captureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) { // when the capture button is clicked, take the photo
-                // capturePhoto();
-
                 if (Build.VERSION.SDK_INT >= 23 && Build.VERSION.SDK_INT <= 29) {
                     String[] PERMISSIONS = {android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
                     if (!hasPermissions(mContext, PERMISSIONS)) {
@@ -266,9 +264,7 @@ public class TakePhotoActivity extends AppCompatActivity {
      * @reference Wilmer Villca - https://stackoverflow.com/a/55503926/14445107 - using a successListener to get the image url of the uploaded photo
      */
     private void uploadFile(final OnUploadListener listener) {
-
         if (mImageUri != null) { // if the image exists, upload it
-
             msTime = System.currentTimeMillis() + " ";
             // we are grabbing the current time in ms, to ensure each photo upload has a unique name; .child() concatenates file to mStorageReference ("uploads" folder)
             StorageReference fileReference = mStorageRef.child(msTime + "." + getFileExtension(mImageUri));
