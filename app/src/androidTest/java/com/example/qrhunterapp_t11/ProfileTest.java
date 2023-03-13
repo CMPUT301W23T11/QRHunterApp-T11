@@ -48,6 +48,8 @@ public class ProfileTest {
     private boolean docExists;
     private QRCode qrCode;
     private SharedPreferences prefs;
+    private final Random rand = new Random();
+    private final String testUser = "testUser" + rand.nextInt(1000);
 
     private QRCode mockQR(String valueString) {
         return new QRCode(valueString);
@@ -75,10 +77,10 @@ public class ProfileTest {
         setPrefs();
 
         Map<String, Object> user = new HashMap<>();
-        user.put("Username", "testUser");
-        user.put("Display Name", "testUser");
+        user.put("Username", testUser);
+        user.put("Display Name", testUser);
 
-        usersReference.document("testUser").set(user);
+        usersReference.document(testUser).set(user);
 
         solo = new Solo(InstrumentationRegistry.getInstrumentation(), activity);
     }
@@ -91,7 +93,7 @@ public class ProfileTest {
         Activity activity = rule.getActivity();
         prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
         prefs.edit().clear().commit();
-        usersReference.document("testUser").delete();
+        usersReference.document(testUser).delete();
         solo.finishOpenedActivities();
     }
 
@@ -102,14 +104,13 @@ public class ProfileTest {
     public void checkListClick() {
         // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        Activity activity = rule.getActivity();
-        CollectionReference qrReference = usersReference.document("testUser").collection("QR Codes");
+        CollectionReference qrReference = usersReference.document(testUser).collection("QR Codes");
         final int randomNum = new Random().nextInt(10000);
         qrCode = mockQR(String.valueOf(randomNum));
         String name = qrCode.getName();
 
         // Check that current user exists
-        checkDocExists("testUser", usersReference, new ProfileTest.Callback() {
+        checkDocExists(testUser, usersReference, new ProfileTest.Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertTrue(docExists);
@@ -169,15 +170,14 @@ public class ProfileTest {
 
         // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        Activity activity = rule.getActivity();
 
-        CollectionReference qrReference = usersReference.document("testUser").collection("QR Codes");
+        CollectionReference qrReference = usersReference.document(testUser).collection("QR Codes");
         final int randomNum = new Random().nextInt(10000);
         qrCode = mockQR(String.valueOf(randomNum));
         String name = qrCode.getName();
 
         // Check that current user exists
-        checkDocExists("testUser", usersReference, new ProfileTest.Callback() {
+        checkDocExists(testUser, usersReference, new ProfileTest.Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertTrue(docExists);
@@ -318,11 +318,11 @@ public class ProfileTest {
         prefs.edit().clear().commit();
         String username;
         String displayName;
-        prefs.edit().putString("currentUser", "testUser").commit();
-        prefs.edit().putString("currentUserDisplayName", "testUser").commit();
+        prefs.edit().putString("currentUser", testUser).commit();
+        prefs.edit().putString("currentUserDisplayName", testUser).commit();
         username = prefs.getString("currentUser", null);
         displayName = prefs.getString("currentUserDisplayName", null);
-        assertEquals("testUser", username);
-        assertEquals("testUser", displayName);
+        assertEquals(testUser, username);
+        assertEquals(testUser, displayName);
     }
 }

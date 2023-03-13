@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Test class for the settings fragment.
@@ -42,7 +43,9 @@ public class SettingsFragmentTest {
     private final CollectionReference usersReference = db.collection("Users");
     private Solo solo;
     private boolean uniqueUser;
-    SharedPreferences prefs;
+    private SharedPreferences prefs;
+    private final Random rand = new Random();
+    private final String testUser = "testUser" + rand.nextInt(1000);
 
     @Rule
     public ActivityTestRule<MainActivity> rule =
@@ -58,10 +61,10 @@ public class SettingsFragmentTest {
         setPrefs();
 
         Map<String, Object> user = new HashMap<>();
-        user.put("Username", "testUser");
-        user.put("Display Name", "testUser");
+        user.put("Username", testUser);
+        user.put("Display Name", testUser);
 
-        usersReference.document("testUser").set(user);
+        usersReference.document(testUser).set(user);
 
         solo = new Solo(InstrumentationRegistry.getInstrumentation(), activity);
     }
@@ -74,7 +77,7 @@ public class SettingsFragmentTest {
         Activity activity = rule.getActivity();
         prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
         prefs.edit().clear().commit();
-        usersReference.document("testUser").delete();
+        usersReference.document(testUser).delete();
         solo.finishOpenedActivities();
     }
 
@@ -117,7 +120,7 @@ public class SettingsFragmentTest {
                 uniqueUser = unique;
                 assertTrue(uniqueUser);
 
-                usersReference.document("testUser").update("Display Name", "testUserUnique");
+                usersReference.document(testUser).update("Display Name", "testUserUnique");
 
                 // Make sure user was successfully added
                 checkUniqueDisplayName("testUserUnique", new checkUniqueUsernameCallback() {
@@ -138,12 +141,12 @@ public class SettingsFragmentTest {
         prefs.edit().clear().commit();
         String username;
         String displayName;
-        prefs.edit().putString("currentUser", "testUser").commit();
-        prefs.edit().putString("currentUserDisplayName", "testUser").commit();
+        prefs.edit().putString("currentUser", testUser).commit();
+        prefs.edit().putString("currentUserDisplayName", testUser).commit();
         username = prefs.getString("currentUser", null);
         displayName = prefs.getString("currentUserDisplayName", null);
-        assertEquals("testUser", username);
-        assertEquals("testUser", displayName);
+        assertEquals(testUser, username);
+        assertEquals(testUser, displayName);
     }
 
     /**

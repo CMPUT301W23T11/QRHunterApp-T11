@@ -30,6 +30,7 @@ import static org.junit.Assert.assertFalse;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Intent tests for the camera fragment.
@@ -48,7 +49,9 @@ public class CameraFragmentTest {
     private final CollectionReference usersReference = db.collection("Users");
     private final CollectionReference QRCodesReference = db.collection("QRCodes");
     private boolean docExists;
-    SharedPreferences prefs;
+    private SharedPreferences prefs;
+    private final Random rand = new Random();
+    private final String testUser = "testUser" + rand.nextInt(1000);
 
     @Rule
     public ActivityTestRule<MainActivity> rule =
@@ -64,10 +67,10 @@ public class CameraFragmentTest {
         setPrefs();
 
         Map<String, Object> user = new HashMap<>();
-        user.put("Username", "testUser");
-        user.put("Display Name", "testUser");
+        user.put("Username", testUser);
+        user.put("Display Name", testUser);
 
-        usersReference.document("testUser").set(user);
+        usersReference.document(testUser).set(user);
 
         solo = new Solo(InstrumentationRegistry.getInstrumentation(), activity);
     }
@@ -80,7 +83,7 @@ public class CameraFragmentTest {
         Activity activity = rule.getActivity();
         prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
         prefs.edit().clear().commit();
-        usersReference.document("testUser").delete();
+        usersReference.document(testUser).delete();
         solo.finishOpenedActivities();
     }
 
@@ -281,11 +284,11 @@ public class CameraFragmentTest {
         prefs.edit().clear().commit();
         String username;
         String displayName;
-        prefs.edit().putString("currentUser", "testUser").commit();
-        prefs.edit().putString("currentUserDisplayName", "testUser").commit();
+        prefs.edit().putString("currentUser", testUser).commit();
+        prefs.edit().putString("currentUserDisplayName", testUser).commit();
         username = prefs.getString("currentUser", null);
         displayName = prefs.getString("currentUserDisplayName", null);
-        assertEquals("testUser", username);
-        assertEquals("testUser", displayName);
+        assertEquals(testUser, username);
+        assertEquals(testUser, displayName);
     }
 }
