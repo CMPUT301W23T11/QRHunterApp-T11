@@ -38,4 +38,7 @@
     <string name="textview_name">Name</string>
     <string name="textview_points">Points</string>
     <string name="textview_comments">Comments</string>
+    <string name="leader_board">LeaderBoard</string>
+    <string name="find_other_players">Find other Players</string>
+    <string name="search">Search</string>
 </resources>
