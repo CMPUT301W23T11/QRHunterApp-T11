@@ -130,6 +130,7 @@ public class ViewQR extends DialogFragment {
                 String commentString = commentET.getText().toString();
 
                 if (!commentString.isEmpty()) {
+                    // TODO: If the same user writes a duplicate comment, it overwrites the previous one
                     String currentUserDisplayName = prefs.getString("currentUserDisplayName", null);
                     String currentUser = prefs.getString("currentUser", null);
                     String QRCodeHash = qrCode.getHash();
@@ -142,8 +143,6 @@ public class ViewQR extends DialogFragment {
                     commentET.getText().clear();
 
                     QRCodesReference.document(QRCodeHash).update("commentList", FieldValue.arrayUnion(c));
-                    //DocumentReference QRCodeDocumentRef = QRCodesReference.document(QRCodeHash);
-                    //usersReference.document(currentUser).collection("User QR Codes").document(QRCodeHash).set(QRCodeDocumentRef);
                 }
             }
         });
