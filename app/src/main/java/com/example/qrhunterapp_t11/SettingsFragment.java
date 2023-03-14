@@ -41,13 +41,10 @@ public class SettingsFragment extends Fragment {
     private EditText emailEditText;
     private String usernameString;
     private String emailString;
-    private boolean validUsername;
-    private final FirebaseFirestore db;
 
     public SettingsFragment(@NonNull FirebaseFirestore db) {
         this.usersReference = db.collection("Users");
         this.QRCodeReference = db.collection("QRCodes");
-        this.db = db;
     }
 
     @NonNull
@@ -75,37 +72,35 @@ public class SettingsFragment extends Fragment {
                 emailString = emailEditText.getText().toString();
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                // Make sure new username is eligible for change
                 usernameCheck(usernameString, usernameEditText, new SettingsCallback() {
                     public void valid(boolean valid) {
-                        valid = valid;
+                        assert (valid);
 
-                        if (valid) {
-                            builder
-                                    .setTitle("Confirm username and email change")
-                                    .setNegativeButton("Cancel", null)
-                                    .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialogInterface, int i) {
-                                            String user = prefs.getString("currentUser", null);
-                                            String oldUsername = prefs.getString("currentUserDisplayName", null);
-                                            updateUserComments(user, oldUsername, usernameString, new SettingsCallback() {
-                                                public void valid(boolean valid) {
-                                                    assert (valid);
-                                                    usersReference.document(user).update("Display Name", usernameString);
-                                                    usersReference.document(user).update("Email", emailString);
+                        builder
+                                .setTitle("Confirm username and email change")
+                                .setNegativeButton("Cancel", null)
+                                .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        String user = prefs.getString("currentUser", null);
+                                        String oldUsername = prefs.getString("currentUserDisplayName", null);
+                                        // Update username in all user's previous comments
+                                        updateUserComments(user, oldUsername, usernameString, new SettingsCallback() {
+                                            public void valid(boolean valid) {
+                                                assert (valid);
+                                                usersReference.document(user).update("Display Name", usernameString);
+                                                usersReference.document(user).update("Email", emailString);
 
-                                                    prefs.edit().putString("currentUserDisplayName", usernameString).commit();
-                                                    prefs.edit().putString("currentUserEmail", emailString).commit();
-                                                }
-                                            });
+                                                prefs.edit().putString("currentUserDisplayName", usernameString).commit();
+                                                prefs.edit().putString("currentUserEmail", emailString).commit();
+                                            }
+                                        });
 
-                                        }
-                                    })
-                                    .create();
-
-                            builder.show();
-
-                        }
+                                    }
+                                })
+                                .create();
+                        builder.show();
                     }
                 });
             }
@@ -174,14 +169,14 @@ public class SettingsFragment extends Fragment {
                         DocumentReference documentReference = snapshot.getDocumentReference(snapshot.getId());
                         userCommentedListRef.add(documentReference);
                     }
-
                     if (!userCommentedListRef.isEmpty()) {
-                        // Retrieve QR Code data from the QRCodes collection using DocumentReferences
+                        // Retrieve matching QR Code data from the QRCodes collection using DocumentReferences
                         QRCodeReference.whereIn(FieldPath.documentId(), userCommentedListRef)
                                 .get()
                                 .addOnSuccessListener(referencedQRDocumentSnapshots -> {
                                     for (QueryDocumentSnapshot snapshot : referencedQRDocumentSnapshots) {
                                         CollectionReference commentList = snapshot.getReference().collection("commentList");
+                                        // Find exactly which comments need to be updated and update them
                                         commentList.whereEqualTo("Username", username)
                                                 .whereNotEqualTo("Display Name", newDisplayUsername)
                                                 .get()
@@ -197,7 +192,6 @@ public class SettingsFragment extends Fragment {
                                 });
                     }
                 });
-
     }
 
     /**

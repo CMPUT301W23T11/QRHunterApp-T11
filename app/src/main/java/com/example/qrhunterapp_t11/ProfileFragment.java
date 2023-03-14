@@ -44,9 +44,9 @@ import java.util.Map;
  */
 public class ProfileFragment extends Fragment {
     private static final String tag = "ProfileFragment";
+    private static final String listenFailed = "listenFailed";
     private final CollectionReference usersReference;
     private final CollectionReference QRCodeReference;
-    private static final String listenFailed = "listenFailed";
     private QRAdapterClass adapter;
     private RecyclerView QRCodeRecyclerView;
     private FirestoreRecyclerOptions<QRCode> options;
