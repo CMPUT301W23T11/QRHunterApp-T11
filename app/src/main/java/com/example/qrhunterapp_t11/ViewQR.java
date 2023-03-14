@@ -22,6 +22,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
@@ -49,7 +50,7 @@ public class ViewQR extends DialogFragment {
     private CommentAdapter commentAdapter;
     private EditText commentET;
     private SharedPreferences prefs;
-    private final String QRCodeHash = qrCode.getHash();
+    private String QRCodeHash;
     private boolean QRCodeHasNoComments;
 
     /**
@@ -67,6 +68,7 @@ public class ViewQR extends DialogFragment {
     public ViewQR(@NonNull QRCode qrCode) {
         super();
         this.qrCode = qrCode;
+        this.QRCodeHash = qrCode.getHash();
     }
 
     /**
@@ -131,10 +133,27 @@ public class ViewQR extends DialogFragment {
                 QRCodeHasNoComments = noComments;
 
                 if (!QRCodeHasNoComments) {
+                    getComments(QRCodeHash, new QRCodeCommentsCallback() {
+                        public void comments(@NonNull ArrayList<ArrayList<Map<String, Object>>> comments) {
 
-                    //commentList =
-                    commentAdapter = new CommentAdapter(getContext(), commentList);
-                    commentListView.setAdapter(commentAdapter);
+                            commentList = new ArrayList<>();
+                            for (int i = 0; i < comments.size(); i++) {
+                                Map<String, Object> commentMap;
+                                commentMap = comments.get(i).get(0);
+                                String username = (String) commentMap.get("Username");
+                                String displayName = (String) commentMap.get("Display Name");
+                                String commentString = (String) commentMap.get("Comment");
+
+                                assert commentString != null;
+                                assert displayName != null;
+                                assert username != null;
+                                Comment comment = new Comment(commentString, displayName, username);
+                                commentList.add(comment);
+                            }
+                            commentAdapter = new CommentAdapter(getContext(), commentList);
+                            commentListView.setAdapter(commentAdapter);
+                        }
+                    });
                 }
             }
         });
@@ -223,9 +242,21 @@ public class ViewQR extends DialogFragment {
                 });
     }
 
-    public void getComments(@NonNull String QRCodeHash) {
+    public void getComments(@NonNull String QRCodeHash, final @NonNull QRCodeCommentsCallback comments) {
 
+        ArrayList<ArrayList<Map<String, Object>>> commentsTemp = new ArrayList<>();
 
+        // Retrieve DocumentReferences in the user's QR code collection and store them in an array
+        QRCodesReference.document(QRCodeHash).collection("commentList")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    for (QueryDocumentSnapshot document : snapshot) {
+                        ArrayList<Map<String, Object>> comment = new ArrayList<>();
+                        comment.add(document.getData());
+                        commentsTemp.add(comment);
+                    }
+                    comments.comments(commentsTemp);
+                });
     }
 
     /**
@@ -242,5 +273,14 @@ public class ViewQR extends DialogFragment {
      */
     public interface QRCodeNoCommentsCallback {
         void noComments(boolean noComments);
+    }
+
+    /**
+     * Callback for querying the database to retrieve comments
+     *
+     * @author Afra
+     */
+    public interface QRCodeCommentsCallback {
+        void comments(@NonNull ArrayList<ArrayList<Map<String, Object>>> comments);
     }
 }
