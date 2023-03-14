@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,14 +20,17 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.text.MessageFormat;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -42,8 +44,9 @@ import java.util.Objects;
  */
 public class ProfileFragment extends Fragment {
     private static final String tag = "ProfileFragment";
-    private final CollectionReference usersReference;
     private static final String listenFailed = "listenFailed";
+    private final CollectionReference usersReference;
+    private final CollectionReference QRCodeReference;
     private QRAdapterClass adapter;
     private RecyclerView QRCodeRecyclerView;
     private FirestoreRecyclerOptions<QRCode> options;
@@ -57,6 +60,7 @@ public class ProfileFragment extends Fragment {
      */
     public ProfileFragment(@NonNull FirebaseFirestore db) {
         this.usersReference = db.collection("Users");
+        this.QRCodeReference = db.collection("QRCodes");
     }
 
     /**
@@ -90,116 +94,121 @@ public class ProfileFragment extends Fragment {
         TextView totalQRCodesText = view.findViewById(R.id.totalQRText);
 
         // If the user has at least one QR code, initialize RecyclerView
-        noQRCodesCheck(username, new ProfileCallback() {
+        noQRCodesCheck(username, new ProfileNoCodesCallback() {
             public void noCodes(boolean noCodes) {
                 userHasNoCodes = noCodes;
 
                 if (!userHasNoCodes) {
-                    CollectionReference QRColl = usersReference.document(username).collection("QR Codes");
 
-                    QRCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
+                    // Retrieve all QR Codes the user has and calculate scores
+                    queryQRCodes(username, new ProfileQRCodeCallback() {
+                        public void getReferencedQRCodes(@NonNull Map<String, String> referencedQRCodes) {
 
-                    options = new FirestoreRecyclerOptions.Builder<QRCode>()
-                            .setQuery(QRColl, QRCode.class)
-                            .build();
+                            CollectionReference QRColl = usersReference.document(username).collection("User QR Codes");
 
-                    adapter = new QRAdapterClass(options);
+                            QRCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
 
-                    //super.onStart(); man idk
-                    adapter.startListening();
-                    QRCodeRecyclerView.setAdapter(adapter);
-                    QRCodeRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                            adapter = new QRAdapterClass(options);
 
-                    // Gets the sum of points from all the QR Code documents
-                    QRColl.addSnapshotListener((value, error) -> {
-                        if (error != null) {
-                            Log.w(tag, listenFailed, error);
-                        }
-                        double total = 0;
+                            //super.onStart(); man idk
+                            adapter.startListening();
+                            QRCodeRecyclerView.setAdapter(adapter);
+                            QRCodeRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-                        assert value != null;
-                        for (QueryDocumentSnapshot document : value) {
-                            total += Objects.requireNonNull(document.getLong("points")).intValue();
+                            // TODO: Reimplement scores using referencedQRCodes, referencedQRCodes is just a map with points, see line 272
 
-                        }
-                        Log.d(tag, "Total Score: " + total);
-                        totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
+//                            // Gets the sum of points from all the QR Code documents
+//                            QRColl.addSnapshotListener((value, error) -> {
+//                                if (error != null) {
+//                                    Log.w(tag, listenFailed, error);
+//                                }
+//                                double total = 0;
+//
+//                                assert value != null;
+//                                for (QueryDocumentSnapshot document : value) {
+//                                    total += (document.getLong("points")).intValue();
+//
+//                                }
+//                                Log.d(tag, "Total Score: " + total);
+//                                totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
+//
+//                            });
+//
+//                            // Orders the QR collection from biggest to smallest, then returns the first QR Code
+//                            Query topQR = QRColl.orderBy("points", Query.Direction.DESCENDING).limit(1);
+//                            topQR.addSnapshotListener((value, error) -> {
+//                                if (error != null) {
+//                                    Log.w(tag, listenFailed, error);
+//                                }
+//                                double total = 0;
+//                                assert value != null;
+//                                for (QueryDocumentSnapshot document : value) {
+//                                    total += (document.getLong("points")).intValue();
+//
+//                                }
+//                                Log.d(tag, "top QR code: " + total);
+//                                topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", total));
+//                            });
+//
+//                            // Orders the QR collection from smallest to largest, then returns the first QR Code
+//                            Query lowQR = QRColl.orderBy("points", Query.Direction.ASCENDING).limit(1);
+//                            lowQR.addSnapshotListener((value, error) -> {
+//                                if (error != null) {
+//                                    Log.w(tag, listenFailed, error);
+//                                }
+//                                double total = 0;
+//                                assert value != null;
+//                                for (QueryDocumentSnapshot document : value) {
+//                                    total += (document.getLong("points")).intValue();
+//
+//                                }
+//                                Log.d(tag, "lowest QR code: " + total);
+//                                lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", total));
+//
+//                            });
+//
+//                            // Gets the size of the amount of QR codes there are
+//                            QRColl.addSnapshotListener((value, error) -> {
+//                                if (error != null) {
+//                                    Log.w(tag, listenFailed, error);
+//                                }
+//                                Log.d(tag, "num of QR: " + value.size());
+//                                totalQRCodesText.setText(MessageFormat.format("Total number of QR codes: {0}", value.size()));
+//                            });
 
-                    });
+                            // Handles clicking on an item to view the QR Code
+                            adapter.setOnItemClickListener(new OnItemClickListener() {
+                                @Override
+                                public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
 
-                    // Orders the QR collection from biggest to smallest, then returns the first QR Code
-                    Query topQR = QRColl.orderBy("points", Query.Direction.DESCENDING).limit(1);
-                    topQR.addSnapshotListener((value, error) -> {
-                        if (error != null) {
-                            Log.w(tag, listenFailed, error);
-                        }
-                        double total = 0;
-                        assert value != null;
-                        for (QueryDocumentSnapshot document : value) {
-                            total += Objects.requireNonNull(document.getLong("points")).intValue();
+                                    QRCode qrCode = documentSnapshot.toObject(QRCode.class);
+                                    new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
+                                }
+                            });
 
-                        }
-                        Log.d(tag, "top QR code: " + total);
-                        topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", total));
-                    });
+                            // Handles long clicking on an item for deletion
+                            adapter.setOnItemLongClickListener(new OnItemLongClickListener() {
+                                @Override
+                                public void onItemLongClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
 
-                    // Orders the QR collection from smallest to largest, then returns the first QR Code
-                    Query lowQR = QRColl.orderBy("points", Query.Direction.ASCENDING).limit(1);
-                    lowQR.addSnapshotListener((value, error) -> {
-                        if (error != null) {
-                            Log.w(tag, listenFailed, error);
-                        }
-                        double total = 0;
-                        assert value != null;
-                        for (QueryDocumentSnapshot document : value) {
-                            total += Objects.requireNonNull(document.getLong("points")).intValue();
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
-                        }
-                        Log.d(tag, "lowest QR code: " + total);
-                        lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", total));
+                                    String documentId = documentSnapshot.getId();
 
-                    });
+                                    builder
+                                            .setTitle("Delete QR Code?")
+                                            .setNegativeButton("Cancel", null)
+                                            .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialogInterface, int i) {
+                                                    usersReference.document(username).collection("User QR Codes").document(documentId).delete();
+                                                }
+                                            })
+                                            .create();
 
-                    // Gets the size of the amount of QR codes there are
-                    QRColl.addSnapshotListener((value, error) -> {
-                        if (error != null) {
-                            Log.w(tag, listenFailed, error);
-                        }
-                        Log.d(tag, "num of QR: " + value.size());
-                        totalQRCodesText.setText(MessageFormat.format("Total number of QR codes: {0}", value.size()));
-                    });
-
-                    // Handles clicking on an item to view the QR Code
-                    adapter.setOnItemClickListener(new OnItemClickListener() {
-                        @Override
-                        public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
-
-                            QRCode qrCode = documentSnapshot.toObject(QRCode.class);
-                            new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
-                        }
-                    });
-
-                    // Handles long clicking on an item for deletion
-                    adapter.setOnItemLongClickListener(new OnItemLongClickListener() {
-                        @Override
-                        public void onItemLongClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
-
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-
-                            String documentId = documentSnapshot.getId();
-
-                            builder
-                                    .setTitle("Delete QR Code?")
-                                    .setNegativeButton("Cancel", null)
-                                    .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialogInterface, int i) {
-                                            usersReference.document(username).collection("QR Codes").document(documentId).delete();
-                                        }
-                                    })
-                                    .create();
-
-                            builder.show();
+                                    builder.show();
+                                }
+                            });
                         }
                     });
                 }
@@ -215,26 +224,79 @@ public class ProfileFragment extends Fragment {
      * @param username Current user's username
      * @param noCodes  Callback function
      */
-    public void noQRCodesCheck(@NonNull String username, final @NonNull ProfileCallback noCodes) {
+    public void noQRCodesCheck(@NonNull String username, final @NonNull ProfileNoCodesCallback noCodes) {
 
-        usersReference.document(username).collection("QR Codes")
+        usersReference.document(username).collection("User QR Codes")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            noCodes.noCodes(task.getResult().size() <= 0);
+                            noCodes.noCodes(task.getResult().size() == 0);
                         }
                     }
                 });
     }
 
     /**
-     * Callback for querying the database
+     * Query database to retrieve referenced QR Codes in the user's collection, then
+     * use those DocumentReferences to retrieve data from the referenced QR codes
+     *
+     * @param username             User's username
+     * @param getReferencedQRCodes Callback for query
+     * @reference Firestore documentation
+     */
+    public void queryQRCodes(@NonNull String username, final @NonNull ProfileQRCodeCallback getReferencedQRCodes) {
+
+        ArrayList<DocumentReference> userQRCodesRef = new ArrayList<>();
+        Map<String, String> referencedQRCodes = new HashMap<>();
+
+        // Retrieve DocumentReferences in the user's QR code collection and store them in an array
+        usersReference.document(username).collection("User QR Codes")
+                .get()
+                .addOnSuccessListener(documentReferenceSnapshots -> {
+                    for (QueryDocumentSnapshot snapshot : documentReferenceSnapshots) {
+
+                        DocumentReference documentReference = snapshot.getDocumentReference(snapshot.getId());
+                        userQRCodesRef.add(documentReference);
+                    }
+
+                    // Retrieve QR Code data from the QRCodes collection using DocumentReferences
+                    Query query = QRCodeReference.whereIn(FieldPath.documentId(), userQRCodesRef);
+                    query
+                            .get()
+                            .addOnSuccessListener(referencedQRDocumentSnapshots -> {
+                                for (QueryDocumentSnapshot snapshot : referencedQRDocumentSnapshots) {
+                                    long QRCodePointsLong = snapshot.getLong("points");
+                                    String QRCodePoints = String.valueOf(QRCodePointsLong);
+                                    referencedQRCodes.put("points", QRCodePoints);
+                                    options = new FirestoreRecyclerOptions.Builder<QRCode>()
+                                            .setQuery(query, QRCode.class)
+                                            .build();
+                                    getReferencedQRCodes.getReferencedQRCodes(referencedQRCodes);
+                                }
+                            });
+                });
+
+    }
+
+    /**
+     * Callback for querying the database to see if user has codes
      *
      * @author Afra
      */
-    public interface ProfileCallback {
+    public interface ProfileNoCodesCallback {
         void noCodes(boolean noCodes);
+    }
+
+    /**
+     * Callback for querying the database to get QR object.
+     * referencedQRCodes is a map containing data for each
+     * QR code in the user's collection
+     *
+     * @author Afra
+     */
+    public interface ProfileQRCodeCallback {
+        void getReferencedQRCodes(@NonNull Map<String, String> referencedQRCodes);
     }
 }
