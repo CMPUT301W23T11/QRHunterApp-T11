@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.firebase.firestore.DocumentSnapshot;
 
 import io.reactivex.rxjava3.annotations.NonNull;
 
@@ -18,6 +17,9 @@ import io.reactivex.rxjava3.annotations.NonNull;
  *
  * @author Afra, Sarah
  * @reference <a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation</a>
+ * @reference <a href="https://www.youtube.com/watch?v=3WR4QAiVuCw">by Coding in Flow for adding OnClick functionality to the recyclerView</a>
+ * @reference <a href="https://www.youtube.com/watch?v=JLW7z_AaUHA">by Akshay Jhajhra for more help with the OnClick</a>
+ * @reference <a href="https://www.youtube.com/watch?v=k7GR3h5OsXk">by Technical Skillz for FirebaseRecyclerOptions help</a>
  */
 public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterClass.RecyclerViewHolder> {
     private OnItemClickListener listener;
@@ -28,32 +30,62 @@ public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterCl
     }
 
     @Override
-    protected void onBindViewHolder(@androidx.annotation.NonNull RecyclerViewHolder holder, int position, @androidx.annotation.NonNull QRCode model) {
+    protected void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position, @NonNull QRCode model) {
         // Bind the QRCode object to the RecyclerViewHolder
         holder.QRCodeName.setText(model.getName());
-        holder.QRCodePoints.setText("Points: " + model.getPoints());
-        holder.QRCodeNumComments.setText("Comments: " + model.getCommentList().size());
+
+        String points = "Points: " + model.getPoints();
+        holder.QRCodePoints.setText(points);
+
+        String comments = "Comments: " + model.getCommentList().size();
+        holder.QRCodeNumComments.setText(comments);
     }
 
+    @androidx.annotation.NonNull
     @Override
-    public RecyclerViewHolder onCreateViewHolder(ViewGroup group, int i) {
+    public RecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup group, int i) {
         View view = LayoutInflater.from(group.getContext())
                 .inflate(R.layout.qrcode_profile_view, group, false);
 
         return new RecyclerViewHolder(view);
     }
 
+    /**
+     * Sets the OnClickListener
+     *
+     * @param listener - OnItemClickListener
+     */
+    public void setOnItemClickListener(@NonNull OnItemClickListener listener) {
+        this.listener = listener;
+    }
+
+    /**
+     * Constructor for OnItemLongClickListener
+     *
+     * @param listener OnItemLongClickListener object
+     * @see OnItemLongClickListener
+     */
+    public void setOnItemLongClickListener(@NonNull OnItemLongClickListener listener) {
+        this.listenerLong = listener;
+    }
+
+    /**
+     * Holds the layout and Click functionalities for each item in the recyclerView
+     */
+
     public class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
-        public TextView QRCodeName;
-        public TextView QRCodePoints;
-        public TextView QRCodeNumComments;
+        private final TextView QRCodeName;
+        private final TextView QRCodePoints;
+        private final TextView QRCodeNumComments;
 
-        public RecyclerViewHolder(@androidx.annotation.NonNull View itemView) {
+        public RecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
             QRCodeName = itemView.findViewById(R.id.qrcode_name);
             QRCodePoints = itemView.findViewById(R.id.qrcode_points);
             QRCodeNumComments = itemView.findViewById(R.id.qrcode_numcomments);
+
+            // This click listener responds to clicks done on an item in the recyclerview
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -65,6 +97,7 @@ public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterCl
                 }
             });
 
+            // Long click listener for deletion
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
@@ -76,14 +109,6 @@ public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterCl
                 }
             });
         }
-    }
-
-    public void setOnItemClickListener(OnItemClickListener listener) {
-        this.listener = listener;
-    }
-
-    public void setOnItemLongClickListener(OnItemLongClickListener listener) {
-        this.listenerLong = listener;
     }
 
 }

@@ -3,58 +3,47 @@ package com.example.qrhunterapp_t11;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.Switch;
-import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.google.firebase.firestore.QuerySnapshot;
 
 /**
  * Handles settings screen. Users can rename themselves and change their email.
  *
  * @author Afra
- * @reference
+ * @reference Firestore documentation
  */
 public class SettingsFragment extends Fragment {
 
     private final CollectionReference usersReference;
+    private EditText usernameEditText;
+    private EditText emailEditText;
+    private String usernameString;
+    private String emailString;
     private boolean validUsername;
-    EditText usernameEditText;
-    EditText emailEditText;
-    String usernameString;
-    String emailString;
 
-    public SettingsFragment(FirebaseFirestore db) {
+    public SettingsFragment(@NonNull FirebaseFirestore db) {
         this.usersReference = db.collection("Users");
     }
 
-    public interface settingsCallback {
-        void usernameValid(boolean valid);
-    }
-
+    @NonNull
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
         SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
@@ -76,7 +65,7 @@ public class SettingsFragment extends Fragment {
                 emailString = emailEditText.getText().toString();
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                usernameCheck(usernameString, usernameEditText, new settingsCallback() {
+                usernameCheck(usernameString, usernameEditText, new SettingsCallback() {
                     public void usernameValid(boolean valid) {
                         validUsername = valid;
 
@@ -108,31 +97,50 @@ public class SettingsFragment extends Fragment {
         return view;
     }
 
-    public void usernameCheck(String usernameString, EditText usernameEditText, final settingsCallback usernameValid) {
+    /**
+     * Checks to see if username is valid and unique
+     *
+     * @param usernameString   Entered username
+     * @param usernameEditText EditText for entered username
+     * @param usernameValid    Callback for query
+     */
+    public void usernameCheck(@NonNull String usernameString, @NonNull EditText usernameEditText, final @NonNull SettingsCallback usernameValid) {
 
-        // Check if field is empty
+        // Check if username matches Firestore document ID guidelines
         if (usernameString.length() == 0) {
             usernameEditText.setError("Field cannot be blank");
+        } else if (usernameString.contains("/")) {
+            usernameEditText.setError("Invalid character: '/'");
+        } else if (usernameString.equals(".") || usernameString.equals("..")) {
+            usernameEditText.setError("Invalid username");
+        } else if (usernameString.equals("__.*__")) {
+            usernameEditText.setError("Invalid username");
         }
 
         // Check if username exists already
         else {
-            DocumentReference usernameReference = usersReference.document(usernameString);
-            usernameReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            usersReference.whereEqualTo("Display Name", usernameString).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
                     if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-
-                        if (document.exists()) {
+                        if (task.getResult().isEmpty()) {
+                            usernameValid.usernameValid(true);
+                        } else {
                             usernameEditText.setError("Username is not unique");
                             usernameValid.usernameValid(false);
-                        } else {
-                            usernameValid.usernameValid(true);
                         }
                     }
                 }
             });
         }
+    }
+
+    /**
+     * Callback for querying the database
+     *
+     * @author Afra
+     */
+    public interface SettingsCallback {
+        void usernameValid(boolean valid);
     }
 }

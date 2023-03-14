@@ -4,16 +4,38 @@
     <string name="search_icon">Search</string>
     <string name="profile_icon">Profile</string>
     <string name="settings">Settings</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 
+    <!-- TODO: Remove or change this placeholder text -->
     <string name="google_map_api_key">AIzaSyBi77bc0a3Lwbh-ZbfFUAGTeqo4m1NvGog</string>
+
     <string name="adds_a_qr_code">Adds a QR code</string>
     <string name="profile_name_text">Profile Name</string>
     <string name="stats_header">STATS</string>
-    <string name="your_total_score_text">Your total score:</string>
-    <string name="your_top_qr_code_text">Your top QR code:</string>
-    <string name="your_lowest_qr_code_text">Your lowest QR code:</string>
-    <string name="your_total_qr_codes_text">Your total QR Codes:</string>
+    <string name="your_total_score_text">Your total score: 0</string>
+    <string name="your_top_qr_code_text">Your top QR code: 0</string>
+    <string name="your_lowest_qr_code_text">Your lowest QR code: 0</string>
+    <string name="your_total_qr_codes_text">Your total QR Codes: 0</string>
     <string name="collection_header">COLLECTION</string>
+    <string name="edittext_email">Email</string>
+    <string name="edittext_username">Username</string>
+    <string name="edittext_confirm">Confirm</string>
+    <string name="edittext_change_username">Change Username:</string>
+    <string name="edittext_change_email">Change Email:</string>
+    <string name="edittext_capture">Capture</string>
+    <string name="edittext_profile">Profile</string>
+    <string name="edittext_comment">comment</string>
+    <string name="edittext_scored_xxxxx_points">Scored XXXXX Points</string>
+    <string name="edittext_points">Points:</string>
+    <string name="edittext_add_comment">Add Comment</string>
+    <string name="imageview_imagecolour">Image colour</string>
+    <string name="imageview_image_face">Image face</string>
+    <string name="imageview_image_nose">Image nose</string>
+    <string name="imageview_image_mouth">Image mouth</string>
+    <string name="imageview_image_eyebrows">Image eyebrows</string>
+    <string name="imageview_image_eyes">Image eyes</string>
+    <string name="imageview_image_photo">Image photo</string>
+    <string name="imageview_send">ImageView send</string>
+    <string name="textview_name">Name</string>
+    <string name="textview_points">Points</string>
+    <string name="textview_comments">Comments</string>
 </resources>

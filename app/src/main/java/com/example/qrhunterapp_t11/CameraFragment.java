@@ -1,8 +1,5 @@
 package com.example.qrhunterapp_t11;
 
-import static android.content.Intent.getIntent;
-import static android.content.Intent.getIntentOld;
-
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,7 +7,11 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
-import android.content.Intent;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -23,12 +24,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -40,8 +35,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
-import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -54,17 +47,16 @@ import java.util.TimerTask;
  * @author Josh Lucas and Afra - methods for creating a new QR object
  */
 public class CameraFragment extends Fragment {
-    ActivityResultLauncher<ScanOptions> barLauncher;
-    ActivityResultLauncher<Intent> photoLauncher;
-    QRCode qrCode;
-
-    String imageUrl;
-    SharedPreferences prefs;
-
-    //https://firebase.google.com/docs/firestore/manage-data/add-data //TODO put this in a javadoc somewhere as an @reference?
-    FirebaseFirestore db;
-    CollectionReference QRCodesReference;
-    CollectionReference usersReference;
+    private static final int permissionsRequestLocation = 100;
+    private ActivityResultLauncher<ScanOptions> barLauncher;
+    private ActivityResultLauncher<Intent> photoLauncher;
+    private QRCode qrCode;
+    private String imageUrl;
+    private SharedPreferences prefs;
+    private final FirebaseFirestore db;
+    private final CollectionReference QRCodesReference;
+    private final CollectionReference usersReference;
+    private static final String locationPrompt = "LocationPrompt";
 
     public CameraFragment(FirebaseFirestore db) {
         this.db = db;
@@ -85,10 +77,11 @@ public class CameraFragment extends Fragment {
      *                           from a previous saved state as given here.
      * @return a View containing the inflated layout.
      */
+    @NonNull
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        //FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
         return inflater.inflate(R.layout.fragment_camera, container, false);
     }
@@ -115,8 +108,8 @@ public class CameraFragment extends Fragment {
      * after a few seconds.
      *
      * @param savedInstanceState If the fragment is being re-created from a previous saved state, this is the state.
-     * @reference Pro Grammer - https://www.youtube.com/watch?v=W4qqTcxqq48 - how to create a custom dialog
-     * @reference Pete Houston - https://xjaphx.wordpress.com/2011/07/13/auto-close-dialog-after-a-specific-time/ - how to have dialog automatically close after a few seconds
+     * @reference <a href="https://www.youtube.com/watch?v=W4qqTcxqq48">how to create a custom dialog</a>
+     * @reference <a href="https://xjaphx.wordpress.com/2011/07/13/auto-close-dialog-after-a-specific-time/">how to have dialog automatically close after a few seconds</a>
      */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -129,6 +122,7 @@ public class CameraFragment extends Fragment {
                     @Override
                     public void onActivityResult(ActivityResult result) {
                         Intent intent = result.getData();
+                        assert intent != null;
                         Bundle extras = intent.getExtras();
                         imageUrl = extras.getString("url");
                         promptForLocation(); // prompt for location once the TakePhotoActivity has finished
@@ -139,8 +133,7 @@ public class CameraFragment extends Fragment {
         barLauncher = registerForActivityResult(new ScanContract(), result -> {
             if (result.getContents() != null) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext()); // create a builder for the alert dialog
-                String resultString = result.getContents(); // how to access QR code contents; score dialog shows placeholder value for now
-                // resultString is a string of whatever was in the QR code; supply it as an argument into your hash function/constructor
+                String resultString = result.getContents(); // access QR code contents
 
                 // object instantiated
                 qrCode = new QRCode(resultString);
@@ -148,10 +141,11 @@ public class CameraFragment extends Fragment {
                 // create custom dialog to display QR score
                 LayoutInflater inflater = this.getLayoutInflater();
                 View dialogView = inflater.inflate(R.layout.qr_scored_dialog, null);
-                TextView scoredTV = dialogView.findViewById(R.id.scoredTV); // NEW ADDITION
+                TextView scoredTV = dialogView.findViewById(R.id.scoredTV);
                 builder.setView(dialogView);
                 builder.setCancelable(false);
-                scoredTV.setText("Scored " + String.valueOf(qrCode.getPoints()) + " Points"); // NEW ADDITION
+                String scored = "Scored " + qrCode.getPoints() + " Points";
+                scoredTV.setText(scored);
 
                 final AlertDialog alertDialog = builder.create();
                 alertDialog.show(); // create and display the dialog
@@ -173,7 +167,7 @@ public class CameraFragment extends Fragment {
     /**
      * Function to initialize QR scanner options, and order the QR scanner to start scanning using the CaptureAct.
      *
-     * @reference Cambo Tutorial - https://www.youtube.com/watch?v=jtT60yFPelI - how to configure the QR camera scanner and obtain the QR contents from the CaptureAct
+     * @reference <a href="https://www.youtube.com/watch?v=jtT60yFPelI">how to configure the QR camera scanner and obtain the QR contents from the CaptureAct</a>
      */
     private void scanCode() {
         ScanOptions options = new ScanOptions();
@@ -188,9 +182,9 @@ public class CameraFragment extends Fragment {
      * Creates a dialog for whether the user would like to take a photo of the object or location of the QR code.
      * If the user selects "no", this step will be skipped and the user's geo-location will be prompted next.
      *
-     * @reference David Hedlund - https://stackoverflow.com/questions/2115758/how-do-i-display-an-alert-dialog-on-android - how to create an AlertDialog
-     * @reference EboMike - https://stackoverflow.com/questions/3875184/cant-create-handler-inside-thread-that-has-not-called-looper-prepare - updating UI elements from within a thread using runOnUiThread()
-     * @reference Rick - https://stackoverflow.com/a/19064968/14445107 - how to prevent users from touching outside a dialog box to escape it
+     * @reference <a href="https://stackoverflow.com/questions/2115758/how-do-i-display-an-alert-dialog-on-android">how to create an AlertDialog</a>
+     * @reference <a href="https://stackoverflow.com/questions/3875184/cant-create-handler-inside-thread-that-has-not-called-looper-prepare">updating UI elements from within a thread using runOnUiThread()</a>
+     * @reference <a href="https://stackoverflow.com/a/19064968/14445107">how to prevent users from touching outside a dialog box to escape it</a>
      */
     private void promptForPhoto() {
         getActivity().runOnUiThread(new Runnable() {
@@ -221,7 +215,7 @@ public class CameraFragment extends Fragment {
     /**
      * Helper function that starts the TakePhotoActivity if the user accepts the photo prompt.
      *
-     * @reference Paul Thompson - https://stackoverflow.com/questions/28619113/start-a-new-activity-from-fragment - how to start an activity from within a fragment
+     * @reference <a href="https://stackoverflow.com/questions/28619113/start-a-new-activity-from-fragment">how to start an activity from within a fragment</a>
      */
     private void takePhoto() {
         Intent intent = new Intent(getActivity(), TakePhotoActivity.class);
@@ -229,14 +223,11 @@ public class CameraFragment extends Fragment {
     }
 
 
-    private static final int PERMISSIONS_REQUEST_LOCATION = 100; //TODO move to top of class for cleanliness?
-    private GoogleApiClient googleApiClient; //TODO move to top of class for cleanliness?
-
     /**
      * Connects the GoogleApiClient and initiates the permissions check
      */
     private void connectGoogleApiClient() {
-        googleApiClient = new GoogleApiClient.Builder(requireContext())
+        GoogleApiClient googleApiClient = new GoogleApiClient.Builder(requireContext())
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
                     @Override
@@ -250,7 +241,7 @@ public class CameraFragment extends Fragment {
                 })
                 .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
                     @Override
-                    public void onConnectionFailed(ConnectionResult connectionResult) {
+                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
                     }
                 })
                 .build();
@@ -273,14 +264,14 @@ public class CameraFragment extends Fragment {
                         // Location data is available
                         double latitude = location.getLatitude();
                         double longitude = location.getLongitude();
-                        Log.d("LocationPrompt", "Latitude: " + latitude + ", Longitude: " + longitude);
+                        Log.d(locationPrompt, "Latitude: " + latitude + ", Longitude: " + longitude);
                         //set location and store
                         //qrCode.setLocation(location);
                         addQRCode();
                         returnToProfile();
                     } else {
                         // Location data is not available
-                        Log.d("LocationPrompt", "ERROR Location data is not available.");
+                        Log.d(locationPrompt, "ERROR Location data is not available.");
                         //stores QRCode into db with just hash as document id and location = null
                         addQRCode();
                         returnToProfile();
@@ -296,15 +287,15 @@ public class CameraFragment extends Fragment {
     private void permissions() {
         if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             // Permission is already granted
-            Log.d("LocationPrompt", "PERMISSION ALREADY GAVE.");
+            Log.d(locationPrompt, "PERMISSION ALREADY GAVE.");
             getCurrentLocation();
         } else {
             // Permission is not granted
             // Ask for the permission, calls onRequestPermissionsResult after selection
-            Log.d("LocationPrompt", "ASKING FOR PERMISSION.");
+            Log.d(locationPrompt, "ASKING FOR PERMISSION.");
             requestPermissions(
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSIONS_REQUEST_LOCATION);
+                    permissionsRequestLocation);
         }
     }
 
@@ -318,14 +309,14 @@ public class CameraFragment extends Fragment {
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == PERMISSIONS_REQUEST_LOCATION) {
+        if (requestCode == permissionsRequestLocation) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission is granted
-                Log.d("LocationPrompt", "Execute if permission granted.");
+                Log.d(locationPrompt, "Execute if permission granted.");
                 getCurrentLocation();
             } else {
                 // Permission is not granted
-                Log.d("LocationPrompt", "Execute if permission not granted.");
+                Log.d(locationPrompt, "Execute if permission not granted.");
                 //stores QRCode into db with just hash as document id and location = null
                 addQRCode();
                 returnToProfile();
@@ -337,8 +328,8 @@ public class CameraFragment extends Fragment {
      * Prompts the user as to whether they would like to share their geolocation for a QR code. If they click "yes", the QR code will be created with location, and
      * if they press "no" without location.
      *
-     * @reference Daily Coding - https://www.youtube.com/watch?v=DfDj9EadOLk - how to use activityresultlauncher to execute code after an activity closes
-     * @reference Oleksandra - https://stackoverflow.com/a/63883427/14445107 - where to initialize an activityresultlauncher
+     * @reference <a href="https://www.youtube.com/watch?v=DfDj9EadOLk">how to use activityresultlauncher to execute code after an activity closes</a>
+     * @reference <a href="https://stackoverflow.com/a/63883427/14445107">where to initialize an activityresultlauncher</a>
      */
     private void promptForLocation() {
         new AlertDialog.Builder(getContext())
@@ -347,14 +338,14 @@ public class CameraFragment extends Fragment {
                 .setCancelable(false)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.d("LocationPrompt", "User accepted geolocation prompt.");
+                        Log.d(locationPrompt, "User accepted geolocation prompt.");
                         permissions();
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.d("LocationPrompt", "User rejected geolocation prompt.");
+                        Log.d(locationPrompt, "User rejected geolocation prompt.");
                         //stores QRCode into db with just hash as document id and location = null
                         addQRCode();
 
@@ -369,7 +360,7 @@ public class CameraFragment extends Fragment {
      * to add another QR code immediately after scanning one, since they're technically still in the CameraFragment,
      * nothing would happen.
      *
-     * @reference Yoju - https://stackoverflow.com/a/60055145/14445107 - using getParentFragmentManager() instead of getFragmentManager()
+     * @reference <a href="https://stackoverflow.com/a/60055145/14445107">using getParentFragmentManager() instead of getFragmentManager()</a>
      */
     private void returnToProfile() {
         FragmentTransaction trans = getParentFragmentManager().beginTransaction();
