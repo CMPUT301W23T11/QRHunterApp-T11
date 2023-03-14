@@ -179,7 +179,7 @@ public class ViewQR extends DialogFragment {
                     comment.put("Display Name", currentUserDisplayName);
                     comment.put("Comment", commentString);
 
-                    Map<String, Object> QRCodeRef = new HashMap<>();
+                    Map<String, CollectionReference> QRCodeRef = new HashMap<>();
                     CollectionReference QRCodeCollectionRef = QRCodesReference.document(QRCodeHash).collection("commentList");
                     QRCodeRef.put(QRCodeHash, QRCodeCollectionRef);
 
