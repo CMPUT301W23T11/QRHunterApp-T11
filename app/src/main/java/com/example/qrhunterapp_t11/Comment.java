@@ -52,14 +52,4 @@ public class Comment {
         return userDisplayName;
     }
 
-    /**
-     * Getter for the username String
-     *
-     * @return username - String
-     */
-    @NonNull
-    public String getUsername() {
-        return username;
-    }
-
 }

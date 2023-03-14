@@ -30,11 +30,14 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -58,7 +61,7 @@ public class CameraFragment extends Fragment {
     private final CollectionReference usersReference;
     private static final String locationPrompt = "LocationPrompt";
 
-    public CameraFragment(FirebaseFirestore db) {
+    public CameraFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
         this.QRCodesReference = db.collection("QRCodes");
         this.usersReference = db.collection("Users");
@@ -373,11 +376,16 @@ public class CameraFragment extends Fragment {
      */
     private void addQRCode() {
         String currentUser = prefs.getString("currentUser", null);
-        String id = qrCode.getHash();
-        QRCodesReference.document(id).set(qrCode);
-        usersReference.document(currentUser).collection("QR Codes").document(id).set(qrCode);
-        usersReference.document(currentUser).collection("QR Codes").document(qrCode.getHash()).update("photoList", FieldValue.arrayUnion(imageUrl));
-        QRCodesReference.document(qrCode.getHash()).update("photoList", FieldValue.arrayUnion(imageUrl));
+        String QRCodeHash = qrCode.getHash();
+
+        QRCodesReference.document(QRCodeHash).set(qrCode);
+        QRCodesReference.document(QRCodeHash).update("photoList", FieldValue.arrayUnion(imageUrl));
+
+        Map<String, Object> QRCodeRef = new HashMap<>();
+        DocumentReference QRCodeDocumentRef = QRCodesReference.document(QRCodeHash);
+        QRCodeRef.put(QRCodeHash, QRCodeDocumentRef);
+
+        usersReference.document(currentUser).collection("User QR Codes").document(QRCodeHash).set(QRCodeRef);
 
     }
 }

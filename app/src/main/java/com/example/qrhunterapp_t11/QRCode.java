@@ -310,22 +310,31 @@ public class QRCode {
     }
 
     /**
-     * Getter for QRCode Object's commentList attribute
+     * Getter for QRCode object's commentList attribute
      *
      * @return commentList - an ArrayList of all the comments associated w/ this QRCode Object
      */
     @NonNull
     public ArrayList<Comment> getCommentList() {
-        return commentList;
+        return this.commentList;
+    }
+
+    /**
+     * Getter for QRCode object's commentList size
+     *
+     * @return commentList.size() - an int representing the number of comments in the commentList
+     */
+    public int getCommentListSize() {
+        return this.commentList.size();
     }
 
     /**
      * Setter for QRCode Object's commentList attribute
      *
-     * @param commentList - an ArrayList of comments
+     * @param comment - a Comment object
      */
-    public void setCommentList(@NonNull ArrayList<Comment> commentList) {
-        this.commentList = commentList;
+    public void updateCommentList(@NonNull Comment comment) {
+        this.commentList.add(comment);
     }
 
     /**

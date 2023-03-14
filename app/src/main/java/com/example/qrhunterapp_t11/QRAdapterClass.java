@@ -37,7 +37,7 @@ public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterCl
         String points = "Points: " + model.getPoints();
         holder.QRCodePoints.setText(points);
 
-        String comments = "Comments: " + model.getCommentList().size();
+        String comments = "Comments: " + model.getCommentListSize();
         holder.QRCodeNumComments.setText(comments);
     }
 

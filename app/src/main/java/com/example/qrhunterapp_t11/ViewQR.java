@@ -132,13 +132,18 @@ public class ViewQR extends DialogFragment {
                 if (!commentString.isEmpty()) {
                     String currentUserDisplayName = prefs.getString("currentUserDisplayName", null);
                     String currentUser = prefs.getString("currentUser", null);
+                    String QRCodeHash = qrCode.getHash();
                     Comment c = new Comment(commentString, currentUserDisplayName, currentUser);
-                    commentList.add(c);
-                    qrCode.setCommentList(commentList);
+
+                    //commentList.add(c);
+                    qrCode.updateCommentList(c);
+                    commentAdapter.setCommentList(qrCode.getCommentList());
                     commentAdapter.notifyDataSetChanged();
                     commentET.getText().clear();
-                    usersReference.document(currentUser).collection("QR Codes").document(qrCode.getHash()).update("commentList", FieldValue.arrayUnion(c));
-                    QRCodesReference.document(qrCode.getHash()).update("commentList", FieldValue.arrayUnion(c));
+
+                    QRCodesReference.document(QRCodeHash).update("commentList", FieldValue.arrayUnion(c));
+                    //DocumentReference QRCodeDocumentRef = QRCodesReference.document(QRCodeHash);
+                    //usersReference.document(currentUser).collection("User QR Codes").document(QRCodeHash).set(QRCodeDocumentRef);
                 }
             }
         });

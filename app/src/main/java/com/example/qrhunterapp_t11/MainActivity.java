@@ -33,7 +33,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDialogListener {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final CollectionReference usersReference = db.collection("Users");
+    public final CollectionReference usersReference = db.collection("Users");
     private final ProfileFragment profileFragment = new ProfileFragment(db);
     private final SettingsFragment settingsFragment = new SettingsFragment(db);
     private final CameraFragment cameraFragment = new CameraFragment(db);
