@@ -184,7 +184,6 @@ public class ViewQR extends DialogFragment {
                     QRCodeRef.put(QRCodeHash, QRCodeCollectionRef);
 
                     QRCodesReference.document(QRCodeHash).collection("commentList").add(comment);
-                    usersReference.document(currentUser).collection("commentedOnList").document(QRCodeHash).set(QRCodeRef);
                 }
             }
         });
