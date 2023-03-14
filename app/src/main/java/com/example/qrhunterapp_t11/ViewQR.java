@@ -18,12 +18,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This is the dialog fragment that appears when a user clicks to see more info about a certain QRCode. It shows the user the QR Code's image, name,
@@ -45,6 +49,8 @@ public class ViewQR extends DialogFragment {
     private CommentAdapter commentAdapter;
     private EditText commentET;
     private SharedPreferences prefs;
+    private final String QRCodeHash = qrCode.getHash();
+    private boolean QRCodeHasNoComments;
 
     /**
      * Empty constructor
@@ -104,9 +110,6 @@ public class ViewQR extends DialogFragment {
         ImageView eyebrowsImageView = view.findViewById(R.id.imageEyebrows);
         ImageView photoImageView = view.findViewById(R.id.imagePhoto);
 
-        commentList = qrCode.getCommentList();
-        commentAdapter = new CommentAdapter(getContext(), commentList);
-        commentListView.setAdapter(commentAdapter);
         String points = "Points: " + qrCode.getPoints();
         pointsTV.setText(points);
 
@@ -123,6 +126,19 @@ public class ViewQR extends DialogFragment {
             Picasso.with(getContext()).load(qrCode.getPhotoList().get(0)).into(photoImageView);
         }
 
+        noCommentsCheck(QRCodeHash, new QRCodeNoCommentsCallback() {
+            public void noComments(boolean noComments) {
+                QRCodeHasNoComments = noComments;
+
+                if (!QRCodeHasNoComments) {
+
+                    //commentList =
+                    commentAdapter = new CommentAdapter(getContext(), commentList);
+                    commentListView.setAdapter(commentAdapter);
+                }
+            }
+        });
+
         // When the send image arrow ImageView is clicked, if a comment has been made it will be added to the QRCode object's saved array of comments and appear in the comment box with the associated user
         commentIV.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -130,19 +146,26 @@ public class ViewQR extends DialogFragment {
                 String commentString = commentET.getText().toString();
 
                 if (!commentString.isEmpty()) {
-                    // TODO: If the same user writes a duplicate comment, it overwrites the previous one
+
                     String currentUserDisplayName = prefs.getString("currentUserDisplayName", null);
                     String currentUser = prefs.getString("currentUser", null);
-                    String QRCodeHash = qrCode.getHash();
                     Comment c = new Comment(commentString, currentUserDisplayName, currentUser);
 
-                    //commentList.add(c);
-                    qrCode.updateCommentList(c);
-                    commentAdapter.setCommentList(qrCode.getCommentList());
+                    commentAdapter.setCommentList(c);
                     commentAdapter.notifyDataSetChanged();
                     commentET.getText().clear();
 
-                    QRCodesReference.document(QRCodeHash).update("commentList", FieldValue.arrayUnion(c));
+                    Map<String, String> comment = new HashMap<>();
+                    comment.put("Username", currentUser);
+                    comment.put("Display Name", currentUserDisplayName);
+                    comment.put("Comment", commentString);
+
+                    Map<String, Object> QRCodeRef = new HashMap<>();
+                    CollectionReference QRCodeCollectionRef = QRCodesReference.document(QRCodeHash).collection("commentList");
+                    QRCodeRef.put(QRCodeHash, QRCodeCollectionRef);
+
+                    QRCodesReference.document(QRCodeHash).collection("commentList").add(comment);
+                    usersReference.document(currentUser).collection("commentedOnList").document(QRCodeHash).set(QRCodeRef);
                 }
             }
         });
@@ -181,9 +204,43 @@ public class ViewQR extends DialogFragment {
     }
 
     /**
+     * Query database to check if QR code has any comments or not
+     *
+     * @param QRCodeHash QR to check for comments
+     * @param noComments Callback function
+     */
+    public void noCommentsCheck(@NonNull String QRCodeHash, final @NonNull QRCodeNoCommentsCallback noComments) {
+
+        QRCodesReference.document(QRCodeHash).collection("commentList")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            noComments.noComments(task.getResult().size() == 0);
+                        }
+                    }
+                });
+    }
+
+    public void getComments(@NonNull String QRCodeHash) {
+
+
+    }
+
+    /**
      * Listener for the ViewQR dialog
      */
     interface ViewQRDialogListener {
         void viewCode(QRCode qrCode);
+    }
+
+    /**
+     * Callback for querying the database to see if QR code has comments
+     *
+     * @author Afra
+     */
+    public interface QRCodeNoCommentsCallback {
+        void noComments(boolean noComments);
     }
 }

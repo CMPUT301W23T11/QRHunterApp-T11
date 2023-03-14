@@ -17,7 +17,6 @@ public class QRCode {
     private int points;
     private Location geolocation;
     private ArrayList<Integer> faceList;
-    private ArrayList<Comment> commentList;
     private ArrayList<String> photoList;
 
     /**
@@ -37,7 +36,6 @@ public class QRCode {
         this.points = calculatePoints(hash);
         this.name = uniqueName(hash);
         this.faceList = uniqueImage(hash);
-        this.commentList = new ArrayList<>();
         this.photoList = new ArrayList<>();
         this.geolocation = null;
     }
@@ -309,33 +307,6 @@ public class QRCode {
         return faceList;
     }
 
-    /**
-     * Getter for QRCode object's commentList attribute
-     *
-     * @return commentList - an ArrayList of all the comments associated w/ this QRCode Object
-     */
-    @NonNull
-    public ArrayList<Comment> getCommentList() {
-        return this.commentList;
-    }
-
-    /**
-     * Getter for QRCode object's commentList size
-     *
-     * @return commentList.size() - an int representing the number of comments in the commentList
-     */
-    public int getCommentListSize() {
-        return this.commentList.size();
-    }
-
-    /**
-     * Setter for QRCode Object's commentList attribute
-     *
-     * @param comment - a Comment object
-     */
-    public void updateCommentList(@NonNull Comment comment) {
-        this.commentList.add(comment);
-    }
 
     /**
      * Setter for QRCode Object's hash attribute

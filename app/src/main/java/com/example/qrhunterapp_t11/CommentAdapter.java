@@ -19,7 +19,7 @@ import java.util.ArrayList;
  */
 
 public class CommentAdapter extends BaseAdapter {
-    private ArrayList<Comment> commentList;
+    private final ArrayList<Comment> commentList;
     private final Context context;
 
     /**
@@ -43,8 +43,8 @@ public class CommentAdapter extends BaseAdapter {
         return commentList.size();
     }
 
-    public void setCommentList(@NonNull ArrayList<Comment> commentList) {
-        this.commentList = commentList;
+    public void setCommentList(@NonNull Comment comment) {
+        this.commentList.add(comment);
     }
 
     /**
