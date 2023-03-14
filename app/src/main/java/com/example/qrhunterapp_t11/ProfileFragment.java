@@ -116,6 +116,7 @@ public class ProfileFragment extends Fragment {
                     QRCodeRecyclerView.setAdapter(adapter);
                     QRCodeRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+                    // Retrieve all QR Codes the user has and calculate scores
                     queryQRCodes(username, new ProfileQRCodeCallback() {
                         public void getReferencedQRCodes(@NonNull Map<String, String> referencedQRCodes) {
 
@@ -240,11 +241,20 @@ public class ProfileFragment extends Fragment {
                 });
     }
 
+    /**
+     * Query database to retrieve referenced QR Codes in the user's collection, then
+     * use those DocumentReferences to retrieve data from the referenced QR codes
+     *
+     * @param username             User's username
+     * @param getReferencedQRCodes Callback for query
+     * @reference Firestore documentation
+     */
     public void queryQRCodes(@NonNull String username, final @NonNull ProfileQRCodeCallback getReferencedQRCodes) {
 
         ArrayList<DocumentReference> userQRCodesRef = new ArrayList<>();
         Map<String, String> referencedQRCodes = new HashMap<>();
 
+        // Retrieve DocumentReferences in the user's QR code collection and store them in an array
         usersReference.document(username).collection("User QR Codes")
                 .get()
                 .addOnSuccessListener(documentReferenceSnapshots -> {
@@ -253,6 +263,8 @@ public class ProfileFragment extends Fragment {
                         DocumentReference documentReference = snapshot.getDocumentReference(snapshot.getId());
                         userQRCodesRef.add(documentReference);
                     }
+
+                    // Retrieve QR Code data from the QRCodes collection using DocumentReferences
                     QRCodeReference.whereIn(FieldPath.documentId(), userQRCodesRef)
                             .get()
                             .addOnSuccessListener(referencedQRDocumentSnapshots -> {
@@ -277,7 +289,9 @@ public class ProfileFragment extends Fragment {
     }
 
     /**
-     * Callback for querying the database to get QR object
+     * Callback for querying the database to get QR object.
+     * referencedQRCodes is a map containing data for each
+     * QR code in the user's collection
      *
      * @author Afra
      */
