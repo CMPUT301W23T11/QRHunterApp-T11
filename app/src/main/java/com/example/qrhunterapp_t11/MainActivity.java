@@ -33,11 +33,12 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDialogListener {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final CollectionReference usersReference = db.collection("Users");
+    public final CollectionReference usersReference = db.collection("Users");
     private final ProfileFragment profileFragment = new ProfileFragment(db);
     private final SettingsFragment settingsFragment = new SettingsFragment(db);
     private final CameraFragment cameraFragment = new CameraFragment(db);
     private final MapFragment mapFragment = new MapFragment();
+    private final SearchFragment searchFragment = new SearchFragment();
     private BottomNavigationView bottomToolbar;
     private int numUsers;
 
@@ -119,7 +120,10 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
 
                     return true;
 
-                // use 'case R.id.search:' for search/leaderboard fragment
+                case R.id.search:
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, searchFragment).commit();
+
+                    return true;
 
             }
             /*
