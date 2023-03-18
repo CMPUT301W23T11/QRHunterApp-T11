@@ -31,6 +31,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -126,27 +127,18 @@ public class ProfileFragment extends Fragment {
 
                             // gets the total score of the user
                             int total = 0;
-                            for (String value: referencedQRCodes.values()) {
-                                total += Integer.parseInt(value);
+                            for (String qr: referencedQRCodes.values()) {
+                                total += Integer.parseInt(qr);
                             }
                             totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
 
-//
-//                            // Orders the QR collection from biggest to smallest, then returns the first QR Code
-//                            Query topQR = QRColl.orderBy("points", Query.Direction.DESCENDING).limit(1);
-//                            topQR.addSnapshotListener((value, error) -> {
-//                                if (error != null) {
-//                                    Log.w(tag, listenFailed, error);
-//                                }
-//                                double total = 0;
-//                                assert value != null;
-//                                for (QueryDocumentSnapshot document : value) {
-//                                    total += (document.getLong("points")).intValue();
-//
-//                                }
-//                                Log.d(tag, "top QR code: " + total);
-//                                topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", total));
-//                            });
+                            Map.Entry<String, String> maxEntry = null;
+                            for (Map.Entry<String, String> entry : referencedQRCodes.entrySet()) {
+                                if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) > 0){
+                                    maxEntry = entry;
+                                }
+                            }
+                            topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", maxEntry));
 //
 //                            // Orders the QR collection from smallest to largest, then returns the first QR Code
 //                            Query lowQR = QRColl.orderBy("points", Query.Direction.ASCENDING).limit(1);
