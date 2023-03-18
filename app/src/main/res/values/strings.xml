@@ -43,4 +43,5 @@
     <string name="search">Search</string>
     <string name="profile_name_text_search">Profile Name</string>
     <string name="profile_points_text_search">Points</string>
+    <string name="ranking_profile">Ranking:</string>
 </resources>

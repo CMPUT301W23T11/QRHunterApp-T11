@@ -1,33 +1,46 @@
 package com.example.qrhunterapp_t11;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-
+/**
+ * Handles search and leaderboard screen.
+ * Leaderboard displays ranked list of players, clicking on a player shows their profile
+ * Search allows the user to search for other users to view their profiles
+ *
+ * @author Afra, Kristina
+ */
 public class SearchFragment extends Fragment {
 
+    private final FirebaseFirestore db;
     private final CollectionReference usersReference;
     private final CollectionReference QRCodeReference;
-    private LeaderboardProfileAdapter adapter;
+    private LeaderboardProfileAdapter leaderboardAdapter;
     private RecyclerView leaderboardRecyclerView;
-    private FirestoreRecyclerOptions<LeaderboardProfile> options;
+    private FirestoreRecyclerOptions<User> leaderboardOptions;
+    private SharedPreferences prefs;
 
     public SearchFragment(@NonNull FirebaseFirestore db) {
+        this.db = db;
         this.usersReference = db.collection("Users");
         this.QRCodeReference = db.collection("QRCodes");
     }
@@ -38,45 +51,68 @@ public class SearchFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
 
-        leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
+        // Set Firestore RecyclerView query and begin monitoring that query
+        leaderboardProfileQuery(new LeaderboardCallback() {
+            public void completedQueryCheck(boolean queryComplete) {
 
-//        adapter = new LeaderboardProfileAdapter(options);
-//
-//        //super.onStart(); man idk
-//        adapter.startListening();
-//        leaderboardRecyclerView.setAdapter(adapter);
-//        leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                if (queryComplete) {
+                    leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
 
+                    prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+                    leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, prefs);
 
-        // TODO: Implement this
-        // Handles clicking on an item to view the user's profile
-//        adapter.setOnItemClickListener(new OnItemClickListener() {
-//            @Override
-//            public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
-//
-////                QRCode qrCode = documentSnapshot.toObject(QRCode.class);
-////                new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
-//            }
-//        });
+                    //super.onStart(); man idk
+                    leaderboardAdapter.startListening();
+                    leaderboardRecyclerView.setAdapter(leaderboardAdapter);
 
+                    TextView yourRanking = view.findViewById(R.id.your_ranking_textview);
+                    yourRanking.setText(prefs.getString("currentUserRanking", null));
+
+                    leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+                    // Handles clicking on a user to view their profile
+                    leaderboardAdapter.setOnItemClickListener(new OnItemClickListener() {
+                        @Override
+                        public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
+
+                            User user = documentSnapshot.toObject(User.class);
+                            FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+                            trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
+                            trans.commit();
+                        }
+                    });
+                }
+            }
+        });
 
         return view;
     }
 
-    public void leaderboardProfileQuery() {
+    /**
+     * Set query for Firestore RecyclerView
+     * Query gets a sorted list of users based on total points
+     *
+     * @param completedQueryCheck Callback for query
+     */
+    public void leaderboardProfileQuery(final @NonNull LeaderboardCallback completedQueryCheck) {
 
-        Query query = usersReference.orderBy("Points");
-        query
+        Query leaderboardQuery = usersReference.orderBy("totalPoints", Query.Direction.DESCENDING);
+        leaderboardQuery
                 .get()
                 .addOnSuccessListener(documentReferenceSnapshots -> {
-                    for (QueryDocumentSnapshot snapshot : documentReferenceSnapshots) {
-                        DocumentReference documentReference = snapshot.getDocumentReference(snapshot.getId());
-                        LeaderboardProfile profile = new LeaderboardProfile(snapshot.get("Display Name").toString(), snapshot.get("Points").toString(), documentReference);
-
-                    }
-                    options = new FirestoreRecyclerOptions.Builder<LeaderboardProfile>()
-                            .setQuery(query, LeaderboardProfile.class)
+                    leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
+                            .setQuery(leaderboardQuery, User.class)
                             .build();
+                    completedQueryCheck.completedQueryCheck(true);
                 });
+    }
+
+    /**
+     * Callback for querying the database to get ordered users
+     *
+     * @author Afra
+     */
+    public interface LeaderboardCallback {
+        void completedQueryCheck(boolean queryComplete);
     }
 }

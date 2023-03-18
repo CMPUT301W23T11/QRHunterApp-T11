@@ -297,7 +297,6 @@ public class QRCode {
      * Setter for QRCode Object's longitude attribute, which represents the
      * Longitude where the code was scanned.
      * @param longitude - longitude of the Location where QR was scanned
-
      */
     public void setLongitude(@NonNull Double longitude) {
         this.longitude = longitude;
