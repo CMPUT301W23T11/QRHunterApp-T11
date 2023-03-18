@@ -14,7 +14,6 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -70,15 +69,10 @@ public class SearchFragment extends Fragment {
 
     public void leaderboardProfileQuery(final @NonNull LeaderboardCallback completedQueryCheck) {
 
-        Query leaderboardQuery = usersReference.orderBy("totalPoints");
+        Query leaderboardQuery = usersReference.orderBy("totalPoints", Query.Direction.DESCENDING);
         leaderboardQuery
                 .get()
                 .addOnSuccessListener(documentReferenceSnapshots -> {
-                    for (QueryDocumentSnapshot snapshot : documentReferenceSnapshots) {
-                        //DocumentReference documentReference = snapshot.getDocumentReference(snapshot.getId());
-                        //profile = new User(snapshot.get("Display Name").toString(), 8);
-                        //newref.document(profile.getUsername()).set(profile);
-                    }
                     leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
                             .setQuery(leaderboardQuery, User.class)
                             .build();
