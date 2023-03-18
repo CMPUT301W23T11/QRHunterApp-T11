@@ -3,12 +3,25 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".MapFragment">
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/google_map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        tools:layout="@layout/fragment_map" />
+
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:queryHint="Search..."
+        app:iconifiedByDefault="false"
+        android:layout_margin="15dp"
+        android:elevation="4dp"
+        android:background="@drawable/search_border"
+        android:layout_gravity="center_horizontal" />
 
 </FrameLayout>

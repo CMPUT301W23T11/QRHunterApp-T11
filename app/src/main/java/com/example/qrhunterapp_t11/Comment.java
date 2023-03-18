@@ -10,17 +10,20 @@ import androidx.annotation.NonNull;
 
 public class Comment {
     private String comment;
-    private String profile;
+    private String userDisplayName;
+    private String username;
 
     /**
      * Constructor for Comment
      *
-     * @param comment - String representing the comment
-     * @param profile - String representing the user's profile
+     * @param comment         - String representing the comment
+     * @param userDisplayName - String representing the user's display name
+     * @param username        - String representing the username
      */
-    public Comment(@NonNull String comment, @NonNull String profile) {
+    public Comment(@NonNull String comment, @NonNull String userDisplayName, @NonNull String username) {
         this.comment = comment;
-        this.profile = profile;
+        this.userDisplayName = userDisplayName;
+        this.username = username;
     }
 
     /**
@@ -40,13 +43,13 @@ public class Comment {
     }
 
     /**
-     * Getter for the profile String
+     * Getter for the userDisplayName String
      *
-     * @return profile - String
+     * @return userDisplayName - String
      */
     @NonNull
-    public String getProfile() {
-        return profile;
+    public String getUserDisplayName() {
+        return userDisplayName;
     }
 
 }
