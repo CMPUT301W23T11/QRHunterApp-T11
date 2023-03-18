@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
     private final SettingsFragment settingsFragment = new SettingsFragment(db);
     private final CameraFragment cameraFragment = new CameraFragment(db);
     private final MapFragment mapFragment = new MapFragment();
-    private final SearchFragment searchFragment = new SearchFragment();
+    private final SearchFragment searchFragment = new SearchFragment(db);
     private BottomNavigationView bottomToolbar;
     private int numUsers;
 
