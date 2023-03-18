@@ -21,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -51,6 +52,9 @@ import java.util.TimerTask;
  */
 public class CameraFragment extends Fragment {
     private static final int permissionsRequestLocation = 100;
+    private boolean mIsPreciseLocationEnabled = false;
+    public static final int permissionsRequestAccessFineLocation = 9003;
+    public static final int permissionsRequestAccessCoarseLocation = 9004;
     private ActivityResultLauncher<ScanOptions> barLauncher;
     private ActivityResultLauncher<Intent> photoLauncher;
     private QRCode qrCode;
@@ -84,7 +88,7 @@ public class CameraFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        //FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
         return inflater.inflate(R.layout.fragment_camera, container, false);
     }
@@ -225,7 +229,6 @@ public class CameraFragment extends Fragment {
         photoLauncher.launch(intent);
     }
 
-
     /**
      * Connects the GoogleApiClient and initiates the permissions check
      */
@@ -259,7 +262,8 @@ public class CameraFragment extends Fragment {
      */
     private void getCurrentLocation() {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
-        if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
@@ -269,6 +273,7 @@ public class CameraFragment extends Fragment {
                         double latitude = location.getLatitude();
 
                         Log.d(locationPrompt, "Latitude: " + latitude + ", Longitude: " + longitude);
+
                         //set longitude and latitude and store
                         qrCode.setLongitude(longitude);
                         qrCode.setLatitude(latitude);
@@ -290,17 +295,20 @@ public class CameraFragment extends Fragment {
      * Initiates the location permission check and logs if permission is already granted
      */
     private void permissions() {
-        if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            // Permission is already granted
+        boolean isFineLocationGranted = ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        boolean isCoarseLocationGranted = ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+
+        if (isFineLocationGranted) {
             Log.d(locationPrompt, "PERMISSION ALREADY GAVE.");
+            mIsPreciseLocationEnabled = true;
+            getCurrentLocation();
+        } else if (isCoarseLocationGranted) {
+            Log.d(locationPrompt, "PERMISSION ALREADY GAVE.");
+            mIsPreciseLocationEnabled = false;
             getCurrentLocation();
         } else {
-            // Permission is not granted
-            // Ask for the permission, calls onRequestPermissionsResult after selection
             Log.d(locationPrompt, "ASKING FOR PERMISSION.");
-            requestPermissions(
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    permissionsRequestLocation);
+            requestPermissions(new String[] {android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, permissionsRequestLocation);
         }
     }
 
@@ -313,19 +321,30 @@ public class CameraFragment extends Fragment {
      * @param grantResults The results of the permission request.
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == permissionsRequestLocation) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission is granted
-                Log.d(locationPrompt, "Execute if permission granted.");
-                getCurrentLocation();
-            } else {
-                // Permission is not granted
-                Log.d(locationPrompt, "Execute if permission not granted.");
-                //stores QRCode into db with just hash as document id and location = null
-                addQRCode();
-                returnToProfile();
-            }
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case permissionsRequestLocation:
+                boolean isFineLocationGranted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                boolean isCoarseLocationGranted = grantResults.length > 1 && grantResults[1] == PackageManager.PERMISSION_GRANTED;
+
+                if (isFineLocationGranted) {
+                    Log.d(locationPrompt, "Execute if permission granted.");
+                    mIsPreciseLocationEnabled = true;
+                    getCurrentLocation();
+                } else if (isCoarseLocationGranted) {
+                    Log.d(locationPrompt, "Execute if permission granted.");
+                    mIsPreciseLocationEnabled = false;
+                    getCurrentLocation();
+                } else {
+                    // Permission is not granted
+                    Log.d(locationPrompt, "Execute if permission not granted.");
+                    //stores QRCode into db with just hash as document id and location = null
+                    addQRCode();
+                    returnToProfile();
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 

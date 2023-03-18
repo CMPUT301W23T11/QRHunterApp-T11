@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginBottom="2dp"
     android:orientation="vertical"
     tools:context=".SearchFragment">
 
@@ -10,48 +11,53 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/headers"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:padding="10dp"
             android:text="@string/find_other_players"
+            android:textAlignment="center"
             android:textColor="@color/white"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:textAlignment="center"
-            android:padding="10dp"
-            />
+            android:textStyle="bold" />
 
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginBottom="15dp"
-            android:backgroundTint="@color/white"
-            android:background="@drawable/white_rounded_background">
+            android:background="@drawable/white_rounded_background"
+            android:backgroundTint="@color/white">
 
             <EditText
+                android:id="@+id/search_id"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/search_id"
                 android:hint="@string/search"
                 android:textSize="16sp" />
 
         </com.google.android.material.appbar.AppBarLayout>
 
 
-
     </LinearLayout>
 
     <TextView
+        android:id="@+id/leaderboard_textview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/leader_board"
-        android:textAlignment="center"
         android:padding="5dp"
+        android:text="@string/leaderboard"
+        android:textAlignment="center"
         android:textColor="@color/headers"
         android:textSize="18sp"
-        android:textStyle="bold"/>
+        android:textStyle="bold" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/leaderboard_recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="25dp" />
 
 </LinearLayout>
