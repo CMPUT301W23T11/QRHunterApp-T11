@@ -22,7 +22,13 @@ import com.google.firebase.firestore.Query;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-
+/**
+ * Handles search and leaderboard screen.
+ * Leaderboard displays ranked list of players, clicking on a player shows their profile
+ * Search allows the user to search for other users to view their profiles
+ *
+ * @author Afra, Kristina
+ */
 public class SearchFragment extends Fragment {
 
     private final FirebaseFirestore db;
@@ -31,7 +37,7 @@ public class SearchFragment extends Fragment {
     private LeaderboardProfileAdapter leaderboardAdapter;
     private RecyclerView leaderboardRecyclerView;
     private FirestoreRecyclerOptions<User> leaderboardOptions;
-    SharedPreferences prefs;
+    private SharedPreferences prefs;
 
     public SearchFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
@@ -45,6 +51,7 @@ public class SearchFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
 
+        // Set Firestore RecyclerView query and begin monitoring that query
         leaderboardProfileQuery(new LeaderboardCallback() {
             public void completedQueryCheck(boolean queryComplete) {
 
@@ -63,8 +70,7 @@ public class SearchFragment extends Fragment {
 
                     leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-                    // TODO: Implement this
-                    // Handles clicking on an item to view the user's profile
+                    // Handles clicking on a user to view their profile
                     leaderboardAdapter.setOnItemClickListener(new OnItemClickListener() {
                         @Override
                         public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
@@ -82,6 +88,12 @@ public class SearchFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Set query for Firestore RecyclerView
+     * Query gets a sorted list of users based on total points
+     *
+     * @param completedQueryCheck Callback for query
+     */
     public void leaderboardProfileQuery(final @NonNull LeaderboardCallback completedQueryCheck) {
 
         Query leaderboardQuery = usersReference.orderBy("totalPoints", Query.Direction.DESCENDING);
@@ -96,9 +108,7 @@ public class SearchFragment extends Fragment {
     }
 
     /**
-     * Callback for querying the database to get QR object.
-     * referencedQRCodes is a map containing data for each
-     * QR code in the user's collection
+     * Callback for querying the database to get ordered users
      *
      * @author Afra
      */

@@ -2,6 +2,11 @@ package com.example.qrhunterapp_t11;
 
 import androidx.annotation.NonNull;
 
+/**
+ * Class that defines a user
+ *
+ * @author Afra
+ */
 public class User {
 
     private String displayName;
@@ -45,11 +50,12 @@ public class User {
         this.totalPoints = totalPoints;
     }
 
+    @NonNull
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(@NonNull String email) {
         this.email = email;
     }
 }

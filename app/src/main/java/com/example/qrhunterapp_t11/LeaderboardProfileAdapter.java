@@ -65,7 +65,6 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
     /**
      * Holds the layout and Click functionalities for each item in the recyclerView
      */
-
     public class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
         private final TextView username;
