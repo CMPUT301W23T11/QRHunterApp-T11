@@ -29,6 +29,8 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import org.checkerframework.checker.units.qual.min;
+
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -132,32 +134,27 @@ public class ProfileFragment extends Fragment {
                             }
                             totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
 
-                            Map.Entry<String, String> maxEntry = null;
-                            for (Map.Entry<String, String> entry : referencedQRCodes.entrySet()) {
-                                if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) > 0){
-                                    maxEntry = entry;
+                            // gets the largest QR from the user
+                            Map.Entry<String, String> maxQR = null;
+                            for (Map.Entry<String, String> val : referencedQRCodes.entrySet()) {
+                                if (maxQR == null || val.getValue().compareTo(maxQR.getValue()) > 0){
+                                    maxQR = val;
                                 }
                             }
-                            topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", maxEntry));
-//
-//                            // Orders the QR collection from smallest to largest, then returns the first QR Code
-//                            Query lowQR = QRColl.orderBy("points", Query.Direction.ASCENDING).limit(1);
-//                            lowQR.addSnapshotListener((value, error) -> {
-//                                if (error != null) {
-//                                    Log.w(tag, listenFailed, error);
-//                                }
-//                                double total = 0;
-//                                assert value != null;
-//                                for (QueryDocumentSnapshot document : value) {
-//                                    total += (document.getLong("points")).intValue();
-//
-//                                }
-//                                Log.d(tag, "lowest QR code: " + total);
-//                                lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", total));
-//
-//                            });
-//
-                            // Gets the size of the amount of QR codes there are
+                            assert maxQR != null;
+                            topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", maxQR.getValue()));
+
+                            // gets the smallest QR from the user
+                            Map.Entry<String, String> minQR = null;
+                            for (Map.Entry<String, String> val : referencedQRCodes.entrySet()) {
+                                if (minQR == null || minQR.getValue().compareTo(val.getValue()) > 0){
+                                    minQR = val;
+                                }
+                            }
+                            assert minQR != null;
+                            lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", minQR.getValue()));
+
+                            // Gets the size of the amount of QR codes the user has
                             int size = referencedQRCodes.size();
                             totalQRCodesText.setText(MessageFormat.format("Total number of QR codes: {0}", size));
 
