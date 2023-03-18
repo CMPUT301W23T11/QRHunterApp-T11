@@ -29,9 +29,12 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.journeyapps.barcodescanner.ScanContract;
@@ -65,6 +68,9 @@ public class CameraFragment extends Fragment {
     private final CollectionReference QRCodesReference;
     private final CollectionReference usersReference;
     private static final String locationPrompt = "LocationPrompt";
+
+    boolean qrExists;
+    boolean qrRefExists;
 
     public CameraFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
@@ -397,21 +403,81 @@ public class CameraFragment extends Fragment {
     }
 
     /**
+     * Helper function to check if a QR code document exists
+     *
+     * @param docToCheck document that should be checked for
+     * @param cr         CollectionReference to the collection being accessed
+     * @reference <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
+     * @reference Aidan Lynch's CameraFragmentTest for this code
+     */
+    public void checkDocExists(String docToCheck, CollectionReference cr, final CameraFragment.Callback dataValid) {
+        DocumentReference docRef = cr.document(docToCheck);
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        Log.d("DocExist", "DocumentSnapshot data: " + document.getData());
+                        dataValid.dataValid(true);
+                    } else {
+                        Log.d("DocExist", "No such document");
+                        dataValid.dataValid(false);
+                    }
+                } else {
+                    Log.d("DocExist", "get failed with ", task.getException());
+                }
+            }
+        });
+    }
+
+    public interface Callback {
+        void dataValid(boolean valid);
+    }
+
+    /**
      * Helper function to add QRCode object to QRCodes and Users collections
      */
     private void addQRCode() {
         String currentUser = prefs.getString("currentUser", null);
         String QRCodeHash = qrCode.getHash();
 
-        QRCodesReference.document(QRCodeHash).set(qrCode);
-        QRCodesReference.document(QRCodeHash).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
-
         Map<String, Object> QRCodeRef = new HashMap<>();
         DocumentReference QRCodeDocumentRef = QRCodesReference.document(QRCodeHash);
         QRCodeRef.put(QRCodeHash, QRCodeDocumentRef);
 
-        usersReference.document(currentUser).collection("User QR Codes").document(QRCodeHash).set(QRCodeRef);
+        // Check if qrCode exists in db in QRCodes collection
+        checkDocExists(QRCodeHash, QRCodesReference, new Callback() {
+            public void dataValid(boolean valid) {
+                qrExists = valid;
+                System.out.println(valid);
 
+                // Check if reference to qrCode exists in db in Users collection
+                checkDocExists(QRCodeHash, usersReference.document(currentUser).collection("User QR Codes"), new Callback() {
+                    public void dataValid(boolean valid) {
+                        qrRefExists = valid;
+                        System.out.println(valid);
+
+                        // If qrCode does not exist, add it to QRCode collection
+                        if (!qrExists){
+                            QRCodesReference.document(QRCodeHash).set(qrCode);
+                        }
+                        // Add image to qrCode
+                        QRCodesReference.document(QRCodeHash).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
+
+                        // If user does not already have this qrCode, add a reference to it
+                        if(!qrRefExists){
+                            System.out.println("HEUHURLSHRPIUSHEPRIHSEPOIHRPOISHEPROIPSOEHRPOISHEPRIHP");
+                            usersReference.document(currentUser).collection("User QR Codes").document(QRCodeHash).set(QRCodeRef);
+                        }
+                        // If User does not have this qrCode but it already exists in qrCode collection, increase its total scans
+                        if ((qrExists) && (!qrRefExists)){
+                            QRCodesReference.document(QRCodeHash).update("numberOfScans", FieldValue.increment(1));
+                        }
+                    }
+                });
+            }
+        });
     }
 
     /**
