@@ -140,9 +140,9 @@ public class ViewQR extends DialogFragment {
                             for (int i = 0; i < comments.size(); i++) {
                                 Map<String, Object> commentMap;
                                 commentMap = comments.get(i).get(0);
-                                String username = (String) commentMap.get("Username");
-                                String displayName = (String) commentMap.get("Display Name");
-                                String commentString = (String) commentMap.get("Comment");
+                                String username = (String) commentMap.get("username");
+                                String displayName = (String) commentMap.get("displayName");
+                                String commentString = (String) commentMap.get("comment");
 
                                 assert commentString != null;
                                 assert displayName != null;
@@ -175,9 +175,9 @@ public class ViewQR extends DialogFragment {
                     commentET.getText().clear();
 
                     Map<String, String> comment = new HashMap<>();
-                    comment.put("Username", currentUser);
-                    comment.put("Display Name", currentUserDisplayName);
-                    comment.put("Comment", commentString);
+                    comment.put("username", currentUser);
+                    comment.put("displayName", currentUserDisplayName);
+                    comment.put("comment", commentString);
 
                     Map<String, CollectionReference> QRCodeRef = new HashMap<>();
                     CollectionReference QRCodeCollectionRef = QRCodesReference.document(QRCodeHash).collection("commentList");

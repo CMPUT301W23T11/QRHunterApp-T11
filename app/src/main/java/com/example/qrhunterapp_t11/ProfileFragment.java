@@ -120,7 +120,7 @@ public class ProfileFragment extends Fragment {
                             //  referencedQRCodes is just a map with points, see line 272
                             Random rand = new Random();
                             int value = rand.nextInt(30);
-                            usersReference.document(username).update("Points", value);
+                            usersReference.document(username).update("totalPoints", value);
 
 //                            // Gets the sum of points from all the QR Code documents
 //                            QRColl.addSnapshotListener((value, error) -> {

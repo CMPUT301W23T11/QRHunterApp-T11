@@ -18,9 +18,6 @@ import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Main app activity. Default startup screen is the player profile.
  * Users can click on the toolbar at the bottom to switch to other parts of the app.
@@ -77,9 +74,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
                     prefs.edit().putString("currentUserDisplayName", username).commit();
                     prefs.edit().putBoolean("LoggedIn", true).commit();
 
-                    Map<String, Object> user = new HashMap<>();
-                    user.put("Username", username);
-                    user.put("Display Name", username);
+                    User user = new User(username, username, 0);
 
                     usersReference.document(username).set(user);
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();

@@ -17,20 +17,20 @@ import io.reactivex.rxjava3.annotations.NonNull;
  *
  * @author Afra
  */
-public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<LeaderboardProfile, LeaderboardProfileAdapter.RecyclerViewHolder> {
+public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, LeaderboardProfileAdapter.RecyclerViewHolder> {
     private OnItemClickListener listener;
 
-    public LeaderboardProfileAdapter(@NonNull FirestoreRecyclerOptions<LeaderboardProfile> options) {
+    public LeaderboardProfileAdapter(@NonNull FirestoreRecyclerOptions<User> options) {
         super(options);
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position, @NonNull LeaderboardProfile model) {
+    protected void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position, @NonNull User model) {
         // Bind the QRCode object to the RecyclerViewHolder
-        holder.username.setText(model.getUsername());
+        holder.username.setText(model.getDisplayName());
 
-        String points = "Points: " + model.getPoints();
-        holder.points.setText(points);
+        String totalPoints = "Points: " + model.getTotalPoints();
+        holder.totalPoints.setText(totalPoints);
 
     }
 
@@ -59,12 +59,12 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<Leaderbo
     public class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
         private final TextView username;
-        private final TextView points;
+        private final TextView totalPoints;
 
         public RecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
             username = itemView.findViewById(R.id.profile_name_textview);
-            points = itemView.findViewById(R.id.profile_points_search);
+            totalPoints = itemView.findViewById(R.id.profile_points_search);
 
             // This click listener responds to clicks done on an item in the recyclerview
             itemView.setOnClickListener(new View.OnClickListener() {
