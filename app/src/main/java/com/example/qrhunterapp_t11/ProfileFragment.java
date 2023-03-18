@@ -114,6 +114,7 @@ public class ProfileFragment extends Fragment {
                             adapter.startListening();
                             QRCodeRecyclerView.setAdapter(adapter);
                             QRCodeRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                            QRCodeRecyclerView.setHasFixedSize(false);
 
                             // TODO: Reimplement scores using referencedQRCodes, referencedQRCodes is just a map with points, see line 272
 
@@ -183,6 +184,7 @@ public class ProfileFragment extends Fragment {
 
                                     QRCode qrCode = documentSnapshot.toObject(QRCode.class);
                                     new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
+                                    //adapter.notifyDataSetChanged();
                                 }
                             });
 

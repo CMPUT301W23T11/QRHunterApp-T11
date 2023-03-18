@@ -15,6 +15,7 @@ public class QRCode {
     private String hash;
     private String name;
     private int points;
+    private int numberOfScans;
     private Location geolocation;
     private ArrayList<Integer> faceList;
     private ArrayList<String> photoList;
@@ -36,6 +37,7 @@ public class QRCode {
         this.points = calculatePoints(hash);
         this.name = uniqueName(hash);
         this.faceList = uniqueImage(hash);
+        this.numberOfScans = 1;
         this.photoList = new ArrayList<>();
         this.geolocation = null;
     }
@@ -350,4 +352,7 @@ public class QRCode {
         return hash;
     }
 
+    public int getNumberOfScans() {
+        return numberOfScans;
+    }
 }

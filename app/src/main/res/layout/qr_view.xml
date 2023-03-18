@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/liquid_cheese_background">
@@ -88,16 +89,51 @@
                     app:srcCompat="@drawable/eyebrows1" />
 
                 <TextView
+                    android:id="@+id/scansTV"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:padding="3dp"
+                    android:text="Total Scans:"
+                    android:textColor="#000000"
+                    android:textSize="20sp"
+                    app:layout_constraintStart_toEndOf="@+id/imageColour"
+                    app:layout_constraintTop_toBottomOf="@+id/pointsTV" />
+
+                <TextView
                     android:id="@+id/pointsTV"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
                     android:padding="3dp"
                     android:text="@string/edittext_points"
                     android:textColor="#000000"
                     android:textSize="20sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/imageColour"
                     app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/commentsTV"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:padding="3dp"
+                    android:text="Comments:"
+                    android:textColor="#000000"
+                    android:textSize="20sp"
+                    app:layout_constraintStart_toEndOf="@+id/imageColour"
+                    app:layout_constraintTop_toBottomOf="@+id/scansTV" />
+
+                <TextView
+                    android:id="@+id/commentsNumTv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="3dp"
+                    android:text="0"
+                    android:textColor="#000000"
+                    android:textSize="20sp"
+                    app:layout_constraintStart_toEndOf="@+id/commentsTV"
+                    app:layout_constraintTop_toBottomOf="@+id/scansTV" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -113,6 +149,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/linearLayoutCompat"
             app:srcCompat="@drawable/add_image" />
+
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/linearLayoutCompat2"
