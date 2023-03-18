@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 /**
- * Interface to handle long clicking on the RecyclerView
+ * Interface to handle clicking on items in RecyclerViews
  *
  * @author Sarah
  */

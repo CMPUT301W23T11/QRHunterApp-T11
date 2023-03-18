@@ -1,7 +1,5 @@
 package com.example.qrhunterapp_t11;
 
-import android.location.Location;
-
 import androidx.annotation.NonNull;
 
 import java.security.MessageDigest;
@@ -16,7 +14,8 @@ public class QRCode {
     private String name;
     private int points;
     private int numberOfScans;
-    private Location geolocation;
+    private Double longitude;
+    private Double latitude;
     private ArrayList<Integer> faceList;
     private ArrayList<String> photoList;
 
@@ -39,7 +38,11 @@ public class QRCode {
         this.faceList = uniqueImage(hash);
         this.numberOfScans = 1;
         this.photoList = new ArrayList<>();
-        this.geolocation = null;
+        this.longitude = null;
+        this.latitude = null;
+        // if for some reason null doesn't work out, we can fall back on init to 0
+        //this.longitude = Double.valueOf(0);
+        //this.latitude = Double.valueOf(0);
     }
 
     /**
@@ -281,22 +284,42 @@ public class QRCode {
     }
 
     /**
-     * Getter for QRCode Object's geolocation attribute
-     *
-     * @return geolocation - a Location object representing the QRCode's location
+     * Getter for QRCode Object's Longitude attribute, which represents the
+     * Longitude where the code was scanned. initialized at 0
+     * @return longitude - a string ArrayList with 2 elements representing [Longitude , Latitude ]
      */
     @NonNull
-    public Location getLocation() {
-        return geolocation;
+    public Double getLongitude() {
+        return this.longitude;
     }
 
     /**
-     * Setter for QRCode Object's geolocation attribute
-     *
-     * @param location - takes a Location object as input
+     * Setter for QRCode Object's longitude attribute, which represents the
+     * Longitude where the code was scanned.
+     * @param longitude - longitude of the Location where QR was scanned
+
      */
-    public void setLocation(@NonNull Location location) {
-        this.geolocation = location;
+    public void setLongitude(@NonNull Double longitude) {
+        this.longitude = longitude;
+    }
+
+    /**
+     * Setter for QRCode Object's latitude attribute, which represents the
+     * Latitude where the code was scanned.
+     * @param latitude - latitude of the location where QR was scanned
+     */
+    public void setLatitude(@NonNull Double latitude) {
+        this.latitude = latitude;
+    }
+
+    /**
+     * Getter for QRCode Object's latitude attribute, which represents the
+     * Latitude where the code was scanned. initialized at 0
+     * @return latitude - a string ArrayList with 2 elements representing [Longitude , Latitude ]
+     */
+    @NonNull
+    public Double getLatitude() {
+        return this.latitude;
     }
 
     /**

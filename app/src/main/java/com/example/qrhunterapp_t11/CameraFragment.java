@@ -62,6 +62,7 @@ public class CameraFragment extends Fragment {
     private ActivityResultLauncher<Intent> photoLauncher;
     private QRCode qrCode;
     private String imageUrl;
+    private String resizedImageUrl;
     private SharedPreferences prefs;
     private final FirebaseFirestore db;
     private final CollectionReference QRCodesReference;
@@ -94,7 +95,7 @@ public class CameraFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        //FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
         return inflater.inflate(R.layout.fragment_camera, container, false);
     }
@@ -138,6 +139,9 @@ public class CameraFragment extends Fragment {
                         assert intent != null;
                         Bundle extras = intent.getExtras();
                         imageUrl = extras.getString("url");
+
+                        resizedImageUrl = getResizeImageUrl(imageUrl); //TODO get true url of image
+
                         promptForLocation(); // prompt for location once the TakePhotoActivity has finished
                     }
                 }
@@ -275,11 +279,14 @@ public class CameraFragment extends Fragment {
                 public void onSuccess(Location location) {
                     if (location != null) {
                         // Location data is available
-                        double latitude = location.getLatitude();
                         double longitude = location.getLongitude();
+                        double latitude = location.getLatitude();
+
                         Log.d(locationPrompt, "Latitude: " + latitude + ", Longitude: " + longitude);
-                        //set location and store
-                        //qrCode.setLocation(location);
+
+                        //set longitude and latitude and store
+                        qrCode.setLongitude(longitude);
+                        qrCode.setLatitude(latitude);
                         addQRCode();
                         returnToProfile();
                     } else {
@@ -430,7 +437,6 @@ public class CameraFragment extends Fragment {
 
     /**
      * Helper function to add QRCode object to QRCodes and Users collections
-     * TODO implement location radius
      */
     private void addQRCode() {
         String currentUser = prefs.getString("currentUser", null);
@@ -456,7 +462,6 @@ public class CameraFragment extends Fragment {
                         if (!qrExists){
                             QRCodesReference.document(QRCodeHash).set(qrCode);
                         }
-
                         // Add image to qrCode
                         QRCodesReference.document(QRCodeHash).update("photoList", FieldValue.arrayUnion(imageUrl));
 
@@ -465,7 +470,6 @@ public class CameraFragment extends Fragment {
                             System.out.println("HEUHURLSHRPIUSHEPRIHSEPOIHRPOISHEPROIPSOEHRPOISHEPRIHP");
                             usersReference.document(currentUser).collection("User QR Codes").document(QRCodeHash).set(QRCodeRef);
                         }
-
                         // If User does not have this qrCode but it already exists in qrCode collection, increase its total scans
                         if ((qrExists) && (!qrRefExists)){
                             QRCodesReference.document(QRCodeHash).update("numberOfScans", FieldValue.increment(1));
@@ -474,5 +478,20 @@ public class CameraFragment extends Fragment {
                 });
             }
         });
+    }
+
+    /**
+     * Gets the true url of the resized image, since firebase does not do this for some reason. Simply adds "_504x416" inside the url,
+     * which is the dimensions of the resized image.
+     *
+     * @param rawImageUrl the original url of the uploaded image, which does not provide the proper path to the resized image.
+     * @return a string containing the url of the resized image, that will be used later when retrieving it for viewing in the QR view.
+     * @reference Lee Meador - https://stackoverflow.com/a/18521373/14445107 - how to insert a string in the middle of another; used without major modification
+     */
+    private String getResizeImageUrl(String rawImageUrl) {
+        int index = rawImageUrl.indexOf(".jpg");
+        String urlFirstHalf = rawImageUrl.substring(0, index);
+        String urlSecondHalf = rawImageUrl.substring(index);
+        return urlFirstHalf + "_504x416" + urlSecondHalf; //TODO probably shouldn't use a string literal; make a constant or something
     }
 }

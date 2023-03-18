@@ -31,6 +31,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 
 /**
@@ -116,7 +117,11 @@ public class ProfileFragment extends Fragment {
                             QRCodeRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
                             QRCodeRecyclerView.setHasFixedSize(false);
 
-                            // TODO: Reimplement scores using referencedQRCodes, referencedQRCodes is just a map with points, see line 272
+                            // TODO: Reimplement scores using referencedQRCodes and set Total Points field in user's document
+                            //  referencedQRCodes is just a map with points, see line 272
+                            Random rand = new Random();
+                            int value = rand.nextInt(30);
+                            usersReference.document(username).update("Points", value);
 
 //                            // Gets the sum of points from all the QR Code documents
 //                            QRColl.addSnapshotListener((value, error) -> {
