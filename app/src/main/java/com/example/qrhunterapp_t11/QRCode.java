@@ -13,6 +13,7 @@ public class QRCode {
     private String hash;
     private String name;
     private int points;
+    private int numberOfScans;
     private Double longitude;
     private Double latitude;
     private ArrayList<Integer> faceList;
@@ -35,6 +36,7 @@ public class QRCode {
         this.points = calculatePoints(hash);
         this.name = uniqueName(hash);
         this.faceList = uniqueImage(hash);
+        this.numberOfScans = 1;
         this.photoList = new ArrayList<>();
         this.longitude = null;
         this.latitude = null;
@@ -295,7 +297,6 @@ public class QRCode {
      * Setter for QRCode Object's longitude attribute, which represents the
      * Longitude where the code was scanned.
      * @param longitude - longitude of the Location where QR was scanned
-
      */
     public void setLongitude(@NonNull Double longitude) {
         this.longitude = longitude;
@@ -373,4 +374,7 @@ public class QRCode {
         return hash;
     }
 
+    public int getNumberOfScans() {
+        return numberOfScans;
+    }
 }

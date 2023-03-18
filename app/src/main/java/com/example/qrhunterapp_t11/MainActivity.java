@@ -18,9 +18,6 @@ import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Main app activity. Default startup screen is the player profile.
  * Users can click on the toolbar at the bottom to switch to other parts of the app.
@@ -34,7 +31,6 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     public final CollectionReference usersReference = db.collection("Users");
-    private final ProfileFragment profileFragment = new ProfileFragment(db);
     private final SettingsFragment settingsFragment = new SettingsFragment(db);
     private final CameraFragment cameraFragment = new CameraFragment(db);
     private final MapFragment mapFragment = new MapFragment();
@@ -77,16 +73,14 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
                     prefs.edit().putString("currentUserDisplayName", username).commit();
                     prefs.edit().putBoolean("LoggedIn", true).commit();
 
-                    Map<String, Object> user = new HashMap<>();
-                    user.put("Username", username);
-                    user.put("Display Name", username);
+                    User user = new User(username, username, 0, "No email");
 
                     usersReference.document(username).set(user);
-                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUser", null))).commit();
                 }
             });
         } else {
-            getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUser", null))).commit();
         }
 
         // floating action button that moves the fragment to the camera fragment
@@ -101,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
         bottomToolbar.setOnItemSelectedListener(item -> {
             switch (item.getItemId()) {
                 case R.id.profile: // changes the main screen to the profile
-                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUser", null))).commit();
 
                     return true;
 

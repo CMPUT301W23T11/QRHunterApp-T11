@@ -22,8 +22,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 /**
@@ -38,7 +36,7 @@ public class ToolbarTest {
     private final CollectionReference usersReference = db.collection("Users");
     private final Random rand = new Random();
     private Solo solo;
-    private final String testUser = "testUser" + rand.nextInt(10000);
+    private final String testUsername = "testUser" + rand.nextInt(1000000);
     private SharedPreferences prefs;
     @Rule
     public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
@@ -53,14 +51,14 @@ public class ToolbarTest {
 
             prefs.edit().clear().commit();
             prefs.edit().putBoolean("LoggedIn", true).commit();
-            prefs.edit().putString("currentUser", testUser).commit();
-            prefs.edit().putString("currentUserDisplayName", testUser).commit();
+            prefs.edit().putString("currentUser", testUsername).commit();
+            prefs.edit().putString("currentUserDisplayName", testUsername).commit();
 
             username = prefs.getString("currentUser", null);
             displayName = prefs.getString("currentUserDisplayName", null);
 
-            assertEquals(testUser, username);
-            assertEquals(testUser, displayName);
+            assertEquals(testUsername, username);
+            assertEquals(testUsername, displayName);
         }
     };
 
@@ -73,11 +71,9 @@ public class ToolbarTest {
         rule.launchActivity(intent);
         Activity activity = rule.getActivity();
 
-        Map<String, Object> user = new HashMap<>();
-        user.put("Username", testUser);
-        user.put("Display Name", testUser);
+        User user = new User(testUsername, testUsername, 0, "No email");
 
-        usersReference.document(testUser).set(user);
+        usersReference.document(testUsername).set(user);
 
         solo = new Solo(InstrumentationRegistry.getInstrumentation(), activity);
     }
@@ -90,7 +86,7 @@ public class ToolbarTest {
         Activity activity = rule.getActivity();
         prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
         prefs.edit().clear().commit();
-        usersReference.document(testUser).delete();
+        usersReference.document(testUsername).delete();
         solo.finishOpenedActivities();
     }
 

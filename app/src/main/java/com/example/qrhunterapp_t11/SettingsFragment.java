@@ -75,32 +75,33 @@ public class SettingsFragment extends Fragment {
                 // Make sure new username is eligible for change
                 usernameCheck(usernameString, usernameEditText, new SettingsCallback() {
                     public void valid(boolean valid) {
-                        assert (valid);
 
-                        builder
-                                .setTitle("Confirm username and email change")
-                                .setNegativeButton("Cancel", null)
-                                .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        String user = prefs.getString("currentUser", null);
-                                        String oldUsername = prefs.getString("currentUserDisplayName", null);
-                                        // Update username in all user's previous comments
-                                        updateUserComments(user, oldUsername, usernameString, new SettingsCallback() {
-                                            public void valid(boolean valid) {
-                                                assert (valid);
-                                                usersReference.document(user).update("Display Name", usernameString);
-                                                usersReference.document(user).update("Email", emailString);
+                        if (valid) {
+                            builder
+                                    .setTitle("Confirm username and email change")
+                                    .setNegativeButton("Cancel", null)
+                                    .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            String user = prefs.getString("currentUser", null);
+                                            String oldUsername = prefs.getString("currentUserDisplayName", null);
+                                            // Update username in all user's previous comments
+                                            updateUserComments(user, oldUsername, usernameString, new SettingsCallback() {
+                                                public void valid(boolean valid) {
+                                                    assert (valid);
+                                                    usersReference.document(user).update("displayName", usernameString);
+                                                    usersReference.document(user).update("email", emailString);
 
-                                                prefs.edit().putString("currentUserDisplayName", usernameString).commit();
-                                                prefs.edit().putString("currentUserEmail", emailString).commit();
-                                            }
-                                        });
+                                                    prefs.edit().putString("currentUserDisplayName", usernameString).commit();
+                                                    prefs.edit().putString("currentUserEmail", emailString).commit();
+                                                }
+                                            });
 
-                                    }
-                                })
-                                .create();
-                        builder.show();
+                                        }
+                                    })
+                                    .create();
+                            builder.show();
+                        }
                     }
                 });
             }
@@ -131,7 +132,7 @@ public class SettingsFragment extends Fragment {
 
         // Check if username exists already
         else {
-            usersReference.whereEqualTo("Display Name", usernameString).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            usersReference.whereEqualTo("displayName", usernameString).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                     if (task.isSuccessful()) {
@@ -177,17 +178,17 @@ public class SettingsFragment extends Fragment {
                                     for (QueryDocumentSnapshot snapshot : referencedQRDocumentSnapshots) {
                                         CollectionReference commentList = snapshot.getReference().collection("commentList");
                                         // Find exactly which comments need to be updated and update them
-                                        commentList.whereEqualTo("Username", username)
-                                                .whereNotEqualTo("Display Name", newDisplayUsername)
+                                        commentList.whereEqualTo("username", username)
+                                                .whereNotEqualTo("displayName", newDisplayUsername)
                                                 .get()
                                                 .addOnSuccessListener(commentedQRDocumentSnapshots -> {
                                                     ArrayList<DocumentSnapshot> commentedQR;
                                                     commentedQR = (ArrayList) commentedQRDocumentSnapshots.getDocuments();
                                                     for (DocumentSnapshot commented : commentedQR) {
-                                                        commented.getReference().update("Display Name", newDisplayUsername);
+                                                        commented.getReference().update("displayName", newDisplayUsername);
                                                     }
+                                                    valid.valid(true);
                                                 });
-                                        valid.valid(true);
                                     }
                                 });
                     }

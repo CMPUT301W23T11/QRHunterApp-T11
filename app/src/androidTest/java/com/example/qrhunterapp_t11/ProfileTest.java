@@ -32,8 +32,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 /**
@@ -48,7 +46,7 @@ public class ProfileTest {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");
     private final Random rand = new Random();
-    private final String testUser = "testUser" + rand.nextInt(10000);
+    private final String testUsername = "testUser" + rand.nextInt(1000000);
     private Solo solo;
     private boolean docExists;
     private QRCode qrCode;
@@ -66,14 +64,14 @@ public class ProfileTest {
 
             prefs.edit().clear().commit();
             prefs.edit().putBoolean("LoggedIn", true).commit();
-            prefs.edit().putString("currentUser", testUser).commit();
-            prefs.edit().putString("currentUserDisplayName", testUser).commit();
+            prefs.edit().putString("currentUser", testUsername).commit();
+            prefs.edit().putString("currentUserDisplayName", testUsername).commit();
 
             username = prefs.getString("currentUser", null);
             displayName = prefs.getString("currentUserDisplayName", null);
 
-            assertEquals(testUser, username);
-            assertEquals(testUser, displayName);
+            assertEquals(testUsername, username);
+            assertEquals(testUsername, displayName);
         }
     };
     private String name;
@@ -91,16 +89,14 @@ public class ProfileTest {
         rule.launchActivity(intent);
         Activity activity = rule.getActivity();
 
-        Map<String, Object> user = new HashMap<>();
-        user.put("Username", testUser);
-        user.put("Display Name", testUser);
-        usersReference.document(testUser).set(user);
+        User user = new User(testUsername, testUsername, 0, "No email");
+        usersReference.document(testUsername).set(user);
 
         // add new QR code
         final int randomNum = new Random().nextInt(10000);
         qrCode = mockQR(String.valueOf(randomNum));
         name = qrCode.getName();
-        CollectionReference qrReference = usersReference.document(testUser).collection("QR Codes");
+        CollectionReference qrReference = usersReference.document(testUsername).collection("QR Codes");
         addDoc(qrCode, qrReference);
 
         // check if new QrCode was added
@@ -122,7 +118,7 @@ public class ProfileTest {
         Activity activity = rule.getActivity();
         prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
         prefs.edit().clear().commit();
-        usersReference.document(testUser).delete();
+        usersReference.document(testUsername).delete();
         solo.finishOpenedActivities();
     }
 
@@ -135,7 +131,7 @@ public class ProfileTest {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
 
         // Check that current user exists
-        checkDocExists(testUser, usersReference, new ProfileTest.Callback() {
+        checkDocExists(testUsername, usersReference, new ProfileTest.Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertTrue(docExists);
@@ -175,7 +171,7 @@ public class ProfileTest {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
 
         // Check that current user exists
-        checkDocExists(testUser, usersReference, new ProfileTest.Callback() {
+        checkDocExists(testUsername, usersReference, new ProfileTest.Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertTrue(docExists);
@@ -202,7 +198,7 @@ public class ProfileTest {
         solo.clickOnView(solo.getView(R.id.imageViewSend));
         // Verify comments have been sent to the comment box
         assertTrue(solo.waitForText("great catch king 😂", 2, 10000));
-        assertTrue(solo.waitForText(testUser, 2, 10000));
+        assertTrue(solo.waitForText(testUsername, 2, 10000));
         // click OK
         solo.clickOnText("OK");
     }
@@ -214,10 +210,10 @@ public class ProfileTest {
     public void checkPointAddition() {
         // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        CollectionReference qrReference = usersReference.document(testUser).collection("QR Codes");
+        CollectionReference qrReference = usersReference.document(testUsername).collection("QR Codes");
 
         // Check that current user exists
-        checkDocExists(testUser, usersReference, new ProfileTest.Callback() {
+        checkDocExists(testUsername, usersReference, new ProfileTest.Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertTrue(docExists);
@@ -261,10 +257,10 @@ public class ProfileTest {
     public void deleteLongClickPositive() {
         // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        CollectionReference qrReference = usersReference.document(testUser).collection("QR Codes");
+        CollectionReference qrReference = usersReference.document(testUsername).collection("QR Codes");
 
         // Check that current user exists
-        checkDocExists(testUser, usersReference, new ProfileTest.Callback() {
+        checkDocExists(testUsername, usersReference, new ProfileTest.Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertTrue(docExists);
@@ -298,10 +294,10 @@ public class ProfileTest {
     public void deleteLongClickNegative() {
         // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        CollectionReference qrReference = usersReference.document(testUser).collection("QR Codes");
+        CollectionReference qrReference = usersReference.document(testUsername).collection("QR Codes");
 
         // Check that current user exists
-        checkDocExists(testUser, usersReference, new ProfileTest.Callback() {
+        checkDocExists(testUsername, usersReference, new ProfileTest.Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertTrue(docExists);

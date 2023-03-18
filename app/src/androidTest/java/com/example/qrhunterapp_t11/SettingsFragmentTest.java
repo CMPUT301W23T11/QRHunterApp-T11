@@ -26,8 +26,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 /**
@@ -41,7 +39,7 @@ public class SettingsFragmentTest {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");
     private final Random rand = new Random();
-    private final String testUser = "testUser" + rand.nextInt(10000);
+    private final String testUsername = "testUser" + rand.nextInt(1000000);
     private Solo solo;
     private boolean uniqueUser;
     private SharedPreferences prefs;
@@ -58,14 +56,14 @@ public class SettingsFragmentTest {
 
             prefs.edit().clear().commit();
             prefs.edit().putBoolean("LoggedIn", true).commit();
-            prefs.edit().putString("currentUser", testUser).commit();
-            prefs.edit().putString("currentUserDisplayName", testUser).commit();
+            prefs.edit().putString("currentUser", testUsername).commit();
+            prefs.edit().putString("currentUserDisplayName", testUsername).commit();
 
             username = prefs.getString("currentUser", null);
             displayName = prefs.getString("currentUserDisplayName", null);
 
-            assertEquals(testUser, username);
-            assertEquals(testUser, displayName);
+            assertEquals(testUsername, username);
+            assertEquals(testUsername, displayName);
         }
     };
 
@@ -78,11 +76,9 @@ public class SettingsFragmentTest {
         rule.launchActivity(intent);
         Activity activity = rule.getActivity();
 
-        Map<String, Object> user = new HashMap<>();
-        user.put("Username", testUser);
-        user.put("Display Name", testUser);
+        User user = new User(testUsername, testUsername, 0, "No email");
 
-        usersReference.document(testUser).set(user);
+        usersReference.document(testUsername).set(user);
 
         solo = new Solo(InstrumentationRegistry.getInstrumentation(), activity);
     }
@@ -95,7 +91,7 @@ public class SettingsFragmentTest {
         Activity activity = rule.getActivity();
         prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
         prefs.edit().clear().commit();
-        usersReference.document(testUser).delete();
+        usersReference.document(testUsername).delete();
         solo.finishOpenedActivities();
     }
 
@@ -138,7 +134,7 @@ public class SettingsFragmentTest {
                 uniqueUser = unique;
                 assertTrue(uniqueUser);
 
-                usersReference.document(testUser).update("Display Name", "testUserUnique");
+                usersReference.document(testUsername).update("displayName", "testUserUnique");
 
                 // Make sure user was successfully added
                 checkUniqueDisplayName("testUserUnique", new checkUniqueUsernameCallback() {
@@ -157,9 +153,7 @@ public class SettingsFragmentTest {
      */
     public void addTestUserToDB(String username) {
 
-        Map<String, Object> user = new HashMap<>();
-        user.put("Username", username);
-        user.put("Display Name", username);
+        User user = new User(username, username, 0, "No email");
 
         usersReference.document(username).set(user);
 
@@ -169,7 +163,7 @@ public class SettingsFragmentTest {
      * Checks if the given username exists in the database.
      */
     public void checkUniqueDisplayName(String username, final checkUniqueUsernameCallback uniqueUsername) {
-        usersReference.whereEqualTo("Display Name", username).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        usersReference.whereEqualTo("displayName", username).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {

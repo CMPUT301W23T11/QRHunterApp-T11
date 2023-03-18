@@ -1,5 +1,6 @@
 package com.example.qrhunterapp_t11;
 
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,20 +18,29 @@ import io.reactivex.rxjava3.annotations.NonNull;
  *
  * @author Afra
  */
-public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<LeaderboardProfile, LeaderboardProfileAdapter.RecyclerViewHolder> {
+public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, LeaderboardProfileAdapter.RecyclerViewHolder> {
     private OnItemClickListener listener;
+    private final SharedPreferences prefs;
 
-    public LeaderboardProfileAdapter(@NonNull FirestoreRecyclerOptions<LeaderboardProfile> options) {
+    public LeaderboardProfileAdapter(@NonNull FirestoreRecyclerOptions<User> options, @NonNull SharedPreferences prefs) {
         super(options);
+        this.prefs = prefs;
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position, @NonNull LeaderboardProfile model) {
+    protected void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position, @NonNull User model) {
         // Bind the QRCode object to the RecyclerViewHolder
-        holder.username.setText(model.getUsername());
+        holder.username.setText(model.getDisplayName());
 
-        String points = "Points: " + model.getPoints();
-        holder.points.setText(points);
+        String totalPoints = "Points: " + model.getTotalPoints();
+        holder.totalPoints.setText(totalPoints);
+
+        holder.ranking.setText(String.valueOf(position + 1));
+
+        if (model.getDisplayName().equals(prefs.getString("currentUser", null))) {
+            String rankingText = "Your Ranking: " + (position + 1);
+            prefs.edit().putString("currentUserRanking", rankingText).commit();
+        }
 
     }
 
@@ -55,22 +65,23 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<Leaderbo
     /**
      * Holds the layout and Click functionalities for each item in the recyclerView
      */
-
     public class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
         private final TextView username;
-        private final TextView points;
+        private final TextView totalPoints;
+        private final TextView ranking;
 
         public RecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
             username = itemView.findViewById(R.id.profile_name_textview);
-            points = itemView.findViewById(R.id.profile_points_search);
+            totalPoints = itemView.findViewById(R.id.profile_points_search);
+            ranking = itemView.findViewById(R.id.ranking_textview);
 
             // This click listener responds to clicks done on an item in the recyclerview
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    int position = getAdapterPosition();
+                    int position = getAbsoluteAdapterPosition();
                     if (position != RecyclerView.NO_POSITION && listener != null) {
                         listener.onItemClick(getSnapshots().getSnapshot(position), position);
                     }
