@@ -88,7 +88,7 @@ public class CameraFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        //FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
         return inflater.inflate(R.layout.fragment_camera, container, false);
     }
@@ -273,7 +273,7 @@ public class CameraFragment extends Fragment {
                         double longitude = location.getLongitude();
                         Log.d(locationPrompt, "Latitude: " + latitude + ", Longitude: " + longitude);
                         //set location and store
-                        //qrCode.setLocation(location);
+                        qrCode.setLocation(location);
                         addQRCode();
                         returnToProfile();
                     } else {

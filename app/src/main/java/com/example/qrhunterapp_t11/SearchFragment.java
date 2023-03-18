@@ -1,64 +1,84 @@
 package com.example.qrhunterapp_t11;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link SearchFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+
 public class SearchFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private final CollectionReference usersReference;
+    private final CollectionReference QRCodeReference;
+    private LeaderboardProfileAdapter adapter;
+    private RecyclerView leaderboardRecyclerView;
+    private FirestoreRecyclerOptions<LeaderboardProfile> options;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public SearchFragment() {
-        // Required empty public constructor
+    public SearchFragment(@NonNull FirebaseFirestore db) {
+        this.usersReference = db.collection("Users");
+        this.QRCodeReference = db.collection("QRCodes");
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment SearchFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static SearchFragment newInstance(String param1, String param2) {
-        SearchFragment fragment = new SearchFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @NonNull
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_search, container, false);
+
+        leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
+
+        adapter = new LeaderboardProfileAdapter(options);
+
+        //super.onStart(); man idk
+        adapter.startListening();
+        leaderboardRecyclerView.setAdapter(adapter);
+        leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+
+        // TODO: Implement this
+        // Handles clicking on an item to view the user's profile
+        adapter.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
+
+//                QRCode qrCode = documentSnapshot.toObject(QRCode.class);
+//                new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
+            }
+        });
+
+
+        return view;
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_search, container, false);
+    public void leaderboardProfileQuery() {
+
+        Query query = usersReference.orderBy("Points");
+        query
+                .get()
+                .addOnSuccessListener(documentReferenceSnapshots -> {
+                    for (QueryDocumentSnapshot snapshot : documentReferenceSnapshots) {
+                        DocumentReference documentReference = snapshot.getDocumentReference(snapshot.getId());
+                        LeaderboardProfile profile = new LeaderboardProfile(snapshot.get("Display Name").toString(), snapshot.get("Points").toString(), documentReference);
+
+                    }
+                    options = new FirestoreRecyclerOptions.Builder<LeaderboardProfile>()
+                            .setQuery(query, LeaderboardProfile.class)
+                            .build();
+                });
     }
 }
