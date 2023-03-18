@@ -59,6 +59,7 @@ public class CameraFragment extends Fragment {
     private ActivityResultLauncher<Intent> photoLauncher;
     private QRCode qrCode;
     private String imageUrl;
+    private String resizedImageUrl;
     private SharedPreferences prefs;
     private final FirebaseFirestore db;
     private final CollectionReference QRCodesReference;
@@ -132,6 +133,9 @@ public class CameraFragment extends Fragment {
                         assert intent != null;
                         Bundle extras = intent.getExtras();
                         imageUrl = extras.getString("url");
+
+                        resizedImageUrl = getResizeImageUrl(imageUrl); //TODO get true url of image
+
                         promptForLocation(); // prompt for location once the TakePhotoActivity has finished
                     }
                 }
@@ -400,7 +404,7 @@ public class CameraFragment extends Fragment {
         String QRCodeHash = qrCode.getHash();
 
         QRCodesReference.document(QRCodeHash).set(qrCode);
-        QRCodesReference.document(QRCodeHash).update("photoList", FieldValue.arrayUnion(imageUrl));
+        QRCodesReference.document(QRCodeHash).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
 
         Map<String, Object> QRCodeRef = new HashMap<>();
         DocumentReference QRCodeDocumentRef = QRCodesReference.document(QRCodeHash);
@@ -408,5 +412,20 @@ public class CameraFragment extends Fragment {
 
         usersReference.document(currentUser).collection("User QR Codes").document(QRCodeHash).set(QRCodeRef);
 
+    }
+
+    /**
+     * Gets the true url of the resized image, since firebase does not do this for some reason. Simply adds "_504x416" inside the url,
+     * which is the dimensions of the resized image.
+     *
+     * @param rawImageUrl the original url of the uploaded image, which does not provide the proper path to the resized image.
+     * @return a string containing the url of the resized image, that will be used later when retrieving it for viewing in the QR view.
+     * @reference Lee Meador - https://stackoverflow.com/a/18521373/14445107 - how to insert a string in the middle of another; used without major modification
+     */
+    private String getResizeImageUrl(String rawImageUrl) {
+        int index = rawImageUrl.indexOf(".jpg");
+        String urlFirstHalf = rawImageUrl.substring(0, index);
+        String urlSecondHalf = rawImageUrl.substring(index);
+        return urlFirstHalf + "_504x416" + urlSecondHalf; //TODO probably shouldn't use a string literal; make a constant or something
     }
 }
