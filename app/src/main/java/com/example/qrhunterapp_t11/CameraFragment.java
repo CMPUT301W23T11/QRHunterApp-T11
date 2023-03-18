@@ -463,7 +463,7 @@ public class CameraFragment extends Fragment {
                             QRCodesReference.document(QRCodeHash).set(qrCode);
                         }
                         // Add image to qrCode
-                        QRCodesReference.document(QRCodeHash).update("photoList", FieldValue.arrayUnion(imageUrl));
+                        QRCodesReference.document(QRCodeHash).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
 
                         // If user does not already have this qrCode, add a reference to it
                         if(!qrRefExists){
