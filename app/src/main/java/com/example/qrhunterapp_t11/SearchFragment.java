@@ -7,13 +7,11 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -42,24 +40,24 @@ public class SearchFragment extends Fragment {
 
         leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
 
-        adapter = new LeaderboardProfileAdapter(options);
-
-        //super.onStart(); man idk
-        adapter.startListening();
-        leaderboardRecyclerView.setAdapter(adapter);
-        leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+//        adapter = new LeaderboardProfileAdapter(options);
+//
+//        //super.onStart(); man idk
+//        adapter.startListening();
+//        leaderboardRecyclerView.setAdapter(adapter);
+//        leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
 
         // TODO: Implement this
         // Handles clicking on an item to view the user's profile
-        adapter.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
-
-//                QRCode qrCode = documentSnapshot.toObject(QRCode.class);
-//                new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
-            }
-        });
+//        adapter.setOnItemClickListener(new OnItemClickListener() {
+//            @Override
+//            public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
+//
+////                QRCode qrCode = documentSnapshot.toObject(QRCode.class);
+////                new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
+//            }
+//        });
 
 
         return view;
