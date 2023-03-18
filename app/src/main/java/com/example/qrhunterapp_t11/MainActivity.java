@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     public final CollectionReference usersReference = db.collection("Users");
-    private final ProfileFragment profileFragment = new ProfileFragment(db);
+    private ProfileFragment profileFragment;
     private final SettingsFragment settingsFragment = new SettingsFragment(db);
     private final CameraFragment cameraFragment = new CameraFragment(db);
     private final MapFragment mapFragment = new MapFragment();
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
                 }
             });
         } else {
-            getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUser", null))).commit();
         }
 
         // floating action button that moves the fragment to the camera fragment
@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
         bottomToolbar.setOnItemSelectedListener(item -> {
             switch (item.getItemId()) {
                 case R.id.profile: // changes the main screen to the profile
-                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUser", null))).commit();
 
                     return true;
 

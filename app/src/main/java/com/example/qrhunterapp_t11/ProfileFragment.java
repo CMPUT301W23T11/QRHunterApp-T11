@@ -1,9 +1,7 @@
 package com.example.qrhunterapp_t11;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,6 +50,8 @@ public class ProfileFragment extends Fragment {
     private RecyclerView QRCodeRecyclerView;
     private FirestoreRecyclerOptions<QRCode> options;
     private boolean userHasNoCodes;
+    private final String displayName;
+    private final String username;
 
     /**
      * Constructor for profile fragment.
@@ -59,9 +59,11 @@ public class ProfileFragment extends Fragment {
      *
      * @param db Firestore database instance
      */
-    public ProfileFragment(@NonNull FirebaseFirestore db) {
+    public ProfileFragment(@NonNull FirebaseFirestore db, @NonNull String displayName, @NonNull String username) {
         this.usersReference = db.collection("Users");
         this.QRCodeReference = db.collection("QRCodes");
+        this.displayName = displayName;
+        this.username = username;
     }
 
     /**
@@ -82,12 +84,8 @@ public class ProfileFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
         TextView loginUsernameTextView = view.findViewById(R.id.profile_name);
-        SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
-        String usernameDisplay = prefs.getString("currentUserDisplayName", null);
-        String username = prefs.getString("currentUser", null);
-
-        loginUsernameTextView.setText(usernameDisplay);
+        loginUsernameTextView.setText(displayName);
 
         TextView totalScoreText = view.findViewById(R.id.totalScoreText);
         TextView topQRCodeText = view.findViewById(R.id.topQRText);

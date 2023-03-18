@@ -7,11 +7,13 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
@@ -20,6 +22,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class SearchFragment extends Fragment {
 
+    private final FirebaseFirestore db;
     private final CollectionReference usersReference;
     private final CollectionReference QRCodeReference;
     private LeaderboardProfileAdapter leaderboardAdapter;
@@ -27,6 +30,7 @@ public class SearchFragment extends Fragment {
     private FirestoreRecyclerOptions<User> leaderboardOptions;
 
     public SearchFragment(@NonNull FirebaseFirestore db) {
+        this.db = db;
         this.usersReference = db.collection("Users");
         this.QRCodeReference = db.collection("QRCodes");
     }
@@ -52,14 +56,16 @@ public class SearchFragment extends Fragment {
 
                     // TODO: Implement this
                     // Handles clicking on an item to view the user's profile
-//                    adapter.setOnItemClickListener(new OnItemClickListener() {
-//                        @Override
-//                        public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
-//
-//                            QRCode qrCode = documentSnapshot.toObject(QRCode.class);
-//                            new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
-//                        }
-//                    });
+                    leaderboardAdapter.setOnItemClickListener(new OnItemClickListener() {
+                        @Override
+                        public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
+
+                            User user = documentSnapshot.toObject(User.class);
+                            FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+                            trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
+                            trans.commit();
+                        }
+                    });
                 }
             }
         });

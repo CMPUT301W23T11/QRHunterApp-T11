@@ -398,7 +398,7 @@ public class CameraFragment extends Fragment {
      */
     private void returnToProfile() {
         FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-        trans.replace(R.id.main_screen, new ProfileFragment(db));
+        trans.replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUser", null)));
         trans.commit();
     }
 
