@@ -119,15 +119,17 @@ public class ProfileFragment extends Fragment {
                             QRCodeRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
                             QRCodeRecyclerView.setHasFixedSize(false);
 
-                            // TODO: Reimplement scores using referencedQRCodes and set Total Points field in user's document
-                            //  referencedQRCodes is just a map with points, see line 272
+                            // TODO: get the fragment to auto refresh
 
                             // gets the total score of the user
                             int total = 0;
                             for (String qr: referencedQRCodes.values()) {
                                 total += Integer.parseInt(qr);
                             }
+                            // updates the users total score in the database
+                            usersReference.document(username).update("totalPoints", total);
                             totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
+
 
                             // gets the largest QR from the user
                             Map.Entry<String, String> maxQR = null;
@@ -139,19 +141,22 @@ public class ProfileFragment extends Fragment {
                             assert maxQR != null;
                             topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", maxQR.getValue()));
 
+
                             // gets the smallest QR from the user
                             Map.Entry<String, String> minQR = null;
                             for (Map.Entry<String, String> val : referencedQRCodes.entrySet()) {
-                                if (minQR == null || minQR.getValue().compareTo(val.getValue()) > 0){
+                                if (minQR == null || val.getValue().compareTo(minQR.getValue()) < 0){
                                     minQR = val;
                                 }
                             }
                             assert minQR != null;
                             lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", minQR.getValue()));
 
+
                             // Gets the size of the amount of QR codes the user has
                             int size = referencedQRCodes.size();
                             totalQRCodesText.setText(MessageFormat.format("Total number of QR codes: {0}", size));
+
 
                             // Handles clicking on an item to view the QR Code
                             adapter.setOnItemClickListener(new OnItemClickListener() {
