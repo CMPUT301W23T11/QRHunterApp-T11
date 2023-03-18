@@ -43,16 +43,31 @@
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/leaderboard_textview"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="5dp"
-        android:text="@string/leaderboard"
-        android:textAlignment="center"
-        android:textColor="@color/headers"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/leaderboard_textview"
+            android:layout_width="210dp"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:text="@string/leaderboard"
+            android:textAlignment="center"
+            android:textColor="@color/headers"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/your_ranking_textview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:text="Your Ranking: "
+            android:textSize="18sp" />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/leaderboard_recyclerview"

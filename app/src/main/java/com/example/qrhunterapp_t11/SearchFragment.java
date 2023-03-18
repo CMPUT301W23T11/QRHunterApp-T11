@@ -1,9 +1,12 @@
 package com.example.qrhunterapp_t11;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -28,6 +31,7 @@ public class SearchFragment extends Fragment {
     private LeaderboardProfileAdapter leaderboardAdapter;
     private RecyclerView leaderboardRecyclerView;
     private FirestoreRecyclerOptions<User> leaderboardOptions;
+    SharedPreferences prefs;
 
     public SearchFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
@@ -47,11 +51,16 @@ public class SearchFragment extends Fragment {
                 if (queryComplete) {
                     leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
 
-                    leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions);
+                    prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+                    leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, prefs);
 
                     //super.onStart(); man idk
                     leaderboardAdapter.startListening();
                     leaderboardRecyclerView.setAdapter(leaderboardAdapter);
+
+                    TextView yourRanking = view.findViewById(R.id.your_ranking_textview);
+                    yourRanking.setText(prefs.getString("currentUserRanking", null));
+
                     leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
                     // TODO: Implement this

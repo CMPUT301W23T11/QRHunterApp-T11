@@ -1,5 +1,6 @@
 package com.example.qrhunterapp_t11;
 
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,9 +20,11 @@ import io.reactivex.rxjava3.annotations.NonNull;
  */
 public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, LeaderboardProfileAdapter.RecyclerViewHolder> {
     private OnItemClickListener listener;
+    private final SharedPreferences prefs;
 
-    public LeaderboardProfileAdapter(@NonNull FirestoreRecyclerOptions<User> options) {
+    public LeaderboardProfileAdapter(@NonNull FirestoreRecyclerOptions<User> options, @NonNull SharedPreferences prefs) {
         super(options);
+        this.prefs = prefs;
     }
 
     @Override
@@ -31,6 +34,13 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
 
         String totalPoints = "Points: " + model.getTotalPoints();
         holder.totalPoints.setText(totalPoints);
+
+        holder.ranking.setText(String.valueOf(position + 1));
+
+        if (model.getDisplayName().equals(prefs.getString("currentUser", null))) {
+            String rankingText = "Your Ranking: " + (position + 1);
+            prefs.edit().putString("currentUserRanking", rankingText).commit();
+        }
 
     }
 
@@ -60,17 +70,19 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
 
         private final TextView username;
         private final TextView totalPoints;
+        private final TextView ranking;
 
         public RecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
             username = itemView.findViewById(R.id.profile_name_textview);
             totalPoints = itemView.findViewById(R.id.profile_points_search);
+            ranking = itemView.findViewById(R.id.ranking_textview);
 
             // This click listener responds to clicks done on an item in the recyclerview
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    int position = getAdapterPosition();
+                    int position = getAbsoluteAdapterPosition();
                     if (position != RecyclerView.NO_POSITION && listener != null) {
                         listener.onItemClick(getSnapshots().getSnapshot(position), position);
                     }

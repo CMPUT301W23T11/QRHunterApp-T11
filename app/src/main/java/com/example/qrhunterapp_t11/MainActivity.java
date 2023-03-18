@@ -31,7 +31,6 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     public final CollectionReference usersReference = db.collection("Users");
-    private ProfileFragment profileFragment;
     private final SettingsFragment settingsFragment = new SettingsFragment(db);
     private final CameraFragment cameraFragment = new CameraFragment(db);
     private final MapFragment mapFragment = new MapFragment();
@@ -77,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
                     User user = new User(username, username, 0, "No email");
 
                     usersReference.document(username).set(user);
-                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUser", null))).commit();
                 }
             });
         } else {
