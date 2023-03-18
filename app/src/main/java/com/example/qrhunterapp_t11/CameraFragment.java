@@ -265,11 +265,13 @@ public class CameraFragment extends Fragment {
                 public void onSuccess(Location location) {
                     if (location != null) {
                         // Location data is available
-                        double latitude = location.getLatitude();
                         double longitude = location.getLongitude();
+                        double latitude = location.getLatitude();
+
                         Log.d(locationPrompt, "Latitude: " + latitude + ", Longitude: " + longitude);
-                        //set location and store
-                        //qrCode.setLocation(location);
+                        //set longitude and latitude and store
+                        qrCode.setLongitude(longitude);
+                        qrCode.setLatitude(latitude);
                         addQRCode();
                         returnToProfile();
                     } else {
