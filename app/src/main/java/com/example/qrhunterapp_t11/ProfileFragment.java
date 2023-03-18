@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +29,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -117,22 +119,13 @@ public class ProfileFragment extends Fragment {
 
                             // TODO: Reimplement scores using referencedQRCodes, referencedQRCodes is just a map with points, see line 272
 
-//                            // Gets the sum of points from all the QR Code documents
-//                            QRColl.addSnapshotListener((value, error) -> {
-//                                if (error != null) {
-//                                    Log.w(tag, listenFailed, error);
-//                                }
-//                                double total = 0;
-//
-//                                assert value != null;
-//                                for (QueryDocumentSnapshot document : value) {
-//                                    total += (document.getLong("points")).intValue();
-//
-//                                }
-//                                Log.d(tag, "Total Score: " + total);
-//                                totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
-//
-//                            });
+                            // gets the total score of the user
+                            int total = 0;
+                            for (String value: referencedQRCodes.values()) {
+                                total += Integer.parseInt(value);
+                            }
+                            totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
+
 //
 //                            // Orders the QR collection from biggest to smallest, then returns the first QR Code
 //                            Query topQR = QRColl.orderBy("points", Query.Direction.DESCENDING).limit(1);
@@ -167,14 +160,9 @@ public class ProfileFragment extends Fragment {
 //
 //                            });
 //
-//                            // Gets the size of the amount of QR codes there are
-//                            QRColl.addSnapshotListener((value, error) -> {
-//                                if (error != null) {
-//                                    Log.w(tag, listenFailed, error);
-//                                }
-//                                Log.d(tag, "num of QR: " + value.size());
-//                                totalQRCodesText.setText(MessageFormat.format("Total number of QR codes: {0}", value.size()));
-//                            });
+                            // Gets the size of the amount of QR codes there are
+                            int size = referencedQRCodes.size();
+                            totalQRCodesText.setText(MessageFormat.format("Total number of QR codes: {0}", size));
 
                             // Handles clicking on an item to view the QR Code
                             adapter.setOnItemClickListener(new OnItemClickListener() {
