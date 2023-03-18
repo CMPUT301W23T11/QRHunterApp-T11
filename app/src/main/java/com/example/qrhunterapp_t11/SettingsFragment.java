@@ -187,8 +187,8 @@ public class SettingsFragment extends Fragment {
                                                     for (DocumentSnapshot commented : commentedQR) {
                                                         commented.getReference().update("displayName", newDisplayUsername);
                                                     }
+                                                    valid.valid(true);
                                                 });
-                                        valid.valid(true);
                                     }
                                 });
                     }
