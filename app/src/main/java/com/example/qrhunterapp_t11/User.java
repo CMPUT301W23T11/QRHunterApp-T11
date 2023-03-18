@@ -7,14 +7,16 @@ public class User {
     private String displayName;
     private String username;
     private int totalPoints;
+    private String email;
 
     public User() {
     }
 
-    public User(@NonNull String displayName, @NonNull String username, int totalPoints) {
+    public User(@NonNull String displayName, @NonNull String username, int totalPoints, @NonNull String email) {
         this.displayName = displayName;
         this.username = username;
         this.totalPoints = totalPoints;
+        this.email = email;
     }
 
     @NonNull
@@ -41,5 +43,13 @@ public class User {
 
     public void setTotalPoints(int totalPoints) {
         this.totalPoints = totalPoints;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

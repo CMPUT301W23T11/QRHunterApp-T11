@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
                     prefs.edit().putString("currentUserDisplayName", username).commit();
                     prefs.edit().putBoolean("LoggedIn", true).commit();
 
-                    User user = new User(username, username, 0);
+                    User user = new User(username, username, 0, "No email");
 
                     usersReference.document(username).set(user);
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, profileFragment).commit();

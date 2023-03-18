@@ -75,32 +75,33 @@ public class SettingsFragment extends Fragment {
                 // Make sure new username is eligible for change
                 usernameCheck(usernameString, usernameEditText, new SettingsCallback() {
                     public void valid(boolean valid) {
-                        assert (valid);
 
-                        builder
-                                .setTitle("Confirm username and email change")
-                                .setNegativeButton("Cancel", null)
-                                .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        String user = prefs.getString("currentUser", null);
-                                        String oldUsername = prefs.getString("currentUserDisplayName", null);
-                                        // Update username in all user's previous comments
-                                        updateUserComments(user, oldUsername, usernameString, new SettingsCallback() {
-                                            public void valid(boolean valid) {
-                                                assert (valid);
-                                                usersReference.document(user).update("displayName", usernameString);
-                                                usersReference.document(user).update("email", emailString);
+                        if (valid) {
+                            builder
+                                    .setTitle("Confirm username and email change")
+                                    .setNegativeButton("Cancel", null)
+                                    .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            String user = prefs.getString("currentUser", null);
+                                            String oldUsername = prefs.getString("currentUserDisplayName", null);
+                                            // Update username in all user's previous comments
+                                            updateUserComments(user, oldUsername, usernameString, new SettingsCallback() {
+                                                public void valid(boolean valid) {
+                                                    assert (valid);
+                                                    usersReference.document(user).update("displayName", usernameString);
+                                                    usersReference.document(user).update("email", emailString);
 
-                                                prefs.edit().putString("currentUserDisplayName", usernameString).commit();
-                                                prefs.edit().putString("currentUserEmail", emailString).commit();
-                                            }
-                                        });
+                                                    prefs.edit().putString("currentUserDisplayName", usernameString).commit();
+                                                    prefs.edit().putString("currentUserEmail", emailString).commit();
+                                                }
+                                            });
 
-                                    }
-                                })
-                                .create();
-                        builder.show();
+                                        }
+                                    })
+                                    .create();
+                            builder.show();
+                        }
                     }
                 });
             }
