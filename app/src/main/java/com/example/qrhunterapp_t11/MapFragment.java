@@ -39,7 +39,16 @@ import com.google.android.gms.maps.OnMapsSdkInitializedCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.FieldPath;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.android.gms.tasks.Task;
 
 import java.io.IOException;
 import java.util.List;
@@ -60,6 +69,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
     private GoogleMap mMap;
     private boolean mLocationPermissionGranted = false;
     private SearchView searchView;
+    private final CollectionReference qrCodeRef;
+
+    public MapFragment(FirebaseFirestore db) {
+        this.qrCodeRef = db.collection("QRCodes");
+    }
 
     /**
      * Called when the fragment is created.
@@ -282,18 +296,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
                 //mMap.setPadding(0, 0, 0, 0);
 
-                // Add marker at user's current location
-                LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-                Criteria criteria = new Criteria();
-                Location location = locationManager.getLastKnownLocation(locationManager.getBestProvider(criteria, false));
-                if (location != null) {
-                    LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-                    MarkerOptions markerOptions = new MarkerOptions()
-                            .position(latLng)
-                            .title("Current location");
-                    mMap.addMarker(markerOptions);
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f));
-                }
                 FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
                 fusedLocationClient.getLastLocation()
                         .addOnSuccessListener(new OnSuccessListener<Location>() {
@@ -309,6 +311,26 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                                 }
                             }
                         });
+
+                // Add markers for each QRCode
+                qrCodeRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Double latitude = document.getDouble("latitude");
+                                Double longitude = document.getDouble("longitude");
+                                if (latitude != null && longitude != null) {
+                                    LatLng location = new LatLng(latitude, longitude);
+                                    mMap.addMarker(new MarkerOptions().position(location).title(document.getId()));
+                                }
+                            }
+                        } else {
+                            Log.d(tag, "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+
             } catch (SecurityException e) {
                 Log.e(tag, "SecurityException: " + e.getMessage());
             }
@@ -356,12 +378,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
     public void onMapsSdkInitialized(@NonNull MapsInitializer.Renderer renderer) {
         switch (renderer) {
             case LATEST:
-                //Log.d(TAG, "Latest Renderer");
+                //Log.d(tag, "Latest Renderer");
                 break;
             case LEGACY:
-                //Log.d(TAG, "Legacy Renderer");
+                //Log.d(tag, "Legacy Renderer");
                 break;
         }
     }
-
 }
