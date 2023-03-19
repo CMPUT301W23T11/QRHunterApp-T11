@@ -1,12 +1,12 @@
 package com.example.qrhunterapp_t11;
 
+import com.example.qrhunterapp_t11.ViewQR;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
-import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
@@ -37,7 +37,14 @@ import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.OnMapsSdkInitializedCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.VectorDrawable;
+import androidx.core.content.res.ResourcesCompat;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -45,9 +52,6 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.FieldPath;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.android.gms.tasks.Task;
 
 import java.io.IOException;
@@ -311,6 +315,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                                 }
                             }
                         });
+                VectorDrawable vectorDrawable = (VectorDrawable) ResourcesCompat.getDrawable(getResources(), R.drawable.ic_qr, null);
+
+                Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(bitmap);
+                vectorDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+                vectorDrawable.draw(canvas);
+
+                BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(bitmap);
 
                 // Add markers for each QRCode
                 qrCodeRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -322,7 +334,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                                 Double longitude = document.getDouble("longitude");
                                 if (latitude != null && longitude != null) {
                                     LatLng location = new LatLng(latitude, longitude);
-                                    mMap.addMarker(new MarkerOptions().position(location).title(document.getId()));
+                                    //mMap.addMarker(new MarkerOptions().position(location).title(document.getId()));
+                                    mMap.addMarker(new MarkerOptions()
+                                            .position(location)
+                                            .title(document.getId())
+                                            .icon(icon));  // Use the custom icon
                                 }
                             }
                         } else {
