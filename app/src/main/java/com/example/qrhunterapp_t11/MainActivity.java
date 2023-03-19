@@ -30,7 +30,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDialogListener {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    public final CollectionReference usersReference = db.collection("Users");
+    private final CollectionReference usersReference = db.collection("Users");
     private final SettingsFragment settingsFragment = new SettingsFragment(db);
     private final CameraFragment cameraFragment = new CameraFragment(db);
     private final MapFragment mapFragment = new MapFragment(db);

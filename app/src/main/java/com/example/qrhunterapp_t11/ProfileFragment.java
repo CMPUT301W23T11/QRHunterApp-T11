@@ -3,7 +3,6 @@ package com.example.qrhunterapp_t11;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,11 +26,8 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import org.checkerframework.checker.units.qual.min;
-
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -123,18 +119,18 @@ public class ProfileFragment extends Fragment {
 
                             // gets the total score of the user
                             int total = 0;
-                            for (String qr: referencedQRCodes.values()) {
+                            for (String qr : referencedQRCodes.values()) {
                                 total += Integer.parseInt(qr);
                             }
                             // updates the users total score in the database
                             usersReference.document(username).update("totalPoints", total);
-                            totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
+                            totalScoreText.setText(MessageFormat.format("Total score: {0}", total));
 
 
                             // gets the largest QR from the user
                             Map.Entry<String, String> maxQR = null;
                             for (Map.Entry<String, String> val : referencedQRCodes.entrySet()) {
-                                if (maxQR == null || val.getValue().compareTo(maxQR.getValue()) > 0){
+                                if (maxQR == null || val.getValue().compareTo(maxQR.getValue()) > 0) {
                                     maxQR = val;
                                 }
                             }
@@ -145,7 +141,7 @@ public class ProfileFragment extends Fragment {
                             // gets the smallest QR from the user
                             Map.Entry<String, String> minQR = null;
                             for (Map.Entry<String, String> val : referencedQRCodes.entrySet()) {
-                                if (minQR == null || val.getValue().compareTo(minQR.getValue()) < 0){
+                                if (minQR == null || val.getValue().compareTo(minQR.getValue()) < 0) {
                                     minQR = val;
                                 }
                             }
