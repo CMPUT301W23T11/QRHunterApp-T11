@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
     public final CollectionReference usersReference = db.collection("Users");
     private final SettingsFragment settingsFragment = new SettingsFragment(db);
     private final CameraFragment cameraFragment = new CameraFragment(db);
-    private final MapFragment mapFragment = new MapFragment();
+    private final MapFragment mapFragment = new MapFragment(db);
     private final SearchFragment searchFragment = new SearchFragment(db);
     private BottomNavigationView bottomToolbar;
     private int numUsers;
