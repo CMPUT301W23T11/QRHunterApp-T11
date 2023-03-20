@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">#FFD41D</item>
+        <item name="windowSplashScreenBackground">#0D970A</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/map_icon</item>
         <item name="postSplashScreenTheme">@style/Theme.QRHunterAppT11</item>
     </style>
 </resources>
+<!-- original yellow: #FFD41D-->
