@@ -178,7 +178,7 @@ public class CameraFragment extends Fragment {
                 TextView scoredTV = dialogView.findViewById(R.id.scoredTV);
                 builder.setView(dialogView);
                 builder.setCancelable(false);
-                String scored = "SCORED " + qrCode.getPoints() + " POINTS";
+                String scored = "SCORED " + qrCode.getPoints();
                 scoredTV.setText(scored);
 
                 final AlertDialog alertDialog = builder.create();

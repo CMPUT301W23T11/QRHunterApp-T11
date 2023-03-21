@@ -23,6 +23,7 @@
             android:paddingBottom="20dp"
             android:text="@string/edittext_scored_xxxxx_points"
             android:textColor="#E1CC14"
-            android:textSize="30sp" />
+            android:textSize="35dp"
+            android:autoSizeTextType="uniform" />
     </com.facebook.shimmer.ShimmerFrameLayout>
 </RelativeLayout>
