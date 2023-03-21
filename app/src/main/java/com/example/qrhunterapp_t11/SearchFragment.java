@@ -1,12 +1,18 @@
 package com.example.qrhunterapp_t11;
 
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.MatrixCursor;
 import android.os.Bundle;
+import android.provider.BaseColumns;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -15,12 +21,20 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnCanceledListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.Arrays;
 
 /**
  * Handles search and leaderboard screen.
@@ -31,6 +45,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class SearchFragment extends Fragment {
 
+    private String tag = "searchFragment";
     private final FirebaseFirestore db;
     private final CollectionReference usersReference;
     private final CollectionReference QRCodeReference;
@@ -38,6 +53,7 @@ public class SearchFragment extends Fragment {
     private RecyclerView leaderboardRecyclerView;
     private FirestoreRecyclerOptions<User> leaderboardOptions;
     private SharedPreferences prefs;
+    private SearchView searchView;
 
     public SearchFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
@@ -50,6 +66,56 @@ public class SearchFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
+        searchView = view.findViewById(R.id.search_id);
+
+        // gets the searchView to be clickable on the whole bar
+        searchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                searchView.setIconified(false);
+            }
+        });
+
+        //finds the user with the specific inputted displayName
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                String pattern = query.toLowerCase().trim();
+               Query getUser = usersReference.whereEqualTo("displayName", pattern);
+                getUser.get()
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()){
+
+                                // checks if a user is found
+                                if (task.getResult().size() > 0) {
+                                    DocumentSnapshot doc = task.getResult().getDocuments().get(0);
+
+                                    // opens the users profile
+                                    User user = doc.toObject(User.class);
+                                    FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+                                    trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
+                                    trans.commit();
+
+                                    } else { // if the user is not found
+                                        Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
+                                        Log.d(tag, "Document NOT found");
+                                    }
+                                }
+                            else {
+                                Log.d(tag, "task not successful: ", task.getException());
+                            }
+                        });
+
+                // fixes bug where onQueryTextSubmit is fired twice
+                searchView.clearFocus();
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
 
         // Set Firestore RecyclerView query and begin monitoring that query
         leaderboardProfileQuery(new LeaderboardCallback() {

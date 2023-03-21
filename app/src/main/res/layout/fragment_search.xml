@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginBottom="2dp"
@@ -31,12 +32,14 @@
             android:background="@drawable/white_rounded_background"
             android:backgroundTint="@color/white">
 
-            <EditText
+            <SearchView
                 android:id="@+id/search_id"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/search"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:layout_gravity="center_horizontal"
+                app:queryHint="Search"
+                 />
 
         </com.google.android.material.appbar.AppBarLayout>
 
