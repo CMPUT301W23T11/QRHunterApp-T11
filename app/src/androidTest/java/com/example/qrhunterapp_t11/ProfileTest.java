@@ -104,7 +104,7 @@ public class ProfileTest {
         addDoc(qrCode, qrReference);
 
         // check if new QrCode was added
-        checkDocExists(qrCode.getHash(), qrReference, new ProfileTest.Callback() {
+        checkDocExists(qrCode.getId(), qrReference, new ProfileTest.Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertTrue(docExists);
@@ -282,7 +282,7 @@ public class ProfileTest {
         solo.clickOnText("Delete");
 
         // Check document has been deleted from the database
-        checkDocExists(qrCode.getHash(), qrReference, new ProfileTest.Callback() {
+        checkDocExists(qrCode.getId(), qrReference, new ProfileTest.Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertFalse(docExists);
@@ -362,7 +362,7 @@ public class ProfileTest {
      * @reference Aidan Lynch's CameraFragmentTest
      */
     public void addDoc(QRCode qrCode, CollectionReference cr) {
-        cr.document(qrCode.getHash()).set(qrCode)
+        cr.document(qrCode.getId()).set(qrCode)
                 .addOnSuccessListener(new OnSuccessListener<Object>() {
                     @Override
                     public void onSuccess(Object o) {

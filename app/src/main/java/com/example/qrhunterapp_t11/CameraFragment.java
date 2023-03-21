@@ -272,6 +272,7 @@ public class CameraFragment extends Fragment {
                         //set longitude and latitude and store
                         qrCode.setLongitude(longitude);
                         qrCode.setLatitude(latitude);
+                        qrCode.setId(longitude, latitude);
                         addQRCode();
                         returnToProfile();
                     } else {
@@ -378,16 +379,16 @@ public class CameraFragment extends Fragment {
      */
     private void addQRCode() {
         String currentUser = prefs.getString("currentUser", null);
-        String QRCodeHash = qrCode.getHash();
+        String QRCodeId = qrCode.getId();
 
-        QRCodesReference.document(QRCodeHash).set(qrCode);
-        QRCodesReference.document(QRCodeHash).update("photoList", FieldValue.arrayUnion(imageUrl));
+        QRCodesReference.document(QRCodeId).set(qrCode);
+        QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayUnion(imageUrl));
 
         Map<String, Object> QRCodeRef = new HashMap<>();
-        DocumentReference QRCodeDocumentRef = QRCodesReference.document(QRCodeHash);
-        QRCodeRef.put(QRCodeHash, QRCodeDocumentRef);
+        DocumentReference QRCodeDocumentRef = QRCodesReference.document(QRCodeId);
+        QRCodeRef.put(QRCodeId, QRCodeDocumentRef);
 
-        usersReference.document(currentUser).collection("User QR Codes").document(QRCodeHash).set(QRCodeRef);
+        usersReference.document(currentUser).collection("User QR Codes").document(QRCodeId).set(QRCodeRef);
 
     }
 }
