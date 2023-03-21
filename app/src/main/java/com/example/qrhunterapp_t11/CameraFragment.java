@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -41,24 +40,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-
-import nl.dionsegijn.konfetti.core.Angle;
-import nl.dionsegijn.konfetti.core.Party;
-import nl.dionsegijn.konfetti.core.PartyFactory;
-import nl.dionsegijn.konfetti.core.Spread;
-import nl.dionsegijn.konfetti.core.emitter.Emitter;
-import nl.dionsegijn.konfetti.core.emitter.EmitterConfig;
-import nl.dionsegijn.konfetti.core.models.Shape;
-import nl.dionsegijn.konfetti.core.models.Size;
-import nl.dionsegijn.konfetti.xml.KonfettiView;
-import static nl.dionsegijn.konfetti.core.Position.Relative;
 
 /**
  * Logic for the camera fragment, which is responsible for managing everything that pertains to scanning and adding a new QR code.
@@ -83,7 +68,6 @@ public class CameraFragment extends Fragment {
     private final CollectionReference QRCodesReference;
     private final CollectionReference usersReference;
     private static final String locationPrompt = "LocationPrompt";
-    private KonfettiView konfettiView;
 
     boolean qrExists;
     boolean qrRefExists;
@@ -140,7 +124,6 @@ public class CameraFragment extends Fragment {
      * @param savedInstanceState If the fragment is being re-created from a previous saved state, this is the state.
      * @reference <a href="https://www.youtube.com/watch?v=W4qqTcxqq48">how to create a custom dialog</a>
      * @reference <a href="https://xjaphx.wordpress.com/2011/07/13/auto-close-dialog-after-a-specific-time/">how to have dialog automatically close after a few seconds</a>
-     * @reference Erfan - https://stackoverflow.com/a/54166609/14445107 - how to remove dim from dialog
      */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -178,16 +161,11 @@ public class CameraFragment extends Fragment {
                 TextView scoredTV = dialogView.findViewById(R.id.scoredTV);
                 builder.setView(dialogView);
                 builder.setCancelable(false);
-                String scored = "SCORED " + qrCode.getPoints();
+                String scored = "Scored " + qrCode.getPoints() + " Points";
                 scoredTV.setText(scored);
 
                 final AlertDialog alertDialog = builder.create();
                 alertDialog.show(); // create and display the dialog
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    Objects.requireNonNull(alertDialog.getWindow()).setDimAmount(0);
-                }
-
-                createKonfetti(); // create some confetti
 
                 final Timer timer = new Timer();
                 timer.schedule(new TimerTask() {
@@ -201,34 +179,6 @@ public class CameraFragment extends Fragment {
                 }, 5000); // set a timer to automatically close the dialog after 5 seconds
             }
         });
-    }
-
-    /**
-     * Creates some confetti when you scan a QR code :)
-     *
-     * @reference Daniel Martinus - https://github.com/DanielMartinus/Konfetti/blob/main/samples/xml-java/src/main/java/nl/dionsegijn/xml/java/MainActivity.java - used without major modification
-     */
-    public void createKonfetti() {
-        konfettiView = getActivity().findViewById(R.id.konfetti_view);
-        EmitterConfig emitterConfig = new Emitter(5, TimeUnit.SECONDS).perSecond(100);
-        konfettiView.start(
-                new PartyFactory(emitterConfig)
-                        .angle(Angle.RIGHT - 65)
-                        .spread(Spread.WIDE)
-                        .shapes(Arrays.asList(Shape.Square.INSTANCE, Shape.Circle.INSTANCE))
-                        .colors(Arrays.asList(0xfce18a, 0xff726d, 0xf4306d, 0xb48def))
-                        .setSpeedBetween(10f, 30f)
-                        .position(new Relative(0.0, 0.3))
-                        .build(),
-                new PartyFactory(emitterConfig)
-                        .angle(Angle.LEFT + 65)
-                        .spread(Spread.WIDE)
-                        .shapes(Arrays.asList(Shape.Square.INSTANCE, Shape.Circle.INSTANCE))
-                        .colors(Arrays.asList(0xfce18a, 0xff726d, 0xf4306d, 0xb48def))
-                        .setSpeedBetween(10f, 30f)
-                        .position(new Relative(1.0, 0.3))
-                        .build()
-        );
     }
 
     /**

@@ -169,7 +169,7 @@ public class TakePhotoActivity extends AppCompatActivity {
                 new ImageCapture.OnImageSavedCallback() {
                     @Override
                     public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
-                        Toast.makeText(TakePhotoActivity.this, "Uploading photo...", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(TakePhotoActivity.this, "Photo has been saved successfully.", Toast.LENGTH_SHORT).show();
                         mImageUri = outputFileResults.getSavedUri(); // get uri (local address) of image to know which file to upload later
                         uploadFile(new OnUploadListener() {
                             //use OnUploadListener to retrieve url String from uploadFile method
