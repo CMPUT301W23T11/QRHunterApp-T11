@@ -92,5 +92,9 @@ dependencies {
 
     // Splashscreen dependency
     implementation 'androidx.core:core-splashscreen:1.0.0-beta02'
+
+    // Konfetti
+    implementation 'nl.dionsegijn:konfetti-xml:2.0.2'
+
 }
 apply plugin: 'com.google.gms.google-services'
