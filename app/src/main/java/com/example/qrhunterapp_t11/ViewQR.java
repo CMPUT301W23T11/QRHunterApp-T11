@@ -163,7 +163,7 @@ public class ViewQR extends DialogFragment {
                             }
                             commentAdapter = new CommentAdapter(getContext(), commentList);
                             commentListView.setAdapter(commentAdapter);
-                            CollectionReference query = db.collection("QRCodes").document(qrCode.getHash()).collection("commentList");
+                            CollectionReference query = db.collection("QRCodes").document(qrCode.getId()).collection("commentList");
                             AggregateQuery countQuery = query.count();
                             countQuery.get(AggregateSource.SERVER).addOnCompleteListener(new OnCompleteListener<AggregateQuerySnapshot>() {
                                 @Override
