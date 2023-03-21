@@ -306,10 +306,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                             @Override
                             public void onSuccess(Location location) {
                                 if (location != null) {
-                                    // Create a LatLng object with the current location
+                                    // Create LatLng object with the current location
                                     LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
 
-                                    // Create a CameraUpdate object with zoom level 15 and move the camera to the current location
+                                    // Create CameraUpdate object and move the camera to the current location
                                     CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(currentLocation, 15);
                                     mMap.animateCamera(cameraUpdate);
                                 }
@@ -334,16 +334,28 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                                 Double longitude = document.getDouble("longitude");
                                 if (latitude != null && longitude != null) {
                                     LatLng location = new LatLng(latitude, longitude);
-                                    //mMap.addMarker(new MarkerOptions().position(location).title(document.getId()));
-                                    mMap.addMarker(new MarkerOptions()
+                                    Marker marker = mMap.addMarker(new MarkerOptions()
                                             .position(location)
                                             .title(document.getId())
                                             .icon(icon));  // Use the custom icon
+                                    marker.setTag(document.toObject(QRCode.class)); // Set QRCode object as the marker's tag
                                 }
                             }
                         } else {
                             Log.d(tag, "Error getting documents: ", task.getException());
                         }
+                    }
+                });
+
+                // OnMarkerClickListener to show the ViewQR dialog fragment when a marker is clicked
+                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker) {
+                        QRCode qrCode = (QRCode) marker.getTag();
+                        if (qrCode != null) {
+                            new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
+                        }
+                        return true;
                     }
                 });
 
