@@ -68,34 +68,46 @@ public class SearchFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
         searchView = view.findViewById(R.id.search_id);
 
+        // gets the searchView to be clickable on the whole bar
         searchView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 searchView.setIconified(false);
             }
         });
+
+        //finds the user with the specific inputted displayName
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 String pattern = query.toLowerCase().trim();
                Query getUser = usersReference.whereEqualTo("displayName", pattern);
                 getUser.get()
-                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                            @Override
-                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                if (task.isSuccessful()){
-                                    for (QueryDocumentSnapshot doc : task.getResult()) {
-                                        User user = doc.toObject(User.class);
-                                        FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-                                        trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
-                                        trans.commit();
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()){
+
+                                // checks if a user is found
+                                if (task.getResult().size() > 0) {
+                                    DocumentSnapshot doc = task.getResult().getDocuments().get(0);
+
+                                    // opens the users profile
+                                    User user = doc.toObject(User.class);
+                                    FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+                                    trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
+                                    trans.commit();
+
+                                    } else { // if the user is not found
+                                        Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
+                                        Log.d(tag, "Document NOT found");
                                     }
                                 }
-                                else {
-                                    Log.d(tag, "document not found: ", task.getException());
-                                }
+                            else {
+                                Log.d(tag, "task not successful: ", task.getException());
                             }
                         });
+
+                // fixes bug where onQueryTextSubmit is fired twice
+                searchView.clearFocus();
                 return false;
             }
 
