@@ -287,6 +287,7 @@ public class CameraFragment extends Fragment {
                         //set longitude and latitude and store
                         qrCode.setLongitude(longitude);
                         qrCode.setLatitude(latitude);
+                        qrCode.setId(longitude, latitude);
                         addQRCode();
                         returnToProfile();
                     } else {
@@ -440,39 +441,39 @@ public class CameraFragment extends Fragment {
      */
     private void addQRCode() {
         String currentUser = prefs.getString("currentUser", null);
-        String QRCodeHash = qrCode.getHash();
+        String QRCodeId = qrCode.getId();
 
         Map<String, Object> QRCodeRef = new HashMap<>();
-        DocumentReference QRCodeDocumentRef = QRCodesReference.document(QRCodeHash);
-        QRCodeRef.put(QRCodeHash, QRCodeDocumentRef);
+        DocumentReference QRCodeDocumentRef = QRCodesReference.document(QRCodeId);
+        QRCodeRef.put(QRCodeId, QRCodeDocumentRef);
 
         // Check if qrCode exists in db in QRCodes collection
-        checkDocExists(QRCodeHash, QRCodesReference, new Callback() {
+        checkDocExists(QRCodeId, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
                 qrExists = valid;
                 System.out.println(valid);
 
                 // Check if reference to qrCode exists in db in Users collection
-                checkDocExists(QRCodeHash, usersReference.document(currentUser).collection("User QR Codes"), new Callback() {
+                checkDocExists(QRCodeId, usersReference.document(currentUser).collection("User QR Codes"), new Callback() {
                     public void dataValid(boolean valid) {
                         qrRefExists = valid;
                         System.out.println(valid);
 
                         // If qrCode does not exist, add it to QRCode collection
                         if (!qrExists){
-                            QRCodesReference.document(QRCodeHash).set(qrCode);
+                            QRCodesReference.document(QRCodeId).set(qrCode);
                         }
                         // Add image to qrCode
-                        QRCodesReference.document(QRCodeHash).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
+                        QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
 
                         // If user does not already have this qrCode, add a reference to it
                         if(!qrRefExists){
                             System.out.println("HEUHURLSHRPIUSHEPRIHSEPOIHRPOISHEPROIPSOEHRPOISHEPRIHP");
-                            usersReference.document(currentUser).collection("User QR Codes").document(QRCodeHash).set(QRCodeRef);
+                            usersReference.document(currentUser).collection("User QR Codes").document(QRCodeId).set(QRCodeRef);
                         }
                         // If User does not have this qrCode but it already exists in qrCode collection, increase its total scans
                         if ((qrExists) && (!qrRefExists)){
-                            QRCodesReference.document(QRCodeHash).update("numberOfScans", FieldValue.increment(1));
+                            QRCodesReference.document(QRCodeId).update("numberOfScans", FieldValue.increment(1));
                         }
                     }
                 });

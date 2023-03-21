@@ -55,6 +55,7 @@ public class ViewQR extends DialogFragment {
     private EditText commentET;
     private SharedPreferences prefs;
     private String QRCodeHash;
+    private String QRCodeId;
     private boolean QRCodeHasNoComments;
     private TextView commentNumTV;
 
@@ -74,6 +75,7 @@ public class ViewQR extends DialogFragment {
         super();
         this.qrCode = qrCode;
         this.QRCodeHash = qrCode.getHash();
+        this.QRCodeId = qrCode.getId();
     }
 
     /**
@@ -137,12 +139,12 @@ public class ViewQR extends DialogFragment {
             Picasso.with(getContext()).load(qrCode.getPhotoList().get(0)).into(photoImageView);
         }
 
-        noCommentsCheck(QRCodeHash, new QRCodeNoCommentsCallback() {
+        noCommentsCheck(QRCodeId, new QRCodeNoCommentsCallback() {
             public void noComments(boolean noComments) {
                 QRCodeHasNoComments = noComments;
 
                 if (!QRCodeHasNoComments) {
-                    getComments(QRCodeHash, new QRCodeCommentsCallback() {
+                    getComments(QRCodeId, new QRCodeCommentsCallback() {
                         public void comments(@NonNull ArrayList<ArrayList<Map<String, Object>>> comments) {
 
                             commentList = new ArrayList<>();
@@ -213,10 +215,10 @@ public class ViewQR extends DialogFragment {
                     comment.put("comment", commentString);
 
                     Map<String, CollectionReference> QRCodeRef = new HashMap<>();
-                    CollectionReference QRCodeCollectionRef = QRCodesReference.document(QRCodeHash).collection("commentList");
-                    QRCodeRef.put(QRCodeHash, QRCodeCollectionRef);
+                    CollectionReference QRCodeCollectionRef = QRCodesReference.document(QRCodeId).collection("commentList");
+                    QRCodeRef.put(QRCodeId, QRCodeCollectionRef);
 
-                    QRCodesReference.document(QRCodeHash).collection("commentList").add(comment);
+                    QRCodesReference.document(QRCodeId).collection("commentList").add(comment);
                     commentNum = Integer.parseInt(commentNumTV.getText().toString());
                     commentNum ++;
                     commentNumTV.setText(commentNum.toString());
@@ -262,12 +264,12 @@ public class ViewQR extends DialogFragment {
     /**
      * Query database to check if QR code has any comments or not
      *
-     * @param QRCodeHash QR to check for comments
+     * @param QRCodeId QR to check for comments
      * @param noComments Callback function
      */
-    public void noCommentsCheck(@NonNull String QRCodeHash, final @NonNull QRCodeNoCommentsCallback noComments) {
+    public void noCommentsCheck(@NonNull String QRCodeId, final @NonNull QRCodeNoCommentsCallback noComments) {
 
-        QRCodesReference.document(QRCodeHash).collection("commentList")
+        QRCodesReference.document(QRCodeId).collection("commentList")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -279,12 +281,12 @@ public class ViewQR extends DialogFragment {
                 });
     }
 
-    public void getComments(@NonNull String QRCodeHash, final @NonNull QRCodeCommentsCallback comments) {
+    public void getComments(@NonNull String QRCodeId, final @NonNull QRCodeCommentsCallback comments) {
 
         ArrayList<ArrayList<Map<String, Object>>> commentsTemp = new ArrayList<>();
 
         // Retrieve DocumentReferences in the user's QR code collection and store them in an array
-        QRCodesReference.document(QRCodeHash).collection("commentList")
+        QRCodesReference.document(QRCodeId).collection("commentList")
                 .get()
                 .addOnSuccessListener(snapshot -> {
                     for (QueryDocumentSnapshot document : snapshot) {

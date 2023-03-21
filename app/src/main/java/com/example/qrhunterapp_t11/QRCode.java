@@ -12,6 +12,7 @@ import java.util.ArrayList;
 public class QRCode {
     private String hash;
     private String name;
+    private String id;
     private int points;
     private int numberOfScans;
     private Double longitude;
@@ -40,6 +41,7 @@ public class QRCode {
         this.photoList = new ArrayList<>();
         this.longitude = null;
         this.latitude = null;
+        this.id = this.hash;
         // if for some reason null doesn't work out, we can fall back on init to 0
         //this.longitude = Double.valueOf(0);
         //this.latitude = Double.valueOf(0);
@@ -53,14 +55,39 @@ public class QRCode {
     public QRCode() {
     }
 
+
     /**
-     * calculatePoints uses the hash value of the QRCode to calculate the points value of the QRCode
-     * Static to increase testability
-     *
-     * @param hash - String hash value of the QR code
-     * @return grandTotal - int
-     * @reference <a href="https://docs.oracle.com/javase/tutorial/java/data/manipstrings.html">Oracle's documentation on string manipulation</a>
+     * Getter for QRCode Object's id attribute, used to define uniqueness of QRCode objects
+     * id is used as a key for the firebase database when accessing QRCodes.
+     * default value is the QRCode's hashkey, if location is added
+     * by player, location value is concatenated to create a unique id
+     * @return id - a string representing a unique instance of a QRCode
      */
+    public String getId() {return id;}
+
+    /**
+     * Setter for QRCode Object's id attribute, used to define uniqueness of QRCode objects
+     * id is used as a key for the firebase database when accessing QRCodes.
+     * default value is the QRCode's hashkey, if location is added
+     * by player, location value is concatenated to create a unique id
+     * @param longitude Double representing longitude of where QRCode was captured
+     * @param latitude Double representing latitude of where QRCode was captured
+     * @reference https://docs.oracle.com/javase/tutorial/java/data/converting.html
+     */
+    public void setId(@NonNull Double longitude, @NonNull Double latitude) {
+        String strLong = Double.toString(longitude);
+        String strLat = Double.toString(longitude);
+        this.id = this.hash + strLong + strLat;
+    }
+
+        /**
+         * calculatePoints uses the hash value of the QRCode to calculate the points value of the QRCode
+         * Static to increase testability
+         *
+         * @param hash - String hash value of the QR code
+         * @return grandTotal - int
+         * @reference <a href="https://docs.oracle.com/javase/tutorial/java/data/manipstrings.html">Oracle's documentation on string manipulation</a>
+         */
     public static int calculatePoints(@NonNull String hash) {
 
         // List of possible chars in the hash, other than 0, each corresponds to their base number of points
