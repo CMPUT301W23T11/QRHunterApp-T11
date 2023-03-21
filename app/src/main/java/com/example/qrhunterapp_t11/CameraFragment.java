@@ -178,7 +178,7 @@ public class CameraFragment extends Fragment {
                 TextView scoredTV = dialogView.findViewById(R.id.scoredTV);
                 builder.setView(dialogView);
                 builder.setCancelable(false);
-                String scored = "Scored " + qrCode.getPoints() + " Points";
+                String scored = "SCORED " + qrCode.getPoints() + " POINTS";
                 scoredTV.setText(scored);
 
                 final AlertDialog alertDialog = builder.create();
@@ -187,7 +187,7 @@ public class CameraFragment extends Fragment {
                     Objects.requireNonNull(alertDialog.getWindow()).setDimAmount(0);
                 }
 
-                parade(); // create some confetti
+                createKonfetti(); // create some confetti
 
                 final Timer timer = new Timer();
                 timer.schedule(new TimerTask() {
@@ -208,22 +208,7 @@ public class CameraFragment extends Fragment {
      *
      * @reference Daniel Martinus - https://github.com/DanielMartinus/Konfetti/blob/main/samples/xml-java/src/main/java/nl/dionsegijn/xml/java/MainActivity.java - used without major modification
      */
-    private void createKonfetti() {
-        konfettiView = getActivity().findViewById(R.id.konfetti_view);
-        EmitterConfig emitterConfig = new Emitter(5L, TimeUnit.SECONDS).perSecond(100);
-        Party party = new PartyFactory(emitterConfig)
-                .angle(270)
-                .spread(120)
-                .setSpeedBetween(1f, 5f)
-                .timeToLive(2000L)
-                .sizes(new Size(12, 5f, 0.2f))
-                .position(0.0, 0.0, 1.0, 0.0)
-                .build();
-
-                konfettiView.start(party);
-    }
-
-    public void parade() {
+    public void createKonfetti() {
         konfettiView = getActivity().findViewById(R.id.konfetti_view);
         EmitterConfig emitterConfig = new Emitter(5, TimeUnit.SECONDS).perSecond(100);
         konfettiView.start(

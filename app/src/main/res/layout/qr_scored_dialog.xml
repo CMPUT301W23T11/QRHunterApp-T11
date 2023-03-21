@@ -13,16 +13,16 @@
         app:shimmer_base_alpha="0.7">
 
         <TextView
-            android:textColor="#E1CC14"
             android:id="@+id/scoredTV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="@font/noto_sans_bold"
             android:paddingLeft="20dp"
             android:paddingTop="20dp"
             android:paddingRight="20dp"
             android:paddingBottom="20dp"
             android:text="@string/edittext_scored_xxxxx_points"
-            android:textSize="30sp"/>
+            android:textColor="#E1CC14"
+            android:textSize="30sp" />
     </com.facebook.shimmer.ShimmerFrameLayout>
 </RelativeLayout>
