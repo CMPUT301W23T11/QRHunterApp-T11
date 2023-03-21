@@ -82,10 +82,10 @@ dependencies {
     implementation "androidx.camera:camera-view:${camerax_version}"
     implementation "androidx.camera:camera-extensions:${camerax_version}"
 
-    //photo dependency
+    // Picasso
     implementation 'com.squareup.picasso:picasso:2.5.2'
 
-    // Robotium dependencies
+    // Robotium
     androidTestImplementation "androidx.test:runner:1.5.2"
     androidTestImplementation "androidx.test:rules:1.5.0"
     androidTestImplementation "com.jayway.android.robotium:robotium-solo:5.5.3"
@@ -95,6 +95,10 @@ dependencies {
 
     // Konfetti
     implementation 'nl.dionsegijn:konfetti-xml:2.0.2'
+
+    // Shimmer
+    implementation 'com.facebook.shimmer:shimmer:0.5.0'
+
 
 }
 apply plugin: 'com.google.gms.google-services'
