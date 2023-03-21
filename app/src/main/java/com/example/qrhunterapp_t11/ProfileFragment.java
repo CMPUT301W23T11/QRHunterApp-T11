@@ -1,9 +1,7 @@
 package com.example.qrhunterapp_t11;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +26,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,6 +50,8 @@ public class ProfileFragment extends Fragment {
     private RecyclerView QRCodeRecyclerView;
     private FirestoreRecyclerOptions<QRCode> options;
     private boolean userHasNoCodes;
+    private final String displayName;
+    private final String username;
 
     /**
      * Constructor for profile fragment.
@@ -58,9 +59,11 @@ public class ProfileFragment extends Fragment {
      *
      * @param db Firestore database instance
      */
-    public ProfileFragment(@NonNull FirebaseFirestore db) {
+    public ProfileFragment(@NonNull FirebaseFirestore db, @NonNull String displayName, @NonNull String username) {
         this.usersReference = db.collection("Users");
         this.QRCodeReference = db.collection("QRCodes");
+        this.displayName = displayName;
+        this.username = username;
     }
 
     /**
@@ -81,12 +84,8 @@ public class ProfileFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
         TextView loginUsernameTextView = view.findViewById(R.id.profile_name);
-        SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
-        String usernameDisplay = prefs.getString("currentUserDisplayName", null);
-        String username = prefs.getString("currentUser", null);
-
-        loginUsernameTextView.setText(usernameDisplay);
+        loginUsernameTextView.setText(displayName);
 
         TextView totalScoreText = view.findViewById(R.id.totalScoreText);
         TextView topQRCodeText = view.findViewById(R.id.topQRText);
@@ -114,67 +113,46 @@ public class ProfileFragment extends Fragment {
                             adapter.startListening();
                             QRCodeRecyclerView.setAdapter(adapter);
                             QRCodeRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                            QRCodeRecyclerView.setHasFixedSize(false);
 
-                            // TODO: Reimplement scores using referencedQRCodes, referencedQRCodes is just a map with points, see line 272
+                            // TODO: get the fragment to auto refresh
 
-//                            // Gets the sum of points from all the QR Code documents
-//                            QRColl.addSnapshotListener((value, error) -> {
-//                                if (error != null) {
-//                                    Log.w(tag, listenFailed, error);
-//                                }
-//                                double total = 0;
-//
-//                                assert value != null;
-//                                for (QueryDocumentSnapshot document : value) {
-//                                    total += (document.getLong("points")).intValue();
-//
-//                                }
-//                                Log.d(tag, "Total Score: " + total);
-//                                totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
-//
-//                            });
-//
-//                            // Orders the QR collection from biggest to smallest, then returns the first QR Code
-//                            Query topQR = QRColl.orderBy("points", Query.Direction.DESCENDING).limit(1);
-//                            topQR.addSnapshotListener((value, error) -> {
-//                                if (error != null) {
-//                                    Log.w(tag, listenFailed, error);
-//                                }
-//                                double total = 0;
-//                                assert value != null;
-//                                for (QueryDocumentSnapshot document : value) {
-//                                    total += (document.getLong("points")).intValue();
-//
-//                                }
-//                                Log.d(tag, "top QR code: " + total);
-//                                topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", total));
-//                            });
-//
-//                            // Orders the QR collection from smallest to largest, then returns the first QR Code
-//                            Query lowQR = QRColl.orderBy("points", Query.Direction.ASCENDING).limit(1);
-//                            lowQR.addSnapshotListener((value, error) -> {
-//                                if (error != null) {
-//                                    Log.w(tag, listenFailed, error);
-//                                }
-//                                double total = 0;
-//                                assert value != null;
-//                                for (QueryDocumentSnapshot document : value) {
-//                                    total += (document.getLong("points")).intValue();
-//
-//                                }
-//                                Log.d(tag, "lowest QR code: " + total);
-//                                lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", total));
-//
-//                            });
-//
-//                            // Gets the size of the amount of QR codes there are
-//                            QRColl.addSnapshotListener((value, error) -> {
-//                                if (error != null) {
-//                                    Log.w(tag, listenFailed, error);
-//                                }
-//                                Log.d(tag, "num of QR: " + value.size());
-//                                totalQRCodesText.setText(MessageFormat.format("Total number of QR codes: {0}", value.size()));
-//                            });
+                            // gets the total score of the user
+                            int total = 0;
+                            for (String qr : referencedQRCodes.values()) {
+                                total += Integer.parseInt(qr);
+                            }
+                            // updates the users total score in the database
+                            usersReference.document(username).update("totalPoints", total);
+                            totalScoreText.setText(MessageFormat.format("Total score: {0}", total));
+
+
+                            // gets the largest QR from the user
+                            Map.Entry<String, String> maxQR = null;
+                            for (Map.Entry<String, String> val : referencedQRCodes.entrySet()) {
+                                if (maxQR == null || val.getValue().compareTo(maxQR.getValue()) > 0) {
+                                    maxQR = val;
+                                }
+                            }
+                            assert maxQR != null;
+                            topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", maxQR.getValue()));
+
+
+                            // gets the smallest QR from the user
+                            Map.Entry<String, String> minQR = null;
+                            for (Map.Entry<String, String> val : referencedQRCodes.entrySet()) {
+                                if (minQR == null || val.getValue().compareTo(minQR.getValue()) < 0) {
+                                    minQR = val;
+                                }
+                            }
+                            assert minQR != null;
+                            lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", minQR.getValue()));
+
+
+                            // Gets the size of the amount of QR codes the user has
+                            int size = referencedQRCodes.size();
+                            totalQRCodesText.setText(MessageFormat.format("Total number of QR codes: {0}", size));
+
 
                             // Handles clicking on an item to view the QR Code
                             adapter.setOnItemClickListener(new OnItemClickListener() {
@@ -183,6 +161,7 @@ public class ProfileFragment extends Fragment {
 
                                     QRCode qrCode = documentSnapshot.toObject(QRCode.class);
                                     new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
+                                    //adapter.notifyDataSetChanged();
                                 }
                             });
 

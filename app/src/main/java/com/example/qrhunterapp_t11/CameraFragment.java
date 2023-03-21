@@ -21,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -28,9 +29,12 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.journeyapps.barcodescanner.ScanContract;
@@ -51,15 +55,22 @@ import java.util.TimerTask;
  */
 public class CameraFragment extends Fragment {
     private static final int permissionsRequestLocation = 100;
+    private boolean mIsPreciseLocationEnabled = false;
+    public static final int permissionsRequestAccessFineLocation = 9003;
+    public static final int permissionsRequestAccessCoarseLocation = 9004;
     private ActivityResultLauncher<ScanOptions> barLauncher;
     private ActivityResultLauncher<Intent> photoLauncher;
     private QRCode qrCode;
     private String imageUrl;
+    private String resizedImageUrl;
     private SharedPreferences prefs;
     private final FirebaseFirestore db;
     private final CollectionReference QRCodesReference;
     private final CollectionReference usersReference;
     private static final String locationPrompt = "LocationPrompt";
+
+    boolean qrExists;
+    boolean qrRefExists;
 
     public CameraFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
@@ -84,7 +95,7 @@ public class CameraFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        //FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
         return inflater.inflate(R.layout.fragment_camera, container, false);
     }
@@ -128,6 +139,9 @@ public class CameraFragment extends Fragment {
                         assert intent != null;
                         Bundle extras = intent.getExtras();
                         imageUrl = extras.getString("url");
+
+                        resizedImageUrl = getResizeImageUrl(imageUrl); //TODO get true url of image
+
                         promptForLocation(); // prompt for location once the TakePhotoActivity has finished
                     }
                 }
@@ -225,7 +239,6 @@ public class CameraFragment extends Fragment {
         photoLauncher.launch(intent);
     }
 
-
     /**
      * Connects the GoogleApiClient and initiates the permissions check
      */
@@ -259,7 +272,8 @@ public class CameraFragment extends Fragment {
      */
     private void getCurrentLocation() {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
-        if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
@@ -269,6 +283,7 @@ public class CameraFragment extends Fragment {
                         double latitude = location.getLatitude();
 
                         Log.d(locationPrompt, "Latitude: " + latitude + ", Longitude: " + longitude);
+
                         //set longitude and latitude and store
                         qrCode.setLongitude(longitude);
                         qrCode.setLatitude(latitude);
@@ -291,17 +306,20 @@ public class CameraFragment extends Fragment {
      * Initiates the location permission check and logs if permission is already granted
      */
     private void permissions() {
-        if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            // Permission is already granted
+        boolean isFineLocationGranted = ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        boolean isCoarseLocationGranted = ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+
+        if (isFineLocationGranted) {
             Log.d(locationPrompt, "PERMISSION ALREADY GAVE.");
+            mIsPreciseLocationEnabled = true;
+            getCurrentLocation();
+        } else if (isCoarseLocationGranted) {
+            Log.d(locationPrompt, "PERMISSION ALREADY GAVE.");
+            mIsPreciseLocationEnabled = false;
             getCurrentLocation();
         } else {
-            // Permission is not granted
-            // Ask for the permission, calls onRequestPermissionsResult after selection
             Log.d(locationPrompt, "ASKING FOR PERMISSION.");
-            requestPermissions(
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    permissionsRequestLocation);
+            requestPermissions(new String[] {android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, permissionsRequestLocation);
         }
     }
 
@@ -314,19 +332,30 @@ public class CameraFragment extends Fragment {
      * @param grantResults The results of the permission request.
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == permissionsRequestLocation) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission is granted
-                Log.d(locationPrompt, "Execute if permission granted.");
-                getCurrentLocation();
-            } else {
-                // Permission is not granted
-                Log.d(locationPrompt, "Execute if permission not granted.");
-                //stores QRCode into db with just hash as document id and location = null
-                addQRCode();
-                returnToProfile();
-            }
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case permissionsRequestLocation:
+                boolean isFineLocationGranted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                boolean isCoarseLocationGranted = grantResults.length > 1 && grantResults[1] == PackageManager.PERMISSION_GRANTED;
+
+                if (isFineLocationGranted) {
+                    Log.d(locationPrompt, "Execute if permission granted.");
+                    mIsPreciseLocationEnabled = true;
+                    getCurrentLocation();
+                } else if (isCoarseLocationGranted) {
+                    Log.d(locationPrompt, "Execute if permission granted.");
+                    mIsPreciseLocationEnabled = false;
+                    getCurrentLocation();
+                } else {
+                    // Permission is not granted
+                    Log.d(locationPrompt, "Execute if permission not granted.");
+                    //stores QRCode into db with just hash as document id and location = null
+                    addQRCode();
+                    returnToProfile();
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
@@ -370,8 +399,41 @@ public class CameraFragment extends Fragment {
      */
     private void returnToProfile() {
         FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-        trans.replace(R.id.main_screen, new ProfileFragment(db));
+        trans.replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUser", null)));
         trans.commit();
+    }
+
+    /**
+     * Helper function to check if a QR code document exists
+     *
+     * @param docToCheck document that should be checked for
+     * @param cr         CollectionReference to the collection being accessed
+     * @reference <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
+     * @reference Aidan Lynch's CameraFragmentTest for this code
+     */
+    public void checkDocExists(String docToCheck, CollectionReference cr, final CameraFragment.Callback dataValid) {
+        DocumentReference docRef = cr.document(docToCheck);
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        Log.d("DocExist", "DocumentSnapshot data: " + document.getData());
+                        dataValid.dataValid(true);
+                    } else {
+                        Log.d("DocExist", "No such document");
+                        dataValid.dataValid(false);
+                    }
+                } else {
+                    Log.d("DocExist", "get failed with ", task.getException());
+                }
+            }
+        });
+    }
+
+    public interface Callback {
+        void dataValid(boolean valid);
     }
 
     /**
@@ -381,14 +443,56 @@ public class CameraFragment extends Fragment {
         String currentUser = prefs.getString("currentUser", null);
         String QRCodeId = qrCode.getId();
 
-        QRCodesReference.document(QRCodeId).set(qrCode);
-        QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayUnion(imageUrl));
-
         Map<String, Object> QRCodeRef = new HashMap<>();
         DocumentReference QRCodeDocumentRef = QRCodesReference.document(QRCodeId);
         QRCodeRef.put(QRCodeId, QRCodeDocumentRef);
 
-        usersReference.document(currentUser).collection("User QR Codes").document(QRCodeId).set(QRCodeRef);
+        // Check if qrCode exists in db in QRCodes collection
+        checkDocExists(QRCodeId, QRCodesReference, new Callback() {
+            public void dataValid(boolean valid) {
+                qrExists = valid;
+                System.out.println(valid);
 
+                // Check if reference to qrCode exists in db in Users collection
+                checkDocExists(QRCodeId, usersReference.document(currentUser).collection("User QR Codes"), new Callback() {
+                    public void dataValid(boolean valid) {
+                        qrRefExists = valid;
+                        System.out.println(valid);
+
+                        // If qrCode does not exist, add it to QRCode collection
+                        if (!qrExists){
+                            QRCodesReference.document(QRCodeId).set(qrCode);
+                        }
+                        // Add image to qrCode
+                        QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
+
+                        // If user does not already have this qrCode, add a reference to it
+                        if(!qrRefExists){
+                            System.out.println("HEUHURLSHRPIUSHEPRIHSEPOIHRPOISHEPROIPSOEHRPOISHEPRIHP");
+                            usersReference.document(currentUser).collection("User QR Codes").document(QRCodeId).set(QRCodeRef);
+                        }
+                        // If User does not have this qrCode but it already exists in qrCode collection, increase its total scans
+                        if ((qrExists) && (!qrRefExists)){
+                            QRCodesReference.document(QRCodeId).update("numberOfScans", FieldValue.increment(1));
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Gets the true url of the resized image, since firebase does not do this for some reason. Simply adds "_504x416" inside the url,
+     * which is the dimensions of the resized image.
+     *
+     * @param rawImageUrl the original url of the uploaded image, which does not provide the proper path to the resized image.
+     * @return a string containing the url of the resized image, that will be used later when retrieving it for viewing in the QR view.
+     * @reference Lee Meador - https://stackoverflow.com/a/18521373/14445107 - how to insert a string in the middle of another; used without major modification
+     */
+    private String getResizeImageUrl(String rawImageUrl) {
+        int index = rawImageUrl.indexOf(".jpg");
+        String urlFirstHalf = rawImageUrl.substring(0, index);
+        String urlSecondHalf = rawImageUrl.substring(index);
+        return urlFirstHalf + "_504x416" + urlSecondHalf; //TODO probably shouldn't use a string literal; make a constant or something
     }
 }

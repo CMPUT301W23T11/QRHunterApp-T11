@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -20,6 +21,9 @@ import androidx.fragment.app.DialogFragment;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.AggregateQuery;
+import com.google.firebase.firestore.AggregateQuerySnapshot;
+import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -53,6 +57,7 @@ public class ViewQR extends DialogFragment {
     private String QRCodeHash;
     private String QRCodeId;
     private boolean QRCodeHasNoComments;
+    private TextView commentNumTV;
 
     /**
      * Empty constructor
@@ -102,10 +107,12 @@ public class ViewQR extends DialogFragment {
         View view = LayoutInflater.from(getContext()).inflate(R.layout.qr_view, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
+        commentNumTV = view.findViewById(R.id.commentsNumTv);
         commentET = view.findViewById(R.id.editTextComment);
         ImageView commentIV = view.findViewById(R.id.imageViewSend);
         ListView commentListView = view.findViewById(R.id.commentListView);
         TextView pointsTV = view.findViewById(R.id.pointsTV);
+        TextView scansTV = view.findViewById(R.id.scansTV);
         ImageView eyesImageView = view.findViewById(R.id.imageEyes);
         ImageView colourImageView = view.findViewById(R.id.imageColour);
         ImageView faceImageView = view.findViewById(R.id.imageFace);
@@ -116,6 +123,8 @@ public class ViewQR extends DialogFragment {
 
         String points = "Points: " + qrCode.getPoints();
         pointsTV.setText(points);
+        String scans = "Total Scans: " + qrCode.getNumberOfScans();
+        scansTV.setText(scans);
 
         // Creates the appearance of the qrCode based on the drawable ids stored in its faceList array
         colourImageView.setImageResource((qrCode.getFaceList()).get(2));
@@ -142,9 +151,9 @@ public class ViewQR extends DialogFragment {
                             for (int i = 0; i < comments.size(); i++) {
                                 Map<String, Object> commentMap;
                                 commentMap = comments.get(i).get(0);
-                                String username = (String) commentMap.get("Username");
-                                String displayName = (String) commentMap.get("Display Name");
-                                String commentString = (String) commentMap.get("Comment");
+                                String username = (String) commentMap.get("username");
+                                String displayName = (String) commentMap.get("displayName");
+                                String commentString = (String) commentMap.get("comment");
 
                                 assert commentString != null;
                                 assert displayName != null;
@@ -154,8 +163,31 @@ public class ViewQR extends DialogFragment {
                             }
                             commentAdapter = new CommentAdapter(getContext(), commentList);
                             commentListView.setAdapter(commentAdapter);
+                            CollectionReference query = db.collection("QRCodes").document(qrCode.getHash()).collection("commentList");
+                            AggregateQuery countQuery = query.count();
+                            countQuery.get(AggregateSource.SERVER).addOnCompleteListener(new OnCompleteListener<AggregateQuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AggregateQuerySnapshot> task) {
+                                    if (task.isSuccessful()) {
+                                        // Count fetched successfully
+                                        AggregateQuerySnapshot snapshot = task.getResult();
+                                        String comments = String.valueOf(snapshot.getCount());
+                                        commentNumTV.setText(comments);
+                                        Log.d("Comments", "Count: " + snapshot.getCount());
+                                    } else {
+                                        Log.d("Comments", "Count failed: ", task.getException());
+                                    }
+                                }
+                            });
+
                         }
                     });
+                }else{
+                    commentList = new ArrayList<>();
+                    commentAdapter = new CommentAdapter(getContext(), commentList);
+                    commentListView.setAdapter(commentAdapter);
+                    commentNumTV.setText("0");
+
                 }
             }
         });
@@ -171,21 +203,27 @@ public class ViewQR extends DialogFragment {
                     String currentUserDisplayName = prefs.getString("currentUserDisplayName", null);
                     String currentUser = prefs.getString("currentUser", null);
                     Comment c = new Comment(commentString, currentUserDisplayName, currentUser);
+                    Integer commentNum = 0;
 
                     commentAdapter.setCommentList(c);
                     commentAdapter.notifyDataSetChanged();
                     commentET.getText().clear();
 
                     Map<String, String> comment = new HashMap<>();
-                    comment.put("Username", currentUser);
-                    comment.put("Display Name", currentUserDisplayName);
-                    comment.put("Comment", commentString);
+                    comment.put("username", currentUser);
+                    comment.put("displayName", currentUserDisplayName);
+                    comment.put("comment", commentString);
 
                     Map<String, CollectionReference> QRCodeRef = new HashMap<>();
                     CollectionReference QRCodeCollectionRef = QRCodesReference.document(QRCodeId).collection("commentList");
                     QRCodeRef.put(QRCodeId, QRCodeCollectionRef);
 
                     QRCodesReference.document(QRCodeId).collection("commentList").add(comment);
+                    commentNum = Integer.parseInt(commentNumTV.getText().toString());
+                    commentNum ++;
+                    commentNumTV.setText(commentNum.toString());
+
+
                 }
             }
         });

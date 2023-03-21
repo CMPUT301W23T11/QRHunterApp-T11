@@ -1,64 +1,184 @@
 package com.example.qrhunterapp_t11;
 
+import android.app.SearchManager;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.database.MatrixCursor;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
+import android.provider.BaseColumns;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SearchView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnCanceledListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.Arrays;
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link SearchFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Handles search and leaderboard screen.
+ * Leaderboard displays ranked list of players, clicking on a player shows their profile
+ * Search allows the user to search for other users to view their profiles
+ *
+ * @author Afra, Kristina
  */
 public class SearchFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private String tag = "searchFragment";
+    private final FirebaseFirestore db;
+    private final CollectionReference usersReference;
+    private final CollectionReference QRCodeReference;
+    private LeaderboardProfileAdapter leaderboardAdapter;
+    private RecyclerView leaderboardRecyclerView;
+    private FirestoreRecyclerOptions<User> leaderboardOptions;
+    private SharedPreferences prefs;
+    private SearchView searchView;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    public SearchFragment(@NonNull FirebaseFirestore db) {
+        this.db = db;
+        this.usersReference = db.collection("Users");
+        this.QRCodeReference = db.collection("QRCodes");
+    }
 
-    public SearchFragment() {
-        // Required empty public constructor
+    @NonNull
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_search, container, false);
+        searchView = view.findViewById(R.id.search_id);
+
+        // gets the searchView to be clickable on the whole bar
+        searchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                searchView.setIconified(false);
+            }
+        });
+
+        //finds the user with the specific inputted displayName
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                String pattern = query.toLowerCase().trim();
+               Query getUser = usersReference.whereEqualTo("displayName", pattern);
+                getUser.get()
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()){
+
+                                // checks if a user is found
+                                if (task.getResult().size() > 0) {
+                                    DocumentSnapshot doc = task.getResult().getDocuments().get(0);
+
+                                    // opens the users profile
+                                    User user = doc.toObject(User.class);
+                                    FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+                                    trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
+                                    trans.commit();
+
+                                    } else { // if the user is not found
+                                        Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
+                                        Log.d(tag, "Document NOT found");
+                                    }
+                                }
+                            else {
+                                Log.d(tag, "task not successful: ", task.getException());
+                            }
+                        });
+
+                // fixes bug where onQueryTextSubmit is fired twice
+                searchView.clearFocus();
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
+        // Set Firestore RecyclerView query and begin monitoring that query
+        leaderboardProfileQuery(new LeaderboardCallback() {
+            public void completedQueryCheck(boolean queryComplete) {
+
+                if (queryComplete) {
+                    leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
+
+                    prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+                    leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, prefs);
+
+                    //super.onStart(); man idk
+                    leaderboardAdapter.startListening();
+                    leaderboardRecyclerView.setAdapter(leaderboardAdapter);
+
+                    TextView yourRanking = view.findViewById(R.id.your_ranking_textview);
+                    yourRanking.setText(prefs.getString("currentUserRanking", null));
+
+                    leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+                    // Handles clicking on a user to view their profile
+                    leaderboardAdapter.setOnItemClickListener(new OnItemClickListener() {
+                        @Override
+                        public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
+
+                            User user = documentSnapshot.toObject(User.class);
+                            FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+                            trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
+                            trans.commit();
+                        }
+                    });
+                }
+            }
+        });
+
+        return view;
     }
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
+     * Set query for Firestore RecyclerView
+     * Query gets a sorted list of users based on total points
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment SearchFragment.
+     * @param completedQueryCheck Callback for query
      */
-    // TODO: Rename and change types and number of parameters
-    public static SearchFragment newInstance(String param1, String param2) {
-        SearchFragment fragment = new SearchFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
+    public void leaderboardProfileQuery(final @NonNull LeaderboardCallback completedQueryCheck) {
+
+        Query leaderboardQuery = usersReference.orderBy("totalPoints", Query.Direction.DESCENDING);
+        leaderboardQuery
+                .get()
+                .addOnSuccessListener(documentReferenceSnapshots -> {
+                    leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
+                            .setQuery(leaderboardQuery, User.class)
+                            .build();
+                    completedQueryCheck.completedQueryCheck(true);
+                });
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_search, container, false);
+    /**
+     * Callback for querying the database to get ordered users
+     *
+     * @author Afra
+     */
+    public interface LeaderboardCallback {
+        void completedQueryCheck(boolean queryComplete);
     }
 }
