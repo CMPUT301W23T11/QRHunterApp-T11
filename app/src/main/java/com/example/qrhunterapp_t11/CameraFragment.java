@@ -1,5 +1,6 @@
 package com.example.qrhunterapp_t11;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -273,7 +274,7 @@ public class CameraFragment extends Fragment {
     private void getCurrentLocation() {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
         if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
@@ -306,20 +307,18 @@ public class CameraFragment extends Fragment {
      * Initiates the location permission check and logs if permission is already granted
      */
     private void permissions() {
-        boolean isFineLocationGranted = ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-        boolean isCoarseLocationGranted = ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        boolean isFineLocationGranted = ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        boolean isCoarseLocationGranted = ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
 
         if (isFineLocationGranted) {
-            Log.d(locationPrompt, "PERMISSION ALREADY GAVE.");
-            mIsPreciseLocationEnabled = true;
+            Log.d(locationPrompt, "PERMISSION ALREADY GAVE F.");
             getCurrentLocation();
         } else if (isCoarseLocationGranted) {
-            Log.d(locationPrompt, "PERMISSION ALREADY GAVE.");
-            mIsPreciseLocationEnabled = false;
+            Log.d(locationPrompt, "PERMISSION ALREADY GAVE C.");
             getCurrentLocation();
         } else {
             Log.d(locationPrompt, "ASKING FOR PERMISSION.");
-            requestPermissions(new String[] {android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, permissionsRequestLocation);
+            requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, permissionsRequestLocation);
         }
     }
 
@@ -332,19 +331,17 @@ public class CameraFragment extends Fragment {
      * @param grantResults The results of the permission request.
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case permissionsRequestLocation:
                 boolean isFineLocationGranted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
                 boolean isCoarseLocationGranted = grantResults.length > 1 && grantResults[1] == PackageManager.PERMISSION_GRANTED;
 
                 if (isFineLocationGranted) {
-                    Log.d(locationPrompt, "Execute if permission granted.");
-                    mIsPreciseLocationEnabled = true;
+                    Log.d(locationPrompt, "Execute if permission granted f.");
                     getCurrentLocation();
                 } else if (isCoarseLocationGranted) {
-                    Log.d(locationPrompt, "Execute if permission granted.");
-                    mIsPreciseLocationEnabled = false;
+                    Log.d(locationPrompt, "Execute if permission granted c.");
                     getCurrentLocation();
                 } else {
                     // Permission is not granted
