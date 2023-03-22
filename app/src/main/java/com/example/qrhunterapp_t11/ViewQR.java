@@ -121,10 +121,13 @@ public class ViewQR extends DialogFragment {
         ImageView eyebrowsImageView = view.findViewById(R.id.imageEyebrows);
         ImageView photoImageView = view.findViewById(R.id.imagePhoto);
 
+
+
         String points = "Points: " + qrCode.getPoints();
         pointsTV.setText(points);
         String scans = "Total Scans: " + qrCode.getNumberOfScans();
         scansTV.setText(scans);
+
 
         // Creates the appearance of the qrCode based on the drawable ids stored in its faceList array
         colourImageView.setImageResource((qrCode.getFaceList()).get(2));
