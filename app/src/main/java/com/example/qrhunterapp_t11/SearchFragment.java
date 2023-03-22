@@ -10,6 +10,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnCanceledListener;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -34,7 +37,9 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Handles search and leaderboard screen.
@@ -53,7 +58,7 @@ public class SearchFragment extends Fragment {
     private RecyclerView leaderboardRecyclerView;
     private FirestoreRecyclerOptions<User> leaderboardOptions;
     private SharedPreferences prefs;
-    private SearchView searchView;
+    private AutoCompleteTextView autoCompleteTextView;
 
     public SearchFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
@@ -66,10 +71,26 @@ public class SearchFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
-        searchView = view.findViewById(R.id.search_id);
+        autoCompleteTextView = view.findViewById(R.id.search_id);
 
+        ArrayList<String> displayNameList = new ArrayList<String>();
+        usersReference.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        for (DocumentSnapshot doc : queryDocumentSnapshots){
+                            if (doc.exists()) {
+                                User user = doc.toObject(User.class);
+                                displayNameList.add(Objects.requireNonNull(user).getDisplayName());}
+                        }
+                    }
+                });
+        ArrayAdapter adapter = new ArrayAdapter(getContext(), android.R.layout.simple_list_item_1, displayNameList);
+        autoCompleteTextView.setAdapter(adapter);
+        autoCompleteTextView.setThreshold(1);
+        autoCompleteTextView.setAdapter(adapter);
         // gets the searchView to be clickable on the whole bar
-        searchView.setOnClickListener(new View.OnClickListener() {
+        /*searchView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 searchView.setIconified(false);
@@ -115,7 +136,7 @@ public class SearchFragment extends Fragment {
             public boolean onQueryTextChange(String newText) {
                 return false;
             }
-        });
+        });*/
 
         // Set Firestore RecyclerView query and begin monitoring that query
         leaderboardProfileQuery(new LeaderboardCallback() {
