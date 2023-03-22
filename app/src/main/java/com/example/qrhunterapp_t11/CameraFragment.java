@@ -469,7 +469,7 @@ public class CameraFragment extends Fragment {
                             usersReference.document(currentUser).update("totalScans", FieldValue.increment(1));
                             usersReference.document(currentUser).update("totalPoints", FieldValue.increment(qrCode.getPoints()));
                         }
-                        // If User does not have this qrCode but it already exists in qrCode collection, increase its total scans
+                        // If user does not have this qrCode but it already exists in qrCode collection, increase its total scans
                         if ((qrExists) && (!qrRefExists)){
                             QRCodesReference.document(QRCodeId).update("numberOfScans", FieldValue.increment(1));
                         }

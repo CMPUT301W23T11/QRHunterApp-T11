@@ -127,7 +127,7 @@ public class ProfileFragment extends Fragment {
 
                             // Gets the largest QR from the user
                             topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", userData.get(userData.size() - 1)));
-                            usersReference.document(username).update("topQRCode", userData.get(userData.size() - 1));
+                            usersReference.document(username).update("topQRCode", Integer.parseInt(userData.get(userData.size() - 1)));
 
                             // Gets the smallest QR from the user
                             lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", userData.get(0)));
