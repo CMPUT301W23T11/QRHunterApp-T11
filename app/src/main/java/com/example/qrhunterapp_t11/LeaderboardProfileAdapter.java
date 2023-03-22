@@ -41,11 +41,11 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
                 holder.totalPoints.setText(totalPoints);
                 break;
             case "Most Scans":
-                String totalScans = "Scans: " + model.getTotalPoints();
+                String totalScans = "Scans: " + model.getTotalScans();
                 holder.totalScans.setText(totalScans);
                 break;
             case "Top QR Code":
-                String topQRCode = "Top QR Code: " + model.getTotalPoints();
+                String topQRCode = "Top QR Code: " + model.getTopQRCode();
                 holder.topQRCode.setText(topQRCode);
                 break;
             case "Top QR Code (Regional)":
