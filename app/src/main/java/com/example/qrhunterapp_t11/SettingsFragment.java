@@ -85,18 +85,19 @@ public class SettingsFragment extends Fragment {
                                         public void onClick(DialogInterface dialogInterface, int i) {
                                             String user = prefs.getString("currentUser", null);
                                             String oldUsername = prefs.getString("currentUserDisplayName", null);
+
+                                            usersReference.document(user).update("displayName", usernameString);
+                                            usersReference.document(user).update("email", emailString);
+
+                                            prefs.edit().putString("currentUserDisplayName", usernameString).commit();
+                                            prefs.edit().putString("currentUserEmail", emailString).commit();
+
                                             // Update username in all user's previous comments
                                             updateUserComments(user, oldUsername, usernameString, new SettingsCallback() {
                                                 public void valid(boolean valid) {
                                                     assert (valid);
-                                                    usersReference.document(user).update("displayName", usernameString);
-                                                    usersReference.document(user).update("email", emailString);
-
-                                                    prefs.edit().putString("currentUserDisplayName", usernameString).commit();
-                                                    prefs.edit().putString("currentUserEmail", emailString).commit();
                                                 }
                                             });
-
                                         }
                                     })
                                     .create();
@@ -167,7 +168,7 @@ public class SettingsFragment extends Fragment {
                 .addOnSuccessListener(documentReferenceSnapshots -> {
                     for (QueryDocumentSnapshot snapshot : documentReferenceSnapshots) {
 
-                        DocumentReference documentReference = snapshot.getDocumentReference(snapshot.getId());
+                        DocumentReference documentReference = (DocumentReference) snapshot.get("Reference");
                         userCommentedListRef.add(documentReference);
                     }
                     if (!userCommentedListRef.isEmpty()) {
