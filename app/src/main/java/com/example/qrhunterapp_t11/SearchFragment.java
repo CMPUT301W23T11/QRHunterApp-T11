@@ -118,7 +118,7 @@ public class SearchFragment extends Fragment {
         });
 
         // Set Firestore RecyclerView query and begin monitoring that query
-        leaderboardProfileQuery(new LeaderboardCallback() {
+        topScoresQuery(new LeaderboardCallback() {
             public void completedQueryCheck(boolean queryComplete) {
 
                 if (queryComplete) {
@@ -160,14 +160,71 @@ public class SearchFragment extends Fragment {
      *
      * @param completedQueryCheck Callback for query
      */
-    public void leaderboardProfileQuery(final @NonNull LeaderboardCallback completedQueryCheck) {
+    public void topScoresQuery(final @NonNull LeaderboardCallback completedQueryCheck) {
 
-        Query leaderboardQuery = usersReference.orderBy("totalPoints", Query.Direction.DESCENDING);
-        leaderboardQuery
+        Query query = usersReference.orderBy("totalPoints", Query.Direction.DESCENDING);
+        query
                 .get()
                 .addOnSuccessListener(documentReferenceSnapshots -> {
                     leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
-                            .setQuery(leaderboardQuery, User.class)
+                            .setQuery(query, User.class)
+                            .build();
+                    completedQueryCheck.completedQueryCheck(true);
+                });
+    }
+
+    /**
+     * Set query for Firestore RecyclerView
+     * Query gets a sorted list of users based on total scans
+     *
+     * @param completedQueryCheck Callback for query
+     */
+    public void topScansQuery(final @NonNull LeaderboardCallback completedQueryCheck) {
+
+        Query query = usersReference.orderBy("totalPoints", Query.Direction.DESCENDING);
+        query
+                .get()
+                .addOnSuccessListener(documentReferenceSnapshots -> {
+                    leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
+                            .setQuery(query, User.class)
+                            .build();
+                    completedQueryCheck.completedQueryCheck(true);
+                });
+    }
+
+    /**
+     * Set query for Firestore RecyclerView
+     * Query gets a sorted list of users based on their top scoring QR code
+     *
+     * @param completedQueryCheck Callback for query
+     */
+    public void topScoringCodesQuery(final @NonNull LeaderboardCallback completedQueryCheck) {
+
+        Query query = usersReference.orderBy("totalPoints", Query.Direction.DESCENDING);
+        query
+                .get()
+                .addOnSuccessListener(documentReferenceSnapshots -> {
+                    leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
+                            .setQuery(query, User.class)
+                            .build();
+                    completedQueryCheck.completedQueryCheck(true);
+                });
+    }
+
+    /**
+     * Set query for Firestore RecyclerView
+     * Query gets a sorted list of users based on their top scoring QR code in a region
+     *
+     * @param completedQueryCheck Callback for query
+     */
+    public void topScoringCodesInRegionQuery(final @NonNull LeaderboardCallback completedQueryCheck) {
+
+        Query query = usersReference.orderBy("totalPoints", Query.Direction.DESCENDING);
+        query
+                .get()
+                .addOnSuccessListener(documentReferenceSnapshots -> {
+                    leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
+                            .setQuery(query, User.class)
                             .build();
                     completedQueryCheck.completedQueryCheck(true);
                 });

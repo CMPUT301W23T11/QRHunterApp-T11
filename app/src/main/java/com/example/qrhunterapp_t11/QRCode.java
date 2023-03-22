@@ -76,7 +76,7 @@ public class QRCode {
      */
     public void setId(@NonNull Double longitude, @NonNull Double latitude) {
         String strLong = Double.toString(longitude);
-        String strLat = Double.toString(longitude);
+        String strLat = Double.toString(latitude);
         this.id = this.hash + strLong + strLat;
     }
 
