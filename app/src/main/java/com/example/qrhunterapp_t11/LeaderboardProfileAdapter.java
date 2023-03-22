@@ -48,7 +48,7 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
     @Override
     public RecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup group, int i) {
         View view = LayoutInflater.from(group.getContext())
-                .inflate(R.layout.individual_profile, group, false);
+                .inflate(R.layout.individual_profile_top_points, group, false);
 
         return new RecyclerViewHolder(view);
     }

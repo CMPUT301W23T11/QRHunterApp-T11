@@ -161,8 +161,8 @@ public class ProfileFragment extends Fragment {
                                 public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
 
                                     QRCode qrCode = documentSnapshot.toObject(QRCode.class);
+                                    assert qrCode != null;
                                     new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
-                                    //adapter.notifyDataSetChanged();
                                 }
                             });
 
@@ -173,7 +173,7 @@ public class ProfileFragment extends Fragment {
 
                                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
-                                    String documentId = documentSnapshot.getId();
+                                    String QRCodeID = documentSnapshot.getId();
 
                                     builder
                                             .setTitle("Delete QR Code?")
@@ -181,7 +181,7 @@ public class ProfileFragment extends Fragment {
                                             .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                                                 @Override
                                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                                    usersReference.document(username).collection("User QR Codes").document(documentId)
+                                                    usersReference.document(username).collection("User QR Codes").document(QRCodeID)
                                                             .get()
                                                             .addOnSuccessListener(userQRSnapshot -> {
                                                                 DocumentReference documentReference = (DocumentReference) userQRSnapshot.get("Reference");
@@ -189,12 +189,13 @@ public class ProfileFragment extends Fragment {
                                                                 documentReference
                                                                         .get()
                                                                         .addOnSuccessListener(QRSnapshot -> {
-                                                                            long points = (long) QRSnapshot.get("points");
+                                                                            long points = QRSnapshot.getLong("points");
                                                                             points = -points;
                                                                             // Delete code from user's collection
-                                                                            usersReference.document(username).collection("User QR Codes").document(documentId).delete();
+                                                                            usersReference.document(username).collection("User QR Codes").document(QRCodeID).delete();
                                                                             // Subtract point value of that code from user's total points
                                                                             usersReference.document(username).update("totalPoints", FieldValue.increment(points));
+
                                                                         });
                                                             });
                                                 }
