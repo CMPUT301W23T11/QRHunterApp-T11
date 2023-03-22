@@ -187,6 +187,8 @@ public class ProfileFragment extends Fragment {
                             });
                         }
                     });
+                } else {
+                    usersReference.document(username).update("topQRCode", 0);
                 }
             }
         });
