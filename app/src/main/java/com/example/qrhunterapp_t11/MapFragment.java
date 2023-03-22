@@ -126,6 +126,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mMap != null) {
+            isServicesOK();
+            isLocationEnabled();
+        }
+    }
+
     private void searchLocation(String location) {
         Geocoder geocoder = new Geocoder(getContext());
         try {
@@ -150,16 +159,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (!isGPSEnabled) {
-            buildAlertMessageNoGps();
-        }
-        if (isServicesOK() && isLocationEnabled()) {
-            mLocationPermissionGranted = true;
-            SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map);
-            if (mapFragment == null) {
-                mapFragment = SupportMapFragment.newInstance();
-                getChildFragmentManager().beginTransaction().replace(R.id.google_map, mapFragment).commit();
+            // Request the user to enable GPS
+            Intent gpsOptionsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(gpsOptionsIntent);
+        } else {
+            // GPS is enabled, check for location permissions
+            if (isServicesOK() && isLocationEnabled()) {
+                mLocationPermissionGranted = true;
+                SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map);
+                if (mapFragment == null) {
+                    mapFragment = SupportMapFragment.newInstance();
+                    getChildFragmentManager().beginTransaction().replace(R.id.google_map, mapFragment).commit();
+                }
+                mapFragment.getMapAsync(this);
             }
-            mapFragment.getMapAsync(this);
         }
     }
 
