@@ -462,10 +462,11 @@ public class CameraFragment extends Fragment {
                         // Add image to qrCode
                         QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
 
-                        // If user does not already have this qrCode, add a reference to it
+                        // If user does not already have this qrCode, add a reference to it, increment their total scans
                         if(!qrRefExists){
                             System.out.println("HEUHURLSHRPIUSHEPRIHSEPOIHRPOISHEPROIPSOEHRPOISHEPRIHP");
                             usersReference.document(currentUser).collection("User QR Codes").document(QRCodeId).set(QRCodeRef);
+                            usersReference.document(currentUser).update("totalScans", FieldValue.increment(1));
                         }
                         // If User does not have this qrCode but it already exists in qrCode collection, increase its total scans
                         if ((qrExists) && (!qrRefExists)){

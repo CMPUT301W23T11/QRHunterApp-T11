@@ -137,6 +137,7 @@ public class ProfileFragment extends Fragment {
                             }
                             assert maxQR != null;
                             topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", maxQR.getValue()));
+                            usersReference.document(username).update("topQRCode", maxQR.getValue());
 
 
                             // gets the smallest QR from the user

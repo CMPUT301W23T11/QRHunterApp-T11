@@ -81,10 +81,10 @@ public class SearchFragment extends Fragment {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 String pattern = query.toLowerCase().trim();
-               Query getUser = usersReference.whereEqualTo("displayName", pattern);
+                Query getUser = usersReference.whereEqualTo("displayName", pattern);
                 getUser.get()
                         .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()){
+                            if (task.isSuccessful()) {
 
                                 // checks if a user is found
                                 if (task.getResult().size() > 0) {
@@ -96,12 +96,11 @@ public class SearchFragment extends Fragment {
                                     trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
                                     trans.commit();
 
-                                    } else { // if the user is not found
-                                        Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
-                                        Log.d(tag, "Document NOT found");
-                                    }
+                                } else { // if the user is not found
+                                    Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
+                                    Log.d(tag, "Document NOT found");
                                 }
-                            else {
+                            } else {
                                 Log.d(tag, "task not successful: ", task.getException());
                             }
                         });
@@ -118,6 +117,7 @@ public class SearchFragment extends Fragment {
         });
 
         // Set Firestore RecyclerView query and begin monitoring that query
+        String leaderboardSpinnerChoice = leaderboardFilter.getSelectedItem().toString();
         topScoresQuery(new LeaderboardCallback() {
             public void completedQueryCheck(boolean queryComplete) {
 
@@ -125,7 +125,7 @@ public class SearchFragment extends Fragment {
                     leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
 
                     prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
-                    leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, prefs);
+                    leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, leaderboardSpinnerChoice, prefs);
 
                     //super.onStart(); man idk
                     leaderboardAdapter.startListening();
@@ -217,7 +217,8 @@ public class SearchFragment extends Fragment {
      *
      * @param completedQueryCheck Callback for query
      */
-    public void topScoringCodesInRegionQuery(final @NonNull LeaderboardCallback completedQueryCheck) {
+    public void topScoringCodesInRegionQuery(
+            final @NonNull LeaderboardCallback completedQueryCheck) {
 
         Query query = usersReference.orderBy("totalPoints", Query.Direction.DESCENDING);
         query

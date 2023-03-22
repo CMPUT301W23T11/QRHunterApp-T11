@@ -12,15 +12,19 @@ public class User {
     private String displayName;
     private String username;
     private int totalPoints;
+    private int totalScans;
+    private int topQRCode;
     private String email;
 
     public User() {
     }
 
-    public User(@NonNull String displayName, @NonNull String username, int totalPoints, @NonNull String email) {
+    public User(@NonNull String displayName, @NonNull String username, int totalPoints, int totalScans, int topQRCode, @NonNull String email) {
         this.displayName = displayName;
         this.username = username;
         this.totalPoints = totalPoints;
+        this.totalScans = totalScans;
+        this.topQRCode = topQRCode;
         this.email = email;
     }
 
@@ -48,6 +52,22 @@ public class User {
 
     public void setTotalPoints(int totalPoints) {
         this.totalPoints = totalPoints;
+    }
+
+    public int getTotalScans(int totalScans) {
+        return totalScans;
+    }
+
+    public void setTotalScans(int totalScans) {
+        this.totalScans = totalScans;
+    }
+
+    public int getTopQRCode(int topQRCode) {
+        return topQRCode;
+    }
+
+    public void setTopQRCode(int topQRCode) {
+        this.topQRCode = topQRCode;
     }
 
     @NonNull

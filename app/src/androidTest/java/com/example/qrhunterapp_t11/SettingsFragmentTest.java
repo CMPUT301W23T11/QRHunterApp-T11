@@ -76,7 +76,7 @@ public class SettingsFragmentTest {
         rule.launchActivity(intent);
         Activity activity = rule.getActivity();
 
-        User user = new User(testUsername, testUsername, 0, "No email");
+        User user = new User(testUsername, testUsername, 0, 0, 0, "No email");
 
         usersReference.document(testUsername).set(user);
 
@@ -153,7 +153,7 @@ public class SettingsFragmentTest {
      */
     public void addTestUserToDB(String username) {
 
-        User user = new User(username, username, 0, "No email");
+        User user = new User(username, username, 0, 0, 0, "No email");
 
         usersReference.document(username).set(user);
 
