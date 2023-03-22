@@ -54,7 +54,7 @@ public class User {
         this.totalPoints = totalPoints;
     }
 
-    public int getTotalScans(int totalScans) {
+    public int getTotalScans() {
         return totalScans;
     }
 
@@ -62,7 +62,7 @@ public class User {
         this.totalScans = totalScans;
     }
 
-    public int getTopQRCode(int topQRCode) {
+    public int getTopQRCode() {
         return topQRCode;
     }
 
