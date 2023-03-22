@@ -1,16 +1,15 @@
 package com.example.qrhunterapp_t11;
 
-import android.app.SearchManager;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.MatrixCursor;
 import android.os.Bundle;
-import android.provider.BaseColumns;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.SearchView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,20 +20,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.tasks.OnCanceledListener;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
-
-import java.util.Arrays;
 
 /**
  * Handles search and leaderboard screen.
@@ -42,10 +33,11 @@ import java.util.Arrays;
  * Search allows the user to search for other users to view their profiles
  *
  * @author Afra, Kristina
+ * @reference <a href="https://stackoverflow.com/a/5241720">For setting spinner</a>
  */
 public class SearchFragment extends Fragment {
 
-    private String tag = "searchFragment";
+    private final String tag = "searchFragment";
     private final FirebaseFirestore db;
     private final CollectionReference usersReference;
     private final CollectionReference QRCodeReference;
@@ -66,6 +58,14 @@ public class SearchFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
+
+        // Set leaderboard options spinner
+        String[] leaderboardFilterChoices = new String[]{"Most Points", "Most Scans", "Top QR Code", "Top QR Code (Regional)"};
+        Spinner leaderboardFilter = view.findViewById(R.id.leaderboard_filter_spinner);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_spinner_item, leaderboardFilterChoices);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        leaderboardFilter.setAdapter(adapter);
+
         searchView = view.findViewById(R.id.search_id);
 
         // gets the searchView to be clickable on the whole bar
@@ -81,10 +81,10 @@ public class SearchFragment extends Fragment {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 String pattern = query.toLowerCase().trim();
-               Query getUser = usersReference.whereEqualTo("displayName", pattern);
+                Query getUser = usersReference.whereEqualTo("displayName", pattern);
                 getUser.get()
                         .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()){
+                            if (task.isSuccessful()) {
 
                                 // checks if a user is found
                                 if (task.getResult().size() > 0) {
@@ -96,12 +96,11 @@ public class SearchFragment extends Fragment {
                                     trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
                                     trans.commit();
 
-                                    } else { // if the user is not found
-                                        Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
-                                        Log.d(tag, "Document NOT found");
-                                    }
+                                } else { // if the user is not found
+                                    Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
+                                    Log.d(tag, "Document NOT found");
                                 }
-                            else {
+                            } else {
                                 Log.d(tag, "task not successful: ", task.getException());
                             }
                         });
@@ -118,6 +117,7 @@ public class SearchFragment extends Fragment {
         });
 
         // Set Firestore RecyclerView query and begin monitoring that query
+        String leaderboardSpinnerChoice = leaderboardFilter.getSelectedItem().toString();
         topScoresQuery(new LeaderboardCallback() {
             public void completedQueryCheck(boolean queryComplete) {
 
@@ -125,7 +125,7 @@ public class SearchFragment extends Fragment {
                     leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
 
                     prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
-                    leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, prefs);
+                    leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, leaderboardSpinnerChoice, prefs);
 
                     //super.onStart(); man idk
                     leaderboardAdapter.startListening();
@@ -217,7 +217,8 @@ public class SearchFragment extends Fragment {
      *
      * @param completedQueryCheck Callback for query
      */
-    public void topScoringCodesInRegionQuery(final @NonNull LeaderboardCallback completedQueryCheck) {
+    public void topScoringCodesInRegionQuery(
+            final @NonNull LeaderboardCallback completedQueryCheck) {
 
         Query query = usersReference.orderBy("totalPoints", Query.Direction.DESCENDING);
         query

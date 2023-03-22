@@ -21,9 +21,11 @@ import io.reactivex.rxjava3.annotations.NonNull;
 public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, LeaderboardProfileAdapter.RecyclerViewHolder> {
     private OnItemClickListener listener;
     private final SharedPreferences prefs;
+    private final String viewMode;
 
-    public LeaderboardProfileAdapter(@NonNull FirestoreRecyclerOptions<User> options, @NonNull SharedPreferences prefs) {
+    public LeaderboardProfileAdapter(@NonNull FirestoreRecyclerOptions<User> options, @NonNull String viewMode, @NonNull SharedPreferences prefs) {
         super(options);
+        this.viewMode = viewMode;
         this.prefs = prefs;
     }
 
@@ -31,11 +33,24 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
     protected void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position, @NonNull User model) {
         // Bind the QRCode object to the RecyclerViewHolder
         holder.username.setText(model.getDisplayName());
-
-        String totalPoints = "Points: " + model.getTotalPoints();
-        holder.totalPoints.setText(totalPoints);
-
         holder.ranking.setText(String.valueOf(position + 1));
+
+        switch (viewMode) {
+            case "Most Points":
+                String totalPoints = "Points: " + model.getTotalPoints();
+                holder.totalPoints.setText(totalPoints);
+                break;
+            case "Most Scans":
+                String totalScans = "Scans: " + model.getTotalPoints();
+                holder.totalScans.setText(totalScans);
+                break;
+            case "Top QR Code":
+                String topQRCode = "Top QR Code: " + model.getTotalPoints();
+                holder.topQRCode.setText(topQRCode);
+                break;
+            case "Top QR Code (Regional)":
+                break;
+        }
 
         if (model.getDisplayName().equals(prefs.getString("currentUser", null))) {
             String rankingText = "Your Ranking: " + (position + 1);
@@ -46,9 +61,22 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
 
     @androidx.annotation.NonNull
     @Override
-    public RecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup group, int i) {
-        View view = LayoutInflater.from(group.getContext())
-                .inflate(R.layout.individual_profile, group, false);
+    public RecyclerViewHolder onCreateViewHolder(@androidx.annotation.NonNull ViewGroup group, int i) {
+        View view = null;
+        switch (viewMode) {
+            case "Most Points":
+                view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_top_points, group, false);
+                break;
+            case "Most Scans":
+                view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_top_scans, group, false);
+                break;
+            case "Top QR Code":
+                view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_top_code, group, false);
+                break;
+            case "Top QR Code (Regional)":
+                view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_top_code, group, false);
+                break;
+        }
 
         return new RecyclerViewHolder(view);
     }
@@ -68,14 +96,30 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
     public class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
         private final TextView username;
-        private final TextView totalPoints;
         private final TextView ranking;
+        private TextView totalPoints;
+        private TextView totalScans;
+        private TextView topQRCode;
 
         public RecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
+
             username = itemView.findViewById(R.id.profile_name_textview);
-            totalPoints = itemView.findViewById(R.id.profile_points_search);
             ranking = itemView.findViewById(R.id.ranking_textview);
+
+            switch (viewMode) {
+                case "Most Points":
+                    totalPoints = itemView.findViewById(R.id.profile_points_search);
+                    break;
+                case "Most Scans":
+                    totalScans = itemView.findViewById(R.id.profile_scans_search);
+                    break;
+                case "Top QR Code":
+                    topQRCode = itemView.findViewById(R.id.profile_top_qr_code_search);
+                    break;
+                case "Top QR Code (Regional)":
+                    break;
+            }
 
             // This click listener responds to clicks done on an item in the recyclerview
             itemView.setOnClickListener(new View.OnClickListener() {
