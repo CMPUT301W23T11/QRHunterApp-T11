@@ -3,7 +3,6 @@ package com.example.qrhunterapp_t11;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,18 +21,15 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import org.checkerframework.checker.units.qual.min;
-
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
@@ -56,6 +52,7 @@ public class ProfileFragment extends Fragment {
     private boolean userHasNoCodes;
     private final String displayName;
     private final String username;
+    FirebaseFirestore db;
 
     /**
      * Constructor for profile fragment.
@@ -64,6 +61,7 @@ public class ProfileFragment extends Fragment {
      * @param db Firestore database instance
      */
     public ProfileFragment(@NonNull FirebaseFirestore db, @NonNull String displayName, @NonNull String username) {
+        this.db = db;
         this.usersReference = db.collection("Users");
         this.QRCodeReference = db.collection("QRCodes");
         this.displayName = displayName;
@@ -104,10 +102,8 @@ public class ProfileFragment extends Fragment {
                 if (!userHasNoCodes) {
 
                     // Retrieve all QR Codes the user has and calculate scores
-                    queryQRCodes(username, new ProfileQRCodeCallback() {
-                        public void getReferencedQRCodes(@NonNull Map<String, String> referencedQRCodes) {
-
-                            CollectionReference QRColl = usersReference.document(username).collection("User QR Codes");
+                    queryQRCodes(username, new ProfileUserDataCallback() {
+                        public void getUserData(@NonNull ArrayList<String> userData) {
 
                             QRCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
 
@@ -123,39 +119,21 @@ public class ProfileFragment extends Fragment {
 
                             // gets the total score of the user
                             int total = 0;
-                            for (String qr: referencedQRCodes.values()) {
+                            for (String qr : userData) {
                                 total += Integer.parseInt(qr);
                             }
-                            // updates the users total score in the database
-                            usersReference.document(username).update("totalPoints", total);
-                            totalScoreText.setText(MessageFormat.format("Total score: {0}", (int) total));
+                            // Updates the users total score in the database
+                            totalScoreText.setText(MessageFormat.format("Total score: {0}", total));
 
+                            // Gets the largest QR from the user
+                            topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", userData.get(userData.size() - 1)));
+                            usersReference.document(username).update("topQRCode", Integer.parseInt(userData.get(userData.size() - 1)));
 
-                            // gets the largest QR from the user
-                            Map.Entry<String, String> maxQR = null;
-                            for (Map.Entry<String, String> val : referencedQRCodes.entrySet()) {
-                                if (maxQR == null || val.getValue().compareTo(maxQR.getValue()) > 0){
-                                    maxQR = val;
-                                }
-                            }
-                            assert maxQR != null;
-                            topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", maxQR.getValue()));
-
-
-                            // gets the smallest QR from the user
-                            Map.Entry<String, String> minQR = null;
-                            for (Map.Entry<String, String> val : referencedQRCodes.entrySet()) {
-                                if (minQR == null || val.getValue().compareTo(minQR.getValue()) < 0){
-                                    minQR = val;
-                                }
-                            }
-                            assert minQR != null;
-                            lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", minQR.getValue()));
-
+                            // Gets the smallest QR from the user
+                            lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", userData.get(0)));
 
                             // Gets the size of the amount of QR codes the user has
-                            int size = referencedQRCodes.size();
-                            totalQRCodesText.setText(MessageFormat.format("Total number of QR codes: {0}", size));
+                            totalQRCodesText.setText(MessageFormat.format("Number of QR Codes: {0}", userData.size()));
 
 
                             // Handles clicking on an item to view the QR Code
@@ -164,8 +142,8 @@ public class ProfileFragment extends Fragment {
                                 public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
 
                                     QRCode qrCode = documentSnapshot.toObject(QRCode.class);
+                                    assert qrCode != null;
                                     new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
-                                    //adapter.notifyDataSetChanged();
                                 }
                             });
 
@@ -176,7 +154,7 @@ public class ProfileFragment extends Fragment {
 
                                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
-                                    String documentId = documentSnapshot.getId();
+                                    String QRCodeID = documentSnapshot.getId();
 
                                     builder
                                             .setTitle("Delete QR Code?")
@@ -184,16 +162,33 @@ public class ProfileFragment extends Fragment {
                                             .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                                                 @Override
                                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                                    usersReference.document(username).collection("User QR Codes").document(documentId).delete();
+                                                    usersReference.document(username).collection("User QR Codes").document(QRCodeID)
+                                                            .get()
+                                                            .addOnSuccessListener(userQRSnapshot -> {
+                                                                DocumentReference documentReference = (DocumentReference) userQRSnapshot.get("Reference");
+                                                                assert documentReference != null;
+                                                                documentReference
+                                                                        .get()
+                                                                        .addOnSuccessListener(QRSnapshot -> {
+                                                                            long points = QRSnapshot.getLong("points");
+                                                                            points = -points;
+                                                                            // Delete code from user's collection
+                                                                            usersReference.document(username).collection("User QR Codes").document(QRCodeID).delete();
+                                                                            // Subtract point value of that code from user's total points
+                                                                            usersReference.document(username).update("totalPoints", FieldValue.increment(points));
+
+                                                                        });
+                                                            });
                                                 }
                                             })
                                             .create();
-
                                     builder.show();
                                 }
                             });
                         }
                     });
+                } else {
+                    usersReference.document(username).update("topQRCode", 0);
                 }
             }
         });
@@ -225,14 +220,14 @@ public class ProfileFragment extends Fragment {
      * Query database to retrieve referenced QR Codes in the user's collection, then
      * use those DocumentReferences to retrieve data from the referenced QR codes
      *
-     * @param username             User's username
-     * @param getReferencedQRCodes Callback for query
+     * @param username    User's username
+     * @param getUserData Callback for query
      * @reference Firestore documentation
      */
-    public void queryQRCodes(@NonNull String username, final @NonNull ProfileQRCodeCallback getReferencedQRCodes) {
+    public void queryQRCodes(@NonNull String username, final @NonNull ProfileUserDataCallback getUserData) {
 
         ArrayList<DocumentReference> userQRCodesRef = new ArrayList<>();
-        Map<String, String> referencedQRCodes = new HashMap<>();
+        ArrayList<String> userPoints = new ArrayList<>();
 
         // Retrieve DocumentReferences in the user's QR code collection and store them in an array
         usersReference.document(username).collection("User QR Codes")
@@ -240,7 +235,7 @@ public class ProfileFragment extends Fragment {
                 .addOnSuccessListener(documentReferenceSnapshots -> {
                     for (QueryDocumentSnapshot snapshot : documentReferenceSnapshots) {
 
-                        DocumentReference documentReference = snapshot.getDocumentReference(snapshot.getId());
+                        DocumentReference documentReference = (DocumentReference) snapshot.get("Reference");
                         userQRCodesRef.add(documentReference);
                     }
 
@@ -250,18 +245,19 @@ public class ProfileFragment extends Fragment {
                             .get()
                             .addOnSuccessListener(referencedQRDocumentSnapshots -> {
                                 for (QueryDocumentSnapshot snapshot : referencedQRDocumentSnapshots) {
-                                    long QRCodePointsLong = snapshot.getLong("points");
-                                    String QRCodePoints = String.valueOf(QRCodePointsLong);
-                                    referencedQRCodes.put("points", QRCodePoints);
+                                    String QRCodePoints = snapshot.get("points").toString();
                                     options = new FirestoreRecyclerOptions.Builder<QRCode>()
                                             .setQuery(query, QRCode.class)
                                             .build();
-                                    getReferencedQRCodes.getReferencedQRCodes(referencedQRCodes);
+                                    userPoints.add(QRCodePoints);
+
+                                    Collections.sort(userPoints);
+                                    getUserData.getUserData(userPoints);
                                 }
                             });
                 });
-
     }
+
 
     /**
      * Callback for querying the database to see if user has codes
@@ -273,13 +269,12 @@ public class ProfileFragment extends Fragment {
     }
 
     /**
-     * Callback for querying the database to get QR object.
-     * referencedQRCodes is a map containing data for each
-     * QR code in the user's collection
+     * Callback for querying the database.
+     * userData is an array containing the user's points
      *
      * @author Afra
      */
-    public interface ProfileQRCodeCallback {
-        void getReferencedQRCodes(@NonNull Map<String, String> referencedQRCodes);
+    public interface ProfileUserDataCallback {
+        void getUserData(@NonNull ArrayList<String> userData);
     }
 }

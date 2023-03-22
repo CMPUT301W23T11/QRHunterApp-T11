@@ -30,7 +30,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDialogListener {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    public final CollectionReference usersReference = db.collection("Users");
+    private final CollectionReference usersReference = db.collection("Users");
     private final SettingsFragment settingsFragment = new SettingsFragment(db);
     private final CameraFragment cameraFragment = new CameraFragment(db);
     private final MapFragment mapFragment = new MapFragment(db);
@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
                     prefs.edit().putString("currentUserDisplayName", username).commit();
                     prefs.edit().putBoolean("LoggedIn", true).commit();
 
-                    User user = new User(username, username, 0, "No email");
+                    User user = new User(username, username, 0, 0, 0, "No email");
 
                     usersReference.document(username).set(user);
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUser", null))).commit();
