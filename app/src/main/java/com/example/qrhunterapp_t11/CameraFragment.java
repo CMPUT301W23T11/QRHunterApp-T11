@@ -22,7 +22,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -56,7 +55,7 @@ import java.util.TimerTask;
  */
 public class CameraFragment extends Fragment {
     private static final int permissionsRequestLocation = 100;
-    private boolean mIsPreciseLocationEnabled = false;
+    private final boolean mIsPreciseLocationEnabled = false;
     public static final int permissionsRequestAccessFineLocation = 9003;
     public static final int permissionsRequestAccessCoarseLocation = 9004;
     private ActivityResultLauncher<ScanOptions> barLauncher;
@@ -442,7 +441,7 @@ public class CameraFragment extends Fragment {
 
         Map<String, Object> QRCodeRef = new HashMap<>();
         DocumentReference QRCodeDocumentRef = QRCodesReference.document(QRCodeId);
-        QRCodeRef.put(QRCodeId, QRCodeDocumentRef);
+        QRCodeRef.put("Reference", QRCodeDocumentRef);
 
         // Check if qrCode exists in db in QRCodes collection
         checkDocExists(QRCodeId, QRCodesReference, new Callback() {
@@ -463,12 +462,14 @@ public class CameraFragment extends Fragment {
                         // Add image to qrCode
                         QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
 
-                        // If user does not already have this qrCode, add a reference to it
+                        // If user does not already have this qrCode, add a reference to it, increment their total scans
                         if(!qrRefExists){
                             System.out.println("HEUHURLSHRPIUSHEPRIHSEPOIHRPOISHEPROIPSOEHRPOISHEPRIHP");
                             usersReference.document(currentUser).collection("User QR Codes").document(QRCodeId).set(QRCodeRef);
+                            usersReference.document(currentUser).update("totalScans", FieldValue.increment(1));
+                            usersReference.document(currentUser).update("totalPoints", FieldValue.increment(qrCode.getPoints()));
                         }
-                        // If User does not have this qrCode but it already exists in qrCode collection, increase its total scans
+                        // If user does not have this qrCode but it already exists in qrCode collection, increase its total scans
                         if ((qrExists) && (!qrRefExists)){
                             QRCodesReference.document(QRCodeId).update("numberOfScans", FieldValue.increment(1));
                         }
