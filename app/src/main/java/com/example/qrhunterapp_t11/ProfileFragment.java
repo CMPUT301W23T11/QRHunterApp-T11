@@ -21,6 +21,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -52,6 +53,7 @@ public class ProfileFragment extends Fragment {
     private boolean userHasNoCodes;
     private final String displayName;
     private final String username;
+    FirebaseFirestore db;
 
     /**
      * Constructor for profile fragment.
@@ -60,6 +62,7 @@ public class ProfileFragment extends Fragment {
      * @param db Firestore database instance
      */
     public ProfileFragment(@NonNull FirebaseFirestore db, @NonNull String displayName, @NonNull String username) {
+        this.db = db;
         this.usersReference = db.collection("Users");
         this.QRCodeReference = db.collection("QRCodes");
         this.displayName = displayName;
@@ -102,8 +105,6 @@ public class ProfileFragment extends Fragment {
                     // Retrieve all QR Codes the user has and calculate scores
                     queryQRCodes(username, new ProfileQRCodeCallback() {
                         public void getReferencedQRCodes(@NonNull Map<String, String> referencedQRCodes) {
-
-                            CollectionReference QRColl = usersReference.document(username).collection("User QR Codes");
 
                             QRCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
 
@@ -180,11 +181,25 @@ public class ProfileFragment extends Fragment {
                                             .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                                                 @Override
                                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                                    usersReference.document(username).collection("User QR Codes").document(documentId).delete();
+                                                    usersReference.document(username).collection("User QR Codes").document(documentId)
+                                                            .get()
+                                                            .addOnSuccessListener(userQRSnapshot -> {
+                                                                DocumentReference documentReference = (DocumentReference) userQRSnapshot.get("Reference");
+                                                                assert documentReference != null;
+                                                                documentReference
+                                                                        .get()
+                                                                        .addOnSuccessListener(QRSnapshot -> {
+                                                                            long points = (long) QRSnapshot.get("points");
+                                                                            points = -points;
+                                                                            // Delete code from user's collection
+                                                                            usersReference.document(username).collection("User QR Codes").document(documentId).delete();
+                                                                            // Subtract point value of that code from user's total points
+                                                                            usersReference.document(username).update("totalPoints", FieldValue.increment(points));
+                                                                        });
+                                                            });
                                                 }
                                             })
                                             .create();
-
                                     builder.show();
                                 }
                             });
@@ -236,7 +251,7 @@ public class ProfileFragment extends Fragment {
                 .addOnSuccessListener(documentReferenceSnapshots -> {
                     for (QueryDocumentSnapshot snapshot : documentReferenceSnapshots) {
 
-                        DocumentReference documentReference = snapshot.getDocumentReference(snapshot.getId());
+                        DocumentReference documentReference = (DocumentReference) snapshot.get("Reference");
                         userQRCodesRef.add(documentReference);
                     }
 
@@ -256,7 +271,6 @@ public class ProfileFragment extends Fragment {
                                 }
                             });
                 });
-
     }
 
     /**
