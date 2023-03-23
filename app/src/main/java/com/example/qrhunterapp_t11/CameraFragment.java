@@ -1,12 +1,12 @@
 package com.example.qrhunterapp_t11;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,7 +22,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -41,24 +40,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-
-import nl.dionsegijn.konfetti.core.Angle;
-import nl.dionsegijn.konfetti.core.Party;
-import nl.dionsegijn.konfetti.core.PartyFactory;
-import nl.dionsegijn.konfetti.core.Spread;
-import nl.dionsegijn.konfetti.core.emitter.Emitter;
-import nl.dionsegijn.konfetti.core.emitter.EmitterConfig;
-import nl.dionsegijn.konfetti.core.models.Shape;
-import nl.dionsegijn.konfetti.core.models.Size;
-import nl.dionsegijn.konfetti.xml.KonfettiView;
-import static nl.dionsegijn.konfetti.core.Position.Relative;
 
 /**
  * Logic for the camera fragment, which is responsible for managing everything that pertains to scanning and adding a new QR code.
@@ -70,7 +55,7 @@ import static nl.dionsegijn.konfetti.core.Position.Relative;
  */
 public class CameraFragment extends Fragment {
     private static final int permissionsRequestLocation = 100;
-    private boolean mIsPreciseLocationEnabled = false;
+    private final boolean mIsPreciseLocationEnabled = false;
     public static final int permissionsRequestAccessFineLocation = 9003;
     public static final int permissionsRequestAccessCoarseLocation = 9004;
     private ActivityResultLauncher<ScanOptions> barLauncher;
@@ -83,7 +68,6 @@ public class CameraFragment extends Fragment {
     private final CollectionReference QRCodesReference;
     private final CollectionReference usersReference;
     private static final String locationPrompt = "LocationPrompt";
-    private KonfettiView konfettiView;
 
     boolean qrExists;
     boolean qrRefExists;
@@ -140,7 +124,6 @@ public class CameraFragment extends Fragment {
      * @param savedInstanceState If the fragment is being re-created from a previous saved state, this is the state.
      * @reference <a href="https://www.youtube.com/watch?v=W4qqTcxqq48">how to create a custom dialog</a>
      * @reference <a href="https://xjaphx.wordpress.com/2011/07/13/auto-close-dialog-after-a-specific-time/">how to have dialog automatically close after a few seconds</a>
-     * @reference Erfan - https://stackoverflow.com/a/54166609/14445107 - how to remove dim from dialog
      */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -178,16 +161,11 @@ public class CameraFragment extends Fragment {
                 TextView scoredTV = dialogView.findViewById(R.id.scoredTV);
                 builder.setView(dialogView);
                 builder.setCancelable(false);
-                String scored = "SCORED " + qrCode.getPoints();
+                String scored = "Scored " + qrCode.getPoints() + " Points";
                 scoredTV.setText(scored);
 
                 final AlertDialog alertDialog = builder.create();
                 alertDialog.show(); // create and display the dialog
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    Objects.requireNonNull(alertDialog.getWindow()).setDimAmount(0);
-                }
-
-                createKonfetti(); // create some confetti
 
                 final Timer timer = new Timer();
                 timer.schedule(new TimerTask() {
@@ -201,34 +179,6 @@ public class CameraFragment extends Fragment {
                 }, 5000); // set a timer to automatically close the dialog after 5 seconds
             }
         });
-    }
-
-    /**
-     * Creates some confetti when you scan a QR code :)
-     *
-     * @reference Daniel Martinus - https://github.com/DanielMartinus/Konfetti/blob/main/samples/xml-java/src/main/java/nl/dionsegijn/xml/java/MainActivity.java - used without major modification
-     */
-    public void createKonfetti() {
-        konfettiView = getActivity().findViewById(R.id.konfetti_view);
-        EmitterConfig emitterConfig = new Emitter(5, TimeUnit.SECONDS).perSecond(100);
-        konfettiView.start(
-                new PartyFactory(emitterConfig)
-                        .angle(Angle.RIGHT - 65)
-                        .spread(Spread.WIDE)
-                        .shapes(Arrays.asList(Shape.Square.INSTANCE, Shape.Circle.INSTANCE))
-                        .colors(Arrays.asList(0xfce18a, 0xff726d, 0xf4306d, 0xb48def))
-                        .setSpeedBetween(10f, 30f)
-                        .position(new Relative(0.0, 0.3))
-                        .build(),
-                new PartyFactory(emitterConfig)
-                        .angle(Angle.LEFT + 65)
-                        .spread(Spread.WIDE)
-                        .shapes(Arrays.asList(Shape.Square.INSTANCE, Shape.Circle.INSTANCE))
-                        .colors(Arrays.asList(0xfce18a, 0xff726d, 0xf4306d, 0xb48def))
-                        .setSpeedBetween(10f, 30f)
-                        .position(new Relative(1.0, 0.3))
-                        .build()
-        );
     }
 
     /**
@@ -323,7 +273,7 @@ public class CameraFragment extends Fragment {
     private void getCurrentLocation() {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
         if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
@@ -337,6 +287,7 @@ public class CameraFragment extends Fragment {
                         //set longitude and latitude and store
                         qrCode.setLongitude(longitude);
                         qrCode.setLatitude(latitude);
+                        qrCode.setId(longitude, latitude);
                         addQRCode();
                         returnToProfile();
                     } else {
@@ -355,20 +306,18 @@ public class CameraFragment extends Fragment {
      * Initiates the location permission check and logs if permission is already granted
      */
     private void permissions() {
-        boolean isFineLocationGranted = ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-        boolean isCoarseLocationGranted = ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        boolean isFineLocationGranted = ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        boolean isCoarseLocationGranted = ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
 
         if (isFineLocationGranted) {
-            Log.d(locationPrompt, "PERMISSION ALREADY GAVE.");
-            mIsPreciseLocationEnabled = true;
+            Log.d(locationPrompt, "PERMISSION ALREADY GAVE F.");
             getCurrentLocation();
         } else if (isCoarseLocationGranted) {
-            Log.d(locationPrompt, "PERMISSION ALREADY GAVE.");
-            mIsPreciseLocationEnabled = false;
+            Log.d(locationPrompt, "PERMISSION ALREADY GAVE C.");
             getCurrentLocation();
         } else {
             Log.d(locationPrompt, "ASKING FOR PERMISSION.");
-            requestPermissions(new String[] {android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, permissionsRequestLocation);
+            requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, permissionsRequestLocation);
         }
     }
 
@@ -381,19 +330,17 @@ public class CameraFragment extends Fragment {
      * @param grantResults The results of the permission request.
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case permissionsRequestLocation:
                 boolean isFineLocationGranted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
                 boolean isCoarseLocationGranted = grantResults.length > 1 && grantResults[1] == PackageManager.PERMISSION_GRANTED;
 
                 if (isFineLocationGranted) {
-                    Log.d(locationPrompt, "Execute if permission granted.");
-                    mIsPreciseLocationEnabled = true;
+                    Log.d(locationPrompt, "Execute if permission granted f.");
                     getCurrentLocation();
                 } else if (isCoarseLocationGranted) {
-                    Log.d(locationPrompt, "Execute if permission granted.");
-                    mIsPreciseLocationEnabled = false;
+                    Log.d(locationPrompt, "Execute if permission granted c.");
                     getCurrentLocation();
                 } else {
                     // Permission is not granted
@@ -490,39 +437,41 @@ public class CameraFragment extends Fragment {
      */
     private void addQRCode() {
         String currentUser = prefs.getString("currentUser", null);
-        String QRCodeHash = qrCode.getHash();
+        String QRCodeId = qrCode.getId();
 
         Map<String, Object> QRCodeRef = new HashMap<>();
-        DocumentReference QRCodeDocumentRef = QRCodesReference.document(QRCodeHash);
-        QRCodeRef.put(QRCodeHash, QRCodeDocumentRef);
+        DocumentReference QRCodeDocumentRef = QRCodesReference.document(QRCodeId);
+        QRCodeRef.put("Reference", QRCodeDocumentRef);
 
         // Check if qrCode exists in db in QRCodes collection
-        checkDocExists(QRCodeHash, QRCodesReference, new Callback() {
+        checkDocExists(QRCodeId, QRCodesReference, new Callback() {
             public void dataValid(boolean valid) {
                 qrExists = valid;
                 System.out.println(valid);
 
                 // Check if reference to qrCode exists in db in Users collection
-                checkDocExists(QRCodeHash, usersReference.document(currentUser).collection("User QR Codes"), new Callback() {
+                checkDocExists(QRCodeId, usersReference.document(currentUser).collection("User QR Codes"), new Callback() {
                     public void dataValid(boolean valid) {
                         qrRefExists = valid;
                         System.out.println(valid);
 
                         // If qrCode does not exist, add it to QRCode collection
                         if (!qrExists){
-                            QRCodesReference.document(QRCodeHash).set(qrCode);
+                            QRCodesReference.document(QRCodeId).set(qrCode);
                         }
                         // Add image to qrCode
-                        QRCodesReference.document(QRCodeHash).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
+                        QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
 
-                        // If user does not already have this qrCode, add a reference to it
+                        // If user does not already have this qrCode, add a reference to it, increment their total scans
                         if(!qrRefExists){
                             System.out.println("HEUHURLSHRPIUSHEPRIHSEPOIHRPOISHEPROIPSOEHRPOISHEPRIHP");
-                            usersReference.document(currentUser).collection("User QR Codes").document(QRCodeHash).set(QRCodeRef);
+                            usersReference.document(currentUser).collection("User QR Codes").document(QRCodeId).set(QRCodeRef);
+                            usersReference.document(currentUser).update("totalScans", FieldValue.increment(1));
+                            usersReference.document(currentUser).update("totalPoints", FieldValue.increment(qrCode.getPoints()));
                         }
-                        // If User does not have this qrCode but it already exists in qrCode collection, increase its total scans
+                        // If user does not have this qrCode but it already exists in qrCode collection, increase its total scans
                         if ((qrExists) && (!qrRefExists)){
-                            QRCodesReference.document(QRCodeHash).update("numberOfScans", FieldValue.increment(1));
+                            QRCodesReference.document(QRCodeId).update("numberOfScans", FieldValue.increment(1));
                         }
                     }
                 });

@@ -7,7 +7,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.splashscreen.SplashScreen;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -27,8 +26,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
  * @reference <a href="https://www.geeksforgeeks.org/how-to-create-fragment-using-bottom-navigation-in-social-media-android-app/">How to use fragments with a bottom navigation bar</a>
  * @reference <a href="https://youtu.be/x6-_va1R788">How to set up and align a floating action button on the BottomNavigationView</a>
  * @reference <a href="https://firebase.google.com/docs/firestore/query-data/aggregation-queries#java">For aggregation queries</a>
- * @reference Philipp Lackner - https://www.youtube.com/watch?v=Loo4i5IrZ4Y - configuring splashscreen
- * @reference Code With Cal - https://www.youtube.com/watch?v=bJjHgWjiAKw - setting app icon
  */
 public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDialogListener {
 
@@ -56,7 +53,6 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SplashScreen.installSplashScreen(this);
         setContentView(R.layout.activity_main);
 
         bottomToolbar = findViewById(R.id.bottomToolbar);
@@ -77,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
                     prefs.edit().putString("currentUserDisplayName", username).commit();
                     prefs.edit().putBoolean("LoggedIn", true).commit();
 
-                    User user = new User(username, username, 0, "No email");
+                    User user = new User(username, username, 0, 0, 0, "No email");
 
                     usersReference.document(username).set(user);
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUser", null))).commit();

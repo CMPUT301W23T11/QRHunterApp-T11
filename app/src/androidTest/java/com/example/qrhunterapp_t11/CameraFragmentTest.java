@@ -81,7 +81,7 @@ public class CameraFragmentTest {
         rule.launchActivity(intent);
         Activity activity = rule.getActivity();
 
-        User user = new User(testUsername, testUsername, 0, "No email");
+        User user = new User(testUsername, testUsername, 0, 0, 0, "No email");
 
         usersReference.document(testUsername).set(user);
 

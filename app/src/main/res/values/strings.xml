@@ -24,7 +24,7 @@
     <string name="edittext_capture">Capture</string>
     <string name="edittext_profile">Profile</string>
     <string name="edittext_comment">comment</string>
-    <string name="edittext_scored_xxxxx_points">SCORED XXXXX</string>
+    <string name="edittext_scored_xxxxx_points">Scored XXXXX Points</string>
     <string name="edittext_points">Points:</string>
     <string name="edittext_add_comment">Add Comment</string>
     <string name="imageview_imagecolour">Image colour</string>
@@ -42,6 +42,9 @@
     <string name="find_other_players">Find other Players</string>
     <string name="search">Search</string>
     <string name="profile_name_text_search">Profile Name</string>
-    <string name="profile_points_text_search">Points</string>
+    <string name="profile_points_text_search">Points:</string>
     <string name="ranking_profile">Ranking:</string>
+    <string name="profile_scans_search_text">Scans:</string>
+    <string name="profile_top_qr_code_search">Top QR Code:</string>
+    <string name="search_hint">Search...</string>
 </resources>

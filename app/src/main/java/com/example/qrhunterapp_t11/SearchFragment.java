@@ -3,10 +3,21 @@ package com.example.qrhunterapp_t11;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -15,12 +26,26 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnCanceledListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+
+import com.google.android.material.search.SearchView;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
+
 
 /**
  * Handles search and leaderboard screen.
@@ -28,9 +53,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * Search allows the user to search for other users to view their profiles
  *
  * @author Afra, Kristina
+ * @reference <a href="https://stackoverflow.com/a/5241720">For setting spinner</a>
  */
 public class SearchFragment extends Fragment {
 
+    private final String tag = "searchFragment";
     private final FirebaseFirestore db;
     private final CollectionReference usersReference;
     private final CollectionReference QRCodeReference;
@@ -38,6 +65,7 @@ public class SearchFragment extends Fragment {
     private RecyclerView leaderboardRecyclerView;
     private FirestoreRecyclerOptions<User> leaderboardOptions;
     private SharedPreferences prefs;
+    private AutoCompleteTextView autoCompleteTextView;
 
     public SearchFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
@@ -50,38 +78,138 @@ public class SearchFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
+        // Set leaderboard options spinner
+        String[] leaderboardFilterChoices = new String[]{"Most Points", "Most Scans", "Top QR Code", "Top QR Code (Regional)"};
+        Spinner leaderboardFilter = view.findViewById(R.id.leaderboard_filter_spinner);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_spinner_item, leaderboardFilterChoices);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        leaderboardFilter.setAdapter(adapter);
+
+        Button deleteSearch = view.findViewById(R.id.close_id);
+        autoCompleteTextView = view.findViewById(R.id.search_id);
+        ArrayList<String> displayNameList = new ArrayList<String>();
+
+        // populates the autocomplete list with users display names
+        // Todo: update list when new user is added or display name is changed
+        usersReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@androidx.annotation.Nullable QuerySnapshot value, @androidx.annotation.Nullable FirebaseFirestoreException error) {
+                if (error != null) {
+                    Log.w(tag, "Listen failed: ", error);
+                    return;
+                }
+                if (value != null) {
+                    displayNameList.clear();
+                    for (DocumentSnapshot doc : value){
+                        if (doc.exists()) {
+                            User user = doc.toObject(User.class);
+                            displayNameList.add(user.getDisplayName());
+                        }
+                    }
+                }
+            }
+        });
+
+
+        // sets up the autocomplete with the provided list
+        ArrayAdapter searchAdapter = new ArrayAdapter(getContext(), android.R.layout.simple_list_item_1, displayNameList);
+        autoCompleteTextView.setThreshold(1);
+        autoCompleteTextView.setAdapter(searchAdapter);
+
+        // Finds the user after clicking enter
+        // https://stackoverflow.com/questions/41670850/prevent-user-to-go-next-line-by-pressing-softkey-enter-in-autocompletetextview
+        // - how to handle a ENTER click action
+        autoCompleteTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if ((keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (i == EditorInfo.IME_ACTION_DONE)){
+                    String searchText = autoCompleteTextView.getText().toString();
+
+
+                    Query getUser = usersReference.whereEqualTo("displayName", searchText);
+                    getUser.get()
+                            .addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
+
+                                    // checks if a user is found
+                                    if (task.getResult().size() > 0) {
+                                        DocumentSnapshot doc = task.getResult().getDocuments().get(0);
+
+                                        // opens the users profile
+                                        User user = doc.toObject(User.class);
+                                        assert user != null;
+
+                                        // Checks to make sure user cant search their own name
+                                        if (!user.getDisplayName().equals(prefs.getString("currentUserDisplayName", null))) {
+                                            autoCompleteTextView.setText("");
+                                            FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+                                            trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
+                                            trans.commit();
+                                        }
+
+                                    } else { // if the user is not found
+                                        Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
+                                        Log.d(tag, "Document NOT found");
+                                    }
+                                } else {
+                                    Log.d(tag, "task not successful: ", task.getException());
+                                }
+                            });
+                }
+                return false;
+            }
+        });
+
+        // clears the text from autoCompleteTextView
+        deleteSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                autoCompleteTextView.setText("", false);
+            }
+        });
+
+        
 
         // Set Firestore RecyclerView query and begin monitoring that query
-        leaderboardProfileQuery(new LeaderboardCallback() {
-            public void completedQueryCheck(boolean queryComplete) {
+        leaderboardFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                // A spinner option will always be selected
+            }
 
-                if (queryComplete) {
-                    leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                String leaderboardSpinnerChoice = leaderboardFilter.getSelectedItem().toString();
+                filterQuery(leaderboardSpinnerChoice, new LeaderboardCallback() {
+                    public void queryCallback(boolean queryComplete) {
+                        assert (queryComplete);
+                        leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
 
-                    prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
-                    leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, prefs);
+                        prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+                        leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, leaderboardSpinnerChoice, prefs);
 
-                    //super.onStart(); man idk
-                    leaderboardAdapter.startListening();
-                    leaderboardRecyclerView.setAdapter(leaderboardAdapter);
+                        //super.onStart(); man idk
+                        leaderboardAdapter.startListening();
+                        leaderboardRecyclerView.setAdapter(leaderboardAdapter);
 
-                    TextView yourRanking = view.findViewById(R.id.your_ranking_textview);
-                    yourRanking.setText(prefs.getString("currentUserRanking", null));
+                        TextView yourRanking = view.findViewById(R.id.your_ranking_textview);
+                        yourRanking.setText(prefs.getString("currentUserRanking", null));
 
-                    leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                        leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-                    // Handles clicking on a user to view their profile
-                    leaderboardAdapter.setOnItemClickListener(new OnItemClickListener() {
-                        @Override
-                        public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
+                        // Handles clicking on a user to view their profile
+                        leaderboardAdapter.setOnItemClickListener(new OnItemClickListener() {
+                            @Override
+                            public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
 
-                            User user = documentSnapshot.toObject(User.class);
-                            FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-                            trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
-                            trans.commit();
-                        }
-                    });
-                }
+                                User user = documentSnapshot.toObject(User.class);
+                                FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+                                trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
+                                trans.commit();
+                            }
+                        });
+                    }
+                });
             }
         });
 
@@ -89,30 +217,45 @@ public class SearchFragment extends Fragment {
     }
 
     /**
-     * Set query for Firestore RecyclerView
-     * Query gets a sorted list of users based on total points
+     * Set query for Firestore RecyclerView depending on what spinner option is selected
      *
-     * @param completedQueryCheck Callback for query
+     * @param filterType    String representing how the leaderboard is filtered
+     * @param queryCallback Callback for query
      */
-    public void leaderboardProfileQuery(final @NonNull LeaderboardCallback completedQueryCheck) {
+    public void filterQuery(@NonNull String filterType, final @NonNull LeaderboardCallback queryCallback) {
+        String queryField = "";
+        switch (filterType) {
+            case "Most Points":
+                queryField = "totalPoints";
+                break;
+            case "Most Scans":
+                queryField = "totalScans";
+                break;
+            case "Top QR Code":
+                queryField = "topQRCode";
+                break;
+            case "Top QR Code (Regional)":
+                queryField = "topQRCode";
+                break;
 
-        Query leaderboardQuery = usersReference.orderBy("totalPoints", Query.Direction.DESCENDING);
-        leaderboardQuery
+        }
+        Query query = usersReference.orderBy(queryField, Query.Direction.DESCENDING);
+        query
                 .get()
                 .addOnSuccessListener(documentReferenceSnapshots -> {
                     leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
-                            .setQuery(leaderboardQuery, User.class)
+                            .setQuery(query, User.class)
                             .build();
-                    completedQueryCheck.completedQueryCheck(true);
+                    queryCallback.queryCallback(true);
                 });
     }
 
     /**
-     * Callback for querying the database to get ordered users
+     * Callback for querying the database to get type of results
      *
      * @author Afra
      */
     public interface LeaderboardCallback {
-        void completedQueryCheck(boolean queryComplete);
+        void queryCallback(boolean queryComplete);
     }
 }
