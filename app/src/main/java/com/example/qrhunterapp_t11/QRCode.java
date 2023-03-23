@@ -184,7 +184,7 @@ public class QRCode {
 
     /**
      * Uses the 6 bits of a shortened hash function to determine which drawables will be used to make the unique image
-     * Static to increase testability
+     * Static to increase testability.
      *
      * @param hash - String hash value of the QR code
      * @return newName - String of the QRCode's name
