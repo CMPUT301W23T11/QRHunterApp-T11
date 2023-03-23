@@ -44,7 +44,7 @@
     <string name="profile_name_text_search">Profile Name</string>
     <string name="profile_points_text_search">Points:</string>
     <string name="ranking_profile">Ranking:</string>
-    <string name="profile_scans_search">Scans:</string>
+    <string name="profile_scans_search_text">Scans:</string>
     <string name="profile_top_qr_code_search">Top QR Code:</string>
     <string name="search_hint">Search...</string>
 </resources>
