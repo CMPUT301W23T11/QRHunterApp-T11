@@ -126,6 +126,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mMap != null) {
+            isServicesOK();
+            isLocationEnabled();
+        }
+    }
+
     private void searchLocation(String location) {
         Geocoder geocoder = new Geocoder(getContext());
         try {
@@ -150,16 +159,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (!isGPSEnabled) {
-            buildAlertMessageNoGps();
-        }
-        if (isServicesOK() && isLocationEnabled()) {
-            mLocationPermissionGranted = true;
-            SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map);
-            if (mapFragment == null) {
-                mapFragment = SupportMapFragment.newInstance();
-                getChildFragmentManager().beginTransaction().replace(R.id.google_map, mapFragment).commit();
+            // Request the user to enable GPS
+            Intent gpsOptionsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(gpsOptionsIntent);
+        } else {
+            // GPS is enabled, check for location permissions
+            if (isServicesOK() && isLocationEnabled()) {
+                mLocationPermissionGranted = true;
+                SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map);
+                if (mapFragment == null) {
+                    mapFragment = SupportMapFragment.newInstance();
+                    getChildFragmentManager().beginTransaction().replace(R.id.google_map, mapFragment).commit();
+                }
+                mapFragment.getMapAsync(this);
             }
-            mapFragment.getMapAsync(this);
         }
     }
 
@@ -306,10 +319,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                             @Override
                             public void onSuccess(Location location) {
                                 if (location != null) {
-                                    // Create a LatLng object with the current location
+                                    // Create LatLng object with the current location
                                     LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
 
-                                    // Create a CameraUpdate object with zoom level 15 and move the camera to the current location
+                                    // Create CameraUpdate object and move the camera to the current location
                                     CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(currentLocation, 15);
                                     mMap.animateCamera(cameraUpdate);
                                 }
@@ -334,16 +347,28 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                                 Double longitude = document.getDouble("longitude");
                                 if (latitude != null && longitude != null) {
                                     LatLng location = new LatLng(latitude, longitude);
-                                    //mMap.addMarker(new MarkerOptions().position(location).title(document.getId()));
-                                    mMap.addMarker(new MarkerOptions()
+                                    Marker marker = mMap.addMarker(new MarkerOptions()
                                             .position(location)
                                             .title(document.getId())
                                             .icon(icon));  // Use the custom icon
+                                    marker.setTag(document.toObject(QRCode.class)); // Set QRCode object as the marker's tag
                                 }
                             }
                         } else {
                             Log.d(tag, "Error getting documents: ", task.getException());
                         }
+                    }
+                });
+
+                // OnMarkerClickListener to show the ViewQR dialog fragment when a marker is clicked
+                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker) {
+                        QRCode qrCode = (QRCode) marker.getTag();
+                        if (qrCode != null) {
+                            new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
+                        }
+                        return true;
                     }
                 });
 

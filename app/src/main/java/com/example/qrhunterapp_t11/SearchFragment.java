@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.SearchView;
 import android.widget.Spinner;
@@ -117,37 +118,45 @@ public class SearchFragment extends Fragment {
         });
 
         // Set Firestore RecyclerView query and begin monitoring that query
-        String leaderboardSpinnerChoice = leaderboardFilter.getSelectedItem().toString();
-        topScoresQuery(new LeaderboardCallback() {
-            public void completedQueryCheck(boolean queryComplete) {
+        leaderboardFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                // A spinner option will always be selected
+            }
 
-                if (queryComplete) {
-                    leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                String leaderboardSpinnerChoice = leaderboardFilter.getSelectedItem().toString();
+                filterQuery(leaderboardSpinnerChoice, new LeaderboardCallback() {
+                    public void queryCallback(boolean queryComplete) {
+                        assert (queryComplete);
+                        leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
 
-                    prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
-                    leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, leaderboardSpinnerChoice, prefs);
+                        prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+                        leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, leaderboardSpinnerChoice, prefs);
 
-                    //super.onStart(); man idk
-                    leaderboardAdapter.startListening();
-                    leaderboardRecyclerView.setAdapter(leaderboardAdapter);
+                        //super.onStart(); man idk
+                        leaderboardAdapter.startListening();
+                        leaderboardRecyclerView.setAdapter(leaderboardAdapter);
 
-                    TextView yourRanking = view.findViewById(R.id.your_ranking_textview);
-                    yourRanking.setText(prefs.getString("currentUserRanking", null));
+                        TextView yourRanking = view.findViewById(R.id.your_ranking_textview);
+                        yourRanking.setText(prefs.getString("currentUserRanking", null));
 
-                    leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                        leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-                    // Handles clicking on a user to view their profile
-                    leaderboardAdapter.setOnItemClickListener(new OnItemClickListener() {
-                        @Override
-                        public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
+                        // Handles clicking on a user to view their profile
+                        leaderboardAdapter.setOnItemClickListener(new OnItemClickListener() {
+                            @Override
+                            public void onItemClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
 
-                            User user = documentSnapshot.toObject(User.class);
-                            FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-                            trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
-                            trans.commit();
-                        }
-                    });
-                }
+                                User user = documentSnapshot.toObject(User.class);
+                                FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+                                trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
+                                trans.commit();
+                            }
+                        });
+                    }
+                });
             }
         });
 
@@ -155,88 +164,45 @@ public class SearchFragment extends Fragment {
     }
 
     /**
-     * Set query for Firestore RecyclerView
-     * Query gets a sorted list of users based on total points
+     * Set query for Firestore RecyclerView depending on what spinner option is selected
      *
-     * @param completedQueryCheck Callback for query
+     * @param filterType    String representing how the leaderboard is filtered
+     * @param queryCallback Callback for query
      */
-    public void topScoresQuery(final @NonNull LeaderboardCallback completedQueryCheck) {
+    public void filterQuery(@NonNull String filterType, final @NonNull LeaderboardCallback queryCallback) {
+        String queryField = "";
+        switch (filterType) {
+            case "Most Points":
+                queryField = "totalPoints";
+                break;
+            case "Most Scans":
+                queryField = "totalScans";
+                break;
+            case "Top QR Code":
+                queryField = "topQRCode";
+                break;
+            case "Top QR Code (Regional)":
+                queryField = "topQRCode";
+                break;
 
-        Query query = usersReference.orderBy("totalPoints", Query.Direction.DESCENDING);
+        }
+        Query query = usersReference.orderBy(queryField, Query.Direction.DESCENDING);
         query
                 .get()
                 .addOnSuccessListener(documentReferenceSnapshots -> {
                     leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
                             .setQuery(query, User.class)
                             .build();
-                    completedQueryCheck.completedQueryCheck(true);
+                    queryCallback.queryCallback(true);
                 });
     }
 
     /**
-     * Set query for Firestore RecyclerView
-     * Query gets a sorted list of users based on total scans
-     *
-     * @param completedQueryCheck Callback for query
-     */
-    public void topScansQuery(final @NonNull LeaderboardCallback completedQueryCheck) {
-
-        Query query = usersReference.orderBy("totalPoints", Query.Direction.DESCENDING);
-        query
-                .get()
-                .addOnSuccessListener(documentReferenceSnapshots -> {
-                    leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
-                            .setQuery(query, User.class)
-                            .build();
-                    completedQueryCheck.completedQueryCheck(true);
-                });
-    }
-
-    /**
-     * Set query for Firestore RecyclerView
-     * Query gets a sorted list of users based on their top scoring QR code
-     *
-     * @param completedQueryCheck Callback for query
-     */
-    public void topScoringCodesQuery(final @NonNull LeaderboardCallback completedQueryCheck) {
-
-        Query query = usersReference.orderBy("totalPoints", Query.Direction.DESCENDING);
-        query
-                .get()
-                .addOnSuccessListener(documentReferenceSnapshots -> {
-                    leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
-                            .setQuery(query, User.class)
-                            .build();
-                    completedQueryCheck.completedQueryCheck(true);
-                });
-    }
-
-    /**
-     * Set query for Firestore RecyclerView
-     * Query gets a sorted list of users based on their top scoring QR code in a region
-     *
-     * @param completedQueryCheck Callback for query
-     */
-    public void topScoringCodesInRegionQuery(
-            final @NonNull LeaderboardCallback completedQueryCheck) {
-
-        Query query = usersReference.orderBy("totalPoints", Query.Direction.DESCENDING);
-        query
-                .get()
-                .addOnSuccessListener(documentReferenceSnapshots -> {
-                    leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
-                            .setQuery(query, User.class)
-                            .build();
-                    completedQueryCheck.completedQueryCheck(true);
-                });
-    }
-
-    /**
-     * Callback for querying the database to get ordered users
+     * Callback for querying the database to get type of results
      *
      * @author Afra
      */
     public interface LeaderboardCallback {
-        void completedQueryCheck(boolean queryComplete);
+        void queryCallback(boolean queryComplete);
     }
 }
