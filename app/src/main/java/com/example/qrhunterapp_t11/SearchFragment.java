@@ -6,12 +6,14 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.SearchView;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,6 +30,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import com.google.android.material.search.SearchView;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -81,8 +84,12 @@ public class SearchFragment extends Fragment {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         leaderboardFilter.setAdapter(adapter);
 
+        Button deleteSearch = view.findViewById(R.id.close_id);
         autoCompleteTextView = view.findViewById(R.id.search_id);
         ArrayList<String> displayNameList = new ArrayList<String>();
+
+        // populates the autocomplete list with users display names
+        // Todo: update list when new user is added or display name is changed
         usersReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@androidx.annotation.Nullable QuerySnapshot value, @androidx.annotation.Nullable FirebaseFirestoreException error) {
@@ -101,114 +108,66 @@ public class SearchFragment extends Fragment {
                 }
             }
         });
-        /*usersReference.get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        for (DocumentSnapshot doc : queryDocumentSnapshots){
-                            if (doc.exists()) {
-                                User user = doc.toObject(User.class);
-                                displayNameList.add(Objects.requireNonNull(user).getDisplayName());}
-                        }
-                    }
-                });*/
 
+
+        // sets up the autocomplete with the provided list
         ArrayAdapter searchAdapter = new ArrayAdapter(getContext(), android.R.layout.simple_list_item_1, displayNameList);
         autoCompleteTextView.setThreshold(1);
         autoCompleteTextView.setAdapter(searchAdapter);
-        autoCompleteTextView.addTextChangedListener(new TextWatcher() {
+
+        // Finds the user after clicking enter
+        // https://stackoverflow.com/questions/41670850/prevent-user-to-go-next-line-by-pressing-softkey-enter-in-autocompletetextview
+        // - how to handle a ENTER click action
+        autoCompleteTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                //searchAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                String searchText = autoCompleteTextView.getText().toString();
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if ((keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (i == EditorInfo.IME_ACTION_DONE)){
+                    String searchText = autoCompleteTextView.getText().toString();
 
 
-                Query getUser = usersReference.whereEqualTo("displayName", searchText);
-                getUser.get()
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
+                    Query getUser = usersReference.whereEqualTo("displayName", searchText);
+                    getUser.get()
+                            .addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
 
-                                // checks if a user is found
-                                if (task.getResult().size() > 0) {
-                                    DocumentSnapshot doc = task.getResult().getDocuments().get(0);
+                                    // checks if a user is found
+                                    if (task.getResult().size() > 0) {
+                                        DocumentSnapshot doc = task.getResult().getDocuments().get(0);
 
-                                    // opens the users profile
-                                    User user = doc.toObject(User.class);
-                                    assert user != null;
-                                    if (!user.getDisplayName().equals(prefs.getString("currentUserDisplayName", null))) {
-                                        autoCompleteTextView.setText("");
-                                        FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-                                        trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
-                                        trans.commit();
+                                        // opens the users profile
+                                        User user = doc.toObject(User.class);
+                                        assert user != null;
+
+                                        // Checks to make sure user cant search their own name
+                                        if (!user.getDisplayName().equals(prefs.getString("currentUserDisplayName", null))) {
+                                            autoCompleteTextView.setText("");
+                                            FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+                                            trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
+                                            trans.commit();
+                                        }
+
+                                    } else { // if the user is not found
+                                        Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
+                                        Log.d(tag, "Document NOT found");
                                     }
-
-                                } else { // if the user is not found
-                                    //Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
-                                    Log.d(tag, "Document NOT found");
+                                } else {
+                                    Log.d(tag, "task not successful: ", task.getException());
                                 }
-                            } else {
-                                Log.d(tag, "task not successful: ", task.getException());
-                            }
-                        });
+                            });
+                }
+                return false;
             }
-
         });
-        // gets the searchView to be clickable on the whole bar
-        /*searchView.setOnClickListener(new View.OnClickListener() {
+
+        // clears the text from autoCompleteTextView
+        deleteSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                searchView.setIconified(false);
+                autoCompleteTextView.setText("", false);
             }
         });
 
-        //finds the user with the specific inputted displayName
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                String pattern = query.toLowerCase().trim();
-                Query getUser = usersReference.whereEqualTo("displayName", pattern);
-                getUser.get()
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
-
-                                // checks if a user is found
-                                if (task.getResult().size() > 0) {
-                                    DocumentSnapshot doc = task.getResult().getDocuments().get(0);
-
-                                    // opens the users profile
-                                    User user = doc.toObject(User.class);
-                                    FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-                                    trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
-                                    trans.commit();
-
-                                } else { // if the user is not found
-                                    Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
-                                    Log.d(tag, "Document NOT found");
-                                }
-                            } else {
-                                Log.d(tag, "task not successful: ", task.getException());
-                            }
-                        });
-
-                // fixes bug where onQueryTextSubmit is fired twice
-                searchView.clearFocus();
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
-            }
-        });*/
+        
 
         // Set Firestore RecyclerView query and begin monitoring that query
         String leaderboardSpinnerChoice = leaderboardFilter.getSelectedItem().toString();
