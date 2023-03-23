@@ -18,6 +18,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -45,7 +47,7 @@ import java.util.Map;
  * @reference <a href="https://cloud.google.com/firestore/docs/manage-data/add-data">for adding comment to db using arrayUnion</a>
  * @references <a href="https://www.svgbackgrounds.com/license/">for liquid_cheese_background</a>
  */
-public class ViewQR extends DialogFragment {
+public class ViewQR extends DialogFragment implements LoadPhotoListener {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference QRCodesReference = db.collection("QRCodes");
     private final CollectionReference usersReference = db.collection("Users");
@@ -58,6 +60,11 @@ public class ViewQR extends DialogFragment {
     private String QRCodeId;
     private boolean QRCodeHasNoComments;
     private TextView commentNumTV;
+    private ViewPager viewPager;
+    private PhotoAdapter photoAdapter;
+    private LoadPhotoListener listener;
+
+
 
     /**
      * Empty constructor
@@ -119,7 +126,7 @@ public class ViewQR extends DialogFragment {
         ImageView noseImageView = view.findViewById(R.id.imageNose);
         ImageView mouthImageView = view.findViewById(R.id.imageMouth);
         ImageView eyebrowsImageView = view.findViewById(R.id.imageEyebrows);
-        ImageView photoImageView = view.findViewById(R.id.imagePhoto);
+        //ImageView photoImageView = view.findViewById(R.id.imagePhoto);
 
 
 
@@ -137,10 +144,16 @@ public class ViewQR extends DialogFragment {
         mouthImageView.setImageResource((qrCode.getFaceList()).get(4));
         eyebrowsImageView.setImageResource((qrCode.getFaceList()).get(5));
 
+        viewPager = view.findViewById(R.id.pager);
+        photoAdapter = new PhotoAdapter(getContext(), qrCode.getPhotoList());
+        viewPager.setAdapter(photoAdapter);
+
         // If the QRCode has an associated photo, use Picasso to load it into the photoImageView (Rotated for some reason)
         if ((!qrCode.getPhotoList().isEmpty()) && (qrCode.getPhotoList().get(0) != null)) {
-            Picasso.with(getContext()).load(qrCode.getPhotoList().get(0)).into(photoImageView);
+            //Picasso.with(getContext()).load(qrCode.getPhotoList().get(0)).into(photoImageView);
         }
+
+
 
         noCommentsCheck(QRCodeId, new QRCodeNoCommentsCallback() {
             public void noComments(boolean noComments) {
@@ -252,6 +265,30 @@ public class ViewQR extends DialogFragment {
             }
         });
 
+        viewPager.setOnTouchListener(new View.OnTouchListener() {
+            private float pointX;
+            private float pointY;
+            private int tolerance = 50;
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch(event.getAction()){
+                    case MotionEvent.ACTION_MOVE:
+                        return false; //This is important, if you return TRUE the action of swipe will not take place.
+                    case MotionEvent.ACTION_DOWN:
+                        pointX = event.getX();
+                        pointY = event.getY();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        boolean sameX = pointX + tolerance > event.getX() && pointX - tolerance < event.getX();
+                        boolean sameY = pointY + tolerance > event.getY() && pointY - tolerance < event.getY();
+                        if(sameX && sameY){
+                            //The user "clicked" certain point in the screen or just returned to the same position an raised the finger
+                        }
+                }
+                return false;
+            }
+        });
+
         return builder
                 .setView(view)
                 .setTitle(qrCode.getName())
@@ -299,6 +336,16 @@ public class ViewQR extends DialogFragment {
                     }
                     comments.comments(commentsTemp);
                 });
+    }
+
+    @Override
+    public void onFirebaseLoadSuccess(ArrayList<String> photos) {
+
+    }
+
+    @Override
+    public void onFirebaseLoadFailed(String error) {
+
     }
 
     /**
