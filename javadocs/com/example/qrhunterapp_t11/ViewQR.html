@@ -128,7 +128,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li>androidx.fragment.app.DialogFragment</li>
 <li>
 <ul class="inheritance">
-<li>com.example.qrhunterapp_t11.ViewQR</li>
+<li>com.example.qrhunterapp_t11.fragments.QRCodeView</li>
 </ul>
 </li>
 </ul>
@@ -270,12 +270,17 @@ extends androidx.fragment.app.DialogFragment</pre>
 <div class="block">Empty constructor</div>
 </td>
 </tr>
-<tr class="rowColor">
-<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(com.example.qrhunterapp_t11.QRCode)">ViewQR</a></span>&#8203;(<a href="QRCode.html" title="class in com.example.qrhunterapp_t11">QRCode</a>&nbsp;qrCode)</code></th>
-<td class="colLast">
-<div class="block">Constructor used when an item in the recyclerview is clicked in the profile</div>
-</td>
-</tr>
+    <tr class="rowColor">
+        <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a
+                href="#%3Cinit%3E(com.example.qrhunterapp_t11.objectclasses.QRCode)">ViewQR</a></span>&#8203;(<a
+                href="QRCode.html" title="class in com.example.qrhunterapp_t11">QRCode</a>&nbsp;qrCode)</code>
+        </th>
+        <td class="colLast">
+            <div class="block">Constructor used when an item in the recyclerview is clicked in the
+                profile
+            </div>
+        </td>
+    </tr>
 </table>
 </li>
 </ul>
@@ -435,29 +440,31 @@ extends androidx.fragment.app.DialogFragment</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a id="&lt;init&gt;()">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>ViewQR</h4>
-<pre>public&nbsp;ViewQR()</pre>
-<div class="block">Empty constructor</div>
-</li>
-</ul>
-<a id="&lt;init&gt;(com.example.qrhunterapp_t11.QRCode)">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>ViewQR</h4>
-<pre>public&nbsp;ViewQR&#8203;(@NonNull
+    <a id="&lt;init&gt;()">
+        <!--   -->
+    </a>
+    <ul class="blockList">
+        <li class="blockList">
+            <h4>ViewQR</h4>
+            <pre>public&nbsp;ViewQR()</pre>
+            <div class="block">Empty constructor</div>
+        </li>
+    </ul>
+    <a id="&lt;init&gt;(com.example.qrhunterapp_t11.objectclasses.QRCode)">
+        <!--   -->
+    </a>
+    <ul class="blockListLast">
+        <li class="blockList">
+            <h4>ViewQR</h4>
+            <pre>public&nbsp;ViewQR&#8203;(@NonNull
               <a href="QRCode.html" title="class in com.example.qrhunterapp_t11">QRCode</a>&nbsp;qrCode)</pre>
-<div class="block">Constructor used when an item in the recyclerview is clicked in the profile</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>qrCode</code> - - qrCode object that was clicked</dd>
-</dl>
+            <div class="block">Constructor used when an item in the recyclerview is clicked in the
+                profile
+            </div>
+            <dl>
+                <dt><span class="paramLabel">Parameters:</span></dt>
+                <dd><code>qrCode</code> - - qrCode object that was clicked</dd>
+            </dl>
 </li>
 </ul>
 </li>

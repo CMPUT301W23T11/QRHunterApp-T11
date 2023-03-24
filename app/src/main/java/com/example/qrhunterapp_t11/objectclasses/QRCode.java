@@ -1,6 +1,8 @@
-package com.example.qrhunterapp_t11;
+package com.example.qrhunterapp_t11.objectclasses;
 
 import androidx.annotation.NonNull;
+
+import com.example.qrhunterapp_t11.R;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -57,37 +59,13 @@ public class QRCode {
 
 
     /**
-     * Getter for QRCode Object's id attribute, used to define uniqueness of QRCode objects
-     * id is used as a key for the firebase database when accessing QRCodes.
-     * default value is the QRCode's hashkey, if location is added
-     * by player, location value is concatenated to create a unique id
-     * @return id - a string representing a unique instance of a QRCode
+     * calculatePoints uses the hash value of the QRCode to calculate the points value of the QRCode
+     * Static to increase testability
+     *
+     * @param hash - String hash value of the QR code
+     * @return grandTotal - int
+     * @reference <a href="https://docs.oracle.com/javase/tutorial/java/data/manipstrings.html">Oracle's documentation on string manipulation</a>
      */
-    public String getId() {return id;}
-
-    /**
-     * Setter for QRCode Object's id attribute, used to define uniqueness of QRCode objects
-     * id is used as a key for the firebase database when accessing QRCodes.
-     * default value is the QRCode's hashkey, if location is added
-     * by player, location value is concatenated to create a unique id
-     * @param longitude Double representing longitude of where QRCode was captured
-     * @param latitude Double representing latitude of where QRCode was captured
-     * @reference https://docs.oracle.com/javase/tutorial/java/data/converting.html
-     */
-    public void setId(@NonNull Double longitude, @NonNull Double latitude) {
-        String strLong = Double.toString(longitude);
-        String strLat = Double.toString(latitude);
-        this.id = this.hash + strLong + strLat;
-    }
-
-        /**
-         * calculatePoints uses the hash value of the QRCode to calculate the points value of the QRCode
-         * Static to increase testability
-         *
-         * @param hash - String hash value of the QR code
-         * @return grandTotal - int
-         * @reference <a href="https://docs.oracle.com/javase/tutorial/java/data/manipstrings.html">Oracle's documentation on string manipulation</a>
-         */
     public static int calculatePoints(@NonNull String hash) {
 
         // List of possible chars in the hash, other than 0, each corresponds to their base number of points
@@ -154,6 +132,35 @@ public class QRCode {
             grandTotal = (int) Math.pow(10, 8);
         }
         return grandTotal;
+    }
+
+    /**
+     * Getter for QRCode Object's id attribute, used to define uniqueness of QRCode objects
+     * id is used as a key for the firebase database when accessing QRCodes.
+     * default value is the QRCode's hashkey, if location is added
+     * by player, location value is concatenated to create a unique id
+     *
+     * @return id - a string representing a unique instance of a QRCode
+     */
+    @NonNull
+    public String getID() {
+        return id;
+    }
+
+    /**
+     * Setter for QRCode Object's id attribute, used to define uniqueness of QRCode objects
+     * id is used as a key for the firebase database when accessing QRCodes.
+     * default value is the QRCode's hashkey, if location is added
+     * by player, location value is concatenated to create a unique id
+     *
+     * @param longitude Double representing longitude of where QRCode was captured
+     * @param latitude  Double representing latitude of where QRCode was captured
+     * @reference https://docs.oracle.com/javase/tutorial/java/data/converting.html
+     */
+    public void setID(@NonNull Double longitude, @NonNull Double latitude) {
+        String strLong = Double.toString(longitude);
+        String strLat = Double.toString(latitude);
+        this.id = this.hash + strLong + strLat;
     }
 
     /**
@@ -313,6 +320,7 @@ public class QRCode {
     /**
      * Getter for QRCode Object's Longitude attribute, which represents the
      * Longitude where the code was scanned. initialized at 0
+     *
      * @return longitude - a string ArrayList with 2 elements representing [Longitude , Latitude ]
      */
     @NonNull
@@ -323,6 +331,7 @@ public class QRCode {
     /**
      * Setter for QRCode Object's longitude attribute, which represents the
      * Longitude where the code was scanned.
+     *
      * @param longitude - longitude of the Location where QR was scanned
      */
     public void setLongitude(@NonNull Double longitude) {
@@ -330,22 +339,24 @@ public class QRCode {
     }
 
     /**
-     * Setter for QRCode Object's latitude attribute, which represents the
-     * Latitude where the code was scanned.
-     * @param latitude - latitude of the location where QR was scanned
-     */
-    public void setLatitude(@NonNull Double latitude) {
-        this.latitude = latitude;
-    }
-
-    /**
      * Getter for QRCode Object's latitude attribute, which represents the
      * Latitude where the code was scanned. initialized at 0
+     *
      * @return latitude - a string ArrayList with 2 elements representing [Longitude , Latitude ]
      */
     @NonNull
     public Double getLatitude() {
         return this.latitude;
+    }
+
+    /**
+     * Setter for QRCode Object's latitude attribute, which represents the
+     * Latitude where the code was scanned.
+     *
+     * @param latitude - latitude of the location where QR was scanned
+     */
+    public void setLatitude(@NonNull Double latitude) {
+        this.latitude = latitude;
     }
 
     /**

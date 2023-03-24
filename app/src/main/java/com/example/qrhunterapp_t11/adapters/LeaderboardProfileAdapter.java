@@ -1,4 +1,4 @@
-package com.example.qrhunterapp_t11;
+package com.example.qrhunterapp_t11.adapters;
 
 import android.content.SharedPreferences;
 import android.view.LayoutInflater;
@@ -8,6 +8,9 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.qrhunterapp_t11.R;
+import com.example.qrhunterapp_t11.interfaces.OnItemClickListener;
+import com.example.qrhunterapp_t11.objectclasses.User;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 

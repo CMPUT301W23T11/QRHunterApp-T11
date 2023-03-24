@@ -1,4 +1,4 @@
-package com.example.qrhunterapp_t11;
+package com.example.qrhunterapp_t11.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,6 +7,10 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.qrhunterapp_t11.R;
+import com.example.qrhunterapp_t11.interfaces.OnItemClickListener;
+import com.example.qrhunterapp_t11.interfaces.OnItemLongClickListener;
+import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 
@@ -21,21 +25,21 @@ import io.reactivex.rxjava3.annotations.NonNull;
  * @reference <a href="https://www.youtube.com/watch?v=JLW7z_AaUHA">by Akshay Jhajhra for more help with the OnClick</a>
  * @reference <a href="https://www.youtube.com/watch?v=k7GR3h5OsXk">by Technical Skillz for FirebaseRecyclerOptions help</a>
  */
-public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterClass.RecyclerViewHolder> {
+public class QRCodeAdapter extends FirestoreRecyclerAdapter<QRCode, QRCodeAdapter.RecyclerViewHolder> {
     private OnItemClickListener listener;
     private OnItemLongClickListener listenerLong;
 
-    public QRAdapterClass(@NonNull FirestoreRecyclerOptions<QRCode> options) {
+    public QRCodeAdapter(@NonNull FirestoreRecyclerOptions<QRCode> options) {
         super(options);
     }
 
     @Override
     protected void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position, @NonNull QRCode model) {
         // Bind the QRCode object to the RecyclerViewHolder
-        holder.QRCodeName.setText(model.getName());
+        holder.qrCodeName.setText(model.getName());
 
         String points = "Points: " + model.getPoints();
-        holder.QRCodePoints.setText(points);
+        holder.qrCodePoints.setText(points);
 
         //String comments = "Comments: " + model.getCommentListSize();
         //holder.QRCodeNumComments.setText(comments);
@@ -75,15 +79,15 @@ public class QRAdapterClass extends FirestoreRecyclerAdapter<QRCode, QRAdapterCl
 
     public class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
-        private final TextView QRCodeName;
-        private final TextView QRCodePoints;
-        private final TextView QRCodeNumComments;
+        private final TextView qrCodeName;
+        private final TextView qrCodePoints;
+        private final TextView qrCodeNumComments;
 
         public RecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
-            QRCodeName = itemView.findViewById(R.id.qrcode_name);
-            QRCodePoints = itemView.findViewById(R.id.qrcode_points);
-            QRCodeNumComments = itemView.findViewById(R.id.qrcode_numcomments);
+            qrCodeName = itemView.findViewById(R.id.qrcode_name);
+            qrCodePoints = itemView.findViewById(R.id.qrcode_points);
+            qrCodeNumComments = itemView.findViewById(R.id.qrcode_numcomments);
 
             // This click listener responds to clicks done on an item in the recyclerview
 

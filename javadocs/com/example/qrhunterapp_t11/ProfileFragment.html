@@ -125,7 +125,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li>androidx.fragment.app.Fragment</li>
 <li>
 <ul class="inheritance">
-<li>com.example.qrhunterapp_t11.ProfileFragment</li>
+<li>com.example.qrhunterapp_t11.fragments.ProfileFragment</li>
 </ul>
 </li>
 </ul>
@@ -271,14 +271,19 @@ extends androidx.fragment.app.Fragment</pre>
 <th class="colSecond" scope="col">Method</th>
 <th class="colLast" scope="col">Description</th>
 </tr>
-<tr id="i0" class="altColor">
-<td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#noQRCodesCheck(java.lang.String,com.example.qrhunterapp_t11.ProfileFragment.ProfileCallback)">noQRCodesCheck</a></span>&#8203;(java.lang.String&nbsp;username,
-              <a href="ProfileFragment.ProfileCallback.html" title="interface in com.example.qrhunterapp_t11">ProfileFragment.ProfileCallback</a>&nbsp;noCodes)</code></th>
-<td class="colLast">
-<div class="block">Query database to check if user has any QR codes in their collection or not</div>
-</td>
-</tr>
+    <tr id="i0" class="altColor">
+        <td class="colFirst"><code>void</code></td>
+        <th class="colSecond" scope="row"><code><span class="memberNameLink"><a
+                href="#noQRCodesCheck(java.lang.String,com.example.qrhunterapp_t11.fragments.ProfileFragment.ProfileCallback)">noQRCodesCheck</a></span>&#8203;(java.lang.String&nbsp;username,
+            <a href="ProfileFragment.ProfileCallback.html"
+               title="interface in com.example.qrhunterapp_t11">ProfileFragment.ProfileCallback</a>&nbsp;noCodes)</code>
+        </th>
+        <td class="colLast">
+            <div class="block">Query database to check if user has any QR codes in their collection
+                or not
+            </div>
+        </td>
+    </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>android.view.View</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#onCreateView(android.view.LayoutInflater,android.view.ViewGroup,android.os.Bundle)">onCreateView</a></span>&#8203;(android.view.LayoutInflater&nbsp;inflater,
@@ -333,10 +338,12 @@ extends androidx.fragment.app.Fragment</pre>
 <li class="blockList">
 <h4>tag</h4>
 <pre>private static final&nbsp;java.lang.String tag</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../constant-values.html#com.example.qrhunterapp_t11.ProfileFragment.tag">Constant Field Values</a></dd>
-</dl>
+    <dl>
+        <dt><span class="seeLabel">See Also:</span></dt>
+        <dd>
+            <a href="../../../constant-values.html#com.example.qrhunterapp_t11.fragments.ProfileFragment.tag">Constant
+                Field Values</a></dd>
+    </dl>
 </li>
 </ul>
 <a id="usersReference">
@@ -355,10 +362,12 @@ extends androidx.fragment.app.Fragment</pre>
 <li class="blockList">
 <h4>listenFailed</h4>
 <pre>private static final&nbsp;java.lang.String listenFailed</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../constant-values.html#com.example.qrhunterapp_t11.ProfileFragment.listenFailed">Constant Field Values</a></dd>
-</dl>
+    <dl>
+        <dt><span class="seeLabel">See Also:</span></dt>
+        <dd>
+            <a href="../../../constant-values.html#com.example.qrhunterapp_t11.fragments.ProfileFragment.listenFailed">Constant
+                Field Values</a></dd>
+    </dl>
 </li>
 </ul>
 <a id="adapter">
@@ -453,29 +462,34 @@ public&nbsp;android.view.View&nbsp;onCreateView&#8203;(@NonNull
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>inflater</code> - The LayoutInflater object that can be used to inflate
                            any views in the fragment,</dd>
-<dd><code>container</code> - If non-null, this is the parent view that the fragment's
-                           UI should be attached to.  The fragment should not add the view itself,
-                           but this can be used to generate the LayoutParams of the view.</dd>
-<dd><code>savedInstanceState</code> - If non-null, this fragment is being re-constructed
-                           from a previous saved state as given here.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>a View containing the inflated layout.</dd>
+    <dd><code>container</code> - If non-null, this is the parent view that the fragment's
+        UI should be attached to. The fragment should not add the view itself,
+        but this can be used to generate the LayoutParams of the view.
+    </dd>
+    <dd><code>savedInstanceState</code> - If non-null, this fragment is being re-constructed
+        from a previous saved state as given here.
+    </dd>
+    <dt><span class="returnLabel">Returns:</span></dt>
+    <dd>a View containing the inflated layout.</dd>
 </dl>
 </li>
 </ul>
-<a id="noQRCodesCheck(java.lang.String,com.example.qrhunterapp_t11.ProfileFragment.ProfileCallback)">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>noQRCodesCheck</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;noQRCodesCheck&#8203;(@NonNull
+    <a id="noQRCodesCheck(java.lang.String,com.example.qrhunterapp_t11.fragments.ProfileFragment.ProfileCallback)">
+        <!--   -->
+    </a>
+    <ul class="blockListLast">
+        <li class="blockList">
+            <h4>noQRCodesCheck</h4>
+            <pre class="methodSignature">public&nbsp;void&nbsp;noQRCodesCheck&#8203;(@NonNull
                            java.lang.String&nbsp;username,
                            @NonNull
-                           <a href="ProfileFragment.ProfileCallback.html" title="interface in com.example.qrhunterapp_t11">ProfileFragment.ProfileCallback</a>&nbsp;noCodes)</pre>
-<div class="block">Query database to check if user has any QR codes in their collection or not</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
+                           <a href="ProfileFragment.ProfileCallback.html"
+                              title="interface in com.example.qrhunterapp_t11">ProfileFragment.ProfileCallback</a>&nbsp;noCodes)</pre>
+            <div class="block">Query database to check if user has any QR codes in their collection
+                or not
+            </div>
+            <dl>
+                <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>username</code> - Current user's username</dd>
 <dd><code>noCodes</code> - Callback function</dd>
 </dl>

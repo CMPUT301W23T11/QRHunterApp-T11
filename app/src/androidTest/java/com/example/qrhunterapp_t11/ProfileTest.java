@@ -15,6 +15,9 @@ import androidx.annotation.NonNull;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
+import com.example.qrhunterapp_t11.activities.MainActivity;
+import com.example.qrhunterapp_t11.objectclasses.QRCode;
+import com.example.qrhunterapp_t11.objectclasses.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -35,7 +38,7 @@ import org.junit.Test;
 import java.util.Random;
 
 /**
- * Intent tests for the Profile Fragment and its interaction with the ViewQR dialog.
+ * Intent tests for the Profile Fragment and its interaction with the QRCodeView dialog.
  *
  * @author Sarah Thomson, Aidan Lynch, Afra
  * @reference code mostly repurposed from Aidan Lynch and lab 7.
@@ -63,11 +66,11 @@ public class ProfileTest {
             String displayName;
 
             prefs.edit().clear().commit();
-            prefs.edit().putBoolean("LoggedIn", true).commit();
-            prefs.edit().putString("currentUser", testUsername).commit();
+            prefs.edit().putBoolean("loggedIn", true).commit();
+            prefs.edit().putString("currentUserUsername", testUsername).commit();
             prefs.edit().putString("currentUserDisplayName", testUsername).commit();
 
-            username = prefs.getString("currentUser", null);
+            username = prefs.getString("currentUserUsername", null);
             displayName = prefs.getString("currentUserDisplayName", null);
 
             assertEquals(testUsername, username);
@@ -76,7 +79,7 @@ public class ProfileTest {
     };
     private String name;
 
-    private QRCode mockQR(String valueString) {
+    private QRCode mockQRCode(String valueString) {
         return new QRCode(valueString);
     }
 
@@ -94,13 +97,13 @@ public class ProfileTest {
 
         // add new QR code
         final int randomNum = new Random().nextInt(10000);
-        qrCode = mockQR(String.valueOf(randomNum));
+        qrCode = mockQRCode(String.valueOf(randomNum));
         name = qrCode.getName();
         CollectionReference qrReference = usersReference.document(testUsername).collection("QR Codes");
         addDoc(qrCode, qrReference);
 
         // check if new QrCode was added
-        checkDocExists(qrCode.getId(), qrReference, new ProfileTest.Callback() {
+        checkDocExists(qrCode.getID(), qrReference, new ProfileTest.Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertTrue(docExists);
@@ -127,7 +130,7 @@ public class ProfileTest {
      */
     @Test
     public void checkListClick() {
-        // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”
+        // Asserts that the current activity is the MainActivity. Otherwise, show Wrong Activity
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
 
         // Check that current user exists
@@ -167,7 +170,7 @@ public class ProfileTest {
      */
     @Test
     public void checkCommentAdd() {
-        // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”
+        // Asserts that the current activity is the MainActivity. Otherwise, show Wrong Activity
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
 
         // Check that current user exists
@@ -208,7 +211,7 @@ public class ProfileTest {
      */
     @Test
     public void checkPointAddition() {
-        // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”
+        // Asserts that the current activity is the MainActivity. Otherwise, show Wrong Activity
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         CollectionReference qrReference = usersReference.document(testUsername).collection("QR Codes");
 
@@ -234,7 +237,7 @@ public class ProfileTest {
         assertTrue(solo.waitForText(String.valueOf(qrCode.getPoints()), 4, 10000));
 
         // create another QR object
-        QRCode qrCode1 = mockQR("Test");
+        QRCode qrCode1 = mockQRCode("Test");
         addDoc(qrCode1, qrReference);
 
         // Check if the total has been updated
@@ -255,7 +258,7 @@ public class ProfileTest {
      */
     //@Test
     public void deleteLongClickPositive() {
-        // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”
+        // Asserts that the current activity is the MainActivity. Otherwise, show Wrong Activity
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         CollectionReference qrReference = usersReference.document(testUsername).collection("QR Codes");
 
@@ -278,7 +281,7 @@ public class ProfileTest {
         solo.clickOnText("Delete");
 
         // Check document has been deleted from the database
-        checkDocExists(qrCode.getId(), qrReference, new ProfileTest.Callback() {
+        checkDocExists(qrCode.getID(), qrReference, new ProfileTest.Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertFalse(docExists);
@@ -292,7 +295,7 @@ public class ProfileTest {
      */
     @Test
     public void deleteLongClickNegative() {
-        // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”
+        // Asserts that the current activity is the MainActivity. Otherwise, show Wrong Activity
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         CollectionReference qrReference = usersReference.document(testUsername).collection("QR Codes");
 
@@ -358,7 +361,7 @@ public class ProfileTest {
      * @reference Aidan Lynch's CameraFragmentTest
      */
     public void addDoc(QRCode qrCode, CollectionReference cr) {
-        cr.document(qrCode.getId()).set(qrCode)
+        cr.document(qrCode.getID()).set(qrCode)
                 .addOnSuccessListener(new OnSuccessListener<Object>() {
                     @Override
                     public void onSuccess(Object o) {

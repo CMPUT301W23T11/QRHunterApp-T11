@@ -1,4 +1,4 @@
-package com.example.qrhunterapp_t11;
+package com.example.qrhunterapp_t11.fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -23,6 +23,10 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.qrhunterapp_t11.R;
+import com.example.qrhunterapp_t11.adapters.LeaderboardProfileAdapter;
+import com.example.qrhunterapp_t11.interfaces.OnItemClickListener;
+import com.example.qrhunterapp_t11.objectclasses.User;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -50,7 +54,7 @@ public class SearchFragment extends Fragment {
     private final String tag = "searchFragment";
     private final FirebaseFirestore db;
     private final CollectionReference usersReference;
-    private final CollectionReference QRCodeReference;
+    private final CollectionReference qrCodeReference;
     private LeaderboardProfileAdapter leaderboardAdapter;
     private RecyclerView leaderboardRecyclerView;
     private FirestoreRecyclerOptions<User> leaderboardOptions;
@@ -60,7 +64,7 @@ public class SearchFragment extends Fragment {
     public SearchFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
         this.usersReference = db.collection("Users");
-        this.QRCodeReference = db.collection("QRCodes");
+        this.qrCodeReference = db.collection("QRCodes");
     }
 
     @NonNull

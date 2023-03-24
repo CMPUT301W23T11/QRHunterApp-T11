@@ -1,4 +1,4 @@
-package com.example.qrhunterapp_t11;
+package com.example.qrhunterapp_t11.fragments;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -14,6 +14,11 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.qrhunterapp_t11.R;
+import com.example.qrhunterapp_t11.adapters.QRCodeAdapter;
+import com.example.qrhunterapp_t11.interfaces.OnItemClickListener;
+import com.example.qrhunterapp_t11.interfaces.OnItemLongClickListener;
+import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -42,9 +47,9 @@ public class ProfileFragment extends Fragment {
     private static final String tag = "ProfileFragment";
     private static final String listenFailed = "listenFailed";
     private final CollectionReference usersReference;
-    private final CollectionReference QRCodeReference;
-    private QRAdapterClass adapter;
-    private RecyclerView QRCodeRecyclerView;
+    private final CollectionReference qrCodeReference;
+    private QRCodeAdapter adapter;
+    private RecyclerView qrCodeRecyclerView;
     private FirestoreRecyclerOptions<QRCode> options;
     private final String displayName;
     private final String username;
@@ -59,7 +64,7 @@ public class ProfileFragment extends Fragment {
     public ProfileFragment(@NonNull FirebaseFirestore db, @NonNull String displayName, @NonNull String username) {
         this.db = db;
         this.usersReference = db.collection("Users");
-        this.QRCodeReference = db.collection("QRCodes");
+        this.qrCodeReference = db.collection("QRCodes");
         this.displayName = displayName;
         this.username = username;
     }
@@ -99,15 +104,15 @@ public class ProfileFragment extends Fragment {
                     queryQRCodes(username, new ProfileUserDataCallback() {
                         public void getUserData(@NonNull ArrayList<String> userData) {
 
-                            QRCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
+                            qrCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
 
-                            adapter = new QRAdapterClass(options);
+                            adapter = new QRCodeAdapter(options);
 
                             //super.onStart(); man idk
                             adapter.startListening();
-                            QRCodeRecyclerView.setAdapter(adapter);
-                            QRCodeRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                            QRCodeRecyclerView.setHasFixedSize(false);
+                            qrCodeRecyclerView.setAdapter(adapter);
+                            qrCodeRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                            qrCodeRecyclerView.setHasFixedSize(false);
 
                             // TODO: get the fragment to auto refresh
 
@@ -137,7 +142,7 @@ public class ProfileFragment extends Fragment {
 
                                     QRCode qrCode = documentSnapshot.toObject(QRCode.class);
                                     assert qrCode != null;
-                                    new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
+                                    new QRCodeView(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
                                 }
                             });
 
@@ -228,7 +233,7 @@ public class ProfileFragment extends Fragment {
                     }
 
                     // Retrieve QR Code data from the QRCodes collection using DocumentReferences
-                    Query query = QRCodeReference.whereIn(FieldPath.documentId(), userQRCodesRef);
+                    Query query = qrCodeReference.whereIn(FieldPath.documentId(), userQRCodesRef);
                     query
                             .get()
                             .addOnSuccessListener(referencedQRDocumentSnapshots -> {
