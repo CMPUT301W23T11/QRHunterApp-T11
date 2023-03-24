@@ -458,16 +458,22 @@ public class CameraFragment extends Fragment {
                         // If qrCode does not exist, add it to QRCode collection
                         if (!qrExists){
                             QRCodesReference.document(QRCodeId).set(qrCode);
+                            if (resizedImageUrl != null){
+                                QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
+                                //QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayRemove(resizedImageUrl));
+                            }
                         }
-                        // Add image to qrCode
-                        QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
-
-                        // If user does not already have this qrCode, add a reference to it, increment their total scans
+                        // If user does not already have this qrCode, add a reference to it, increment their total scans, add new photo to qrCode
                         if(!qrRefExists){
                             System.out.println("HEUHURLSHRPIUSHEPRIHSEPOIHRPOISHEPROIPSOEHRPOISHEPRIHP");
                             usersReference.document(currentUser).collection("User QR Codes").document(QRCodeId).set(QRCodeRef);
                             usersReference.document(currentUser).update("totalScans", FieldValue.increment(1));
                             usersReference.document(currentUser).update("totalPoints", FieldValue.increment(qrCode.getPoints()));
+                            if (resizedImageUrl != null){
+                                QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
+                                //QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayRemove(resizedImageUrl));
+                            }
+
                         }
                         // If user does not have this qrCode but it already exists in qrCode collection, increase its total scans
                         if ((qrExists) && (!qrRefExists)){

@@ -12,11 +12,13 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager2.widget.ViewPager2;
@@ -47,7 +49,7 @@ import java.util.Map;
  * @reference <a href="https://cloud.google.com/firestore/docs/manage-data/add-data">for adding comment to db using arrayUnion</a>
  * @references <a href="https://www.svgbackgrounds.com/license/">for liquid_cheese_background</a>
  */
-public class ViewQR extends DialogFragment implements LoadPhotoListener {
+public class ViewQR extends DialogFragment{
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference QRCodesReference = db.collection("QRCodes");
     private final CollectionReference usersReference = db.collection("Users");
@@ -62,7 +64,9 @@ public class ViewQR extends DialogFragment implements LoadPhotoListener {
     private TextView commentNumTV;
     private ViewPager viewPager;
     private PhotoAdapter photoAdapter;
-    private LoadPhotoListener listener;
+
+
+
 
 
 
@@ -116,25 +120,24 @@ public class ViewQR extends DialogFragment implements LoadPhotoListener {
 
         commentNumTV = view.findViewById(R.id.commentsNumTv);
         commentET = view.findViewById(R.id.editTextComment);
-        ImageView commentIV = view.findViewById(R.id.imageViewSend);
+
         ListView commentListView = view.findViewById(R.id.commentListView);
+
+        LinearLayoutCompat photoBox = view.findViewById(R.id.photoBackground);
+
         TextView pointsTV = view.findViewById(R.id.pointsTV);
         TextView scansTV = view.findViewById(R.id.scansTV);
+        TextView numeratorTV = view.findViewById(R.id.numeratorTV);
+        TextView denominatorTV = view.findViewById(R.id.denominatorTV);
+
         ImageView eyesImageView = view.findViewById(R.id.imageEyes);
         ImageView colourImageView = view.findViewById(R.id.imageColour);
         ImageView faceImageView = view.findViewById(R.id.imageFace);
         ImageView noseImageView = view.findViewById(R.id.imageNose);
         ImageView mouthImageView = view.findViewById(R.id.imageMouth);
         ImageView eyebrowsImageView = view.findViewById(R.id.imageEyebrows);
+        ImageView commentIV = view.findViewById(R.id.imageViewSend);
         //ImageView photoImageView = view.findViewById(R.id.imagePhoto);
-
-
-
-        String points = "Points: " + qrCode.getPoints();
-        pointsTV.setText(points);
-        String scans = "Total Scans: " + qrCode.getNumberOfScans();
-        scansTV.setText(scans);
-
 
         // Creates the appearance of the qrCode based on the drawable ids stored in its faceList array
         colourImageView.setImageResource((qrCode.getFaceList()).get(2));
@@ -144,11 +147,24 @@ public class ViewQR extends DialogFragment implements LoadPhotoListener {
         mouthImageView.setImageResource((qrCode.getFaceList()).get(4));
         eyebrowsImageView.setImageResource((qrCode.getFaceList()).get(5));
 
+        String points = "Points: " + qrCode.getPoints();
+        pointsTV.setText(points);
+        String scans = "Total Scans: " + qrCode.getNumberOfScans();
+        scansTV.setText(scans);
         viewPager = view.findViewById(R.id.pager);
         photoAdapter = new PhotoAdapter(getContext(), qrCode.getPhotoList());
         viewPager.setAdapter(photoAdapter);
 
+        System.out.println(photoAdapter.getCount());
+
+
         // If the QRCode has an associated photo, use Picasso to load it into the photoImageView (Rotated for some reason)
+        if(photoAdapter.getCount() == 0){
+            photoBox.setVisibility(View.GONE);
+        }
+        denominatorTV.setText(String.valueOf(photoAdapter.getCount()));
+        numeratorTV.setText(String.valueOf(viewPager.getCurrentItem() + 1));
+
         if ((!qrCode.getPhotoList().isEmpty()) && (qrCode.getPhotoList().get(0) != null)) {
             //Picasso.with(getContext()).load(qrCode.getPhotoList().get(0)).into(photoImageView);
         }
@@ -244,6 +260,17 @@ public class ViewQR extends DialogFragment implements LoadPhotoListener {
             }
         });
 
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                numeratorTV.setText(String.valueOf(viewPager.getCurrentItem() + 1));
+            }
+            @Override
+            public void onPageSelected(int position) {}
+            @Override
+            public void onPageScrollStateChanged(int state) {}
+        });
+
         //This OnTouchListener code block came from Moisés Olmedo to make a list view be scrollable within a scrollview.
         //Link: https://stackoverflow.com/questions/6210895/listview-inside-scrollview-is-not-scrolling-on-android/17503823#17503823
         //License: CC BY-SA 3.0
@@ -262,30 +289,6 @@ public class ViewQR extends DialogFragment implements LoadPhotoListener {
                 }
                 v.onTouchEvent(event);
                 return true;
-            }
-        });
-
-        viewPager.setOnTouchListener(new View.OnTouchListener() {
-            private float pointX;
-            private float pointY;
-            private int tolerance = 50;
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch(event.getAction()){
-                    case MotionEvent.ACTION_MOVE:
-                        return false; //This is important, if you return TRUE the action of swipe will not take place.
-                    case MotionEvent.ACTION_DOWN:
-                        pointX = event.getX();
-                        pointY = event.getY();
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        boolean sameX = pointX + tolerance > event.getX() && pointX - tolerance < event.getX();
-                        boolean sameY = pointY + tolerance > event.getY() && pointY - tolerance < event.getY();
-                        if(sameX && sameY){
-                            //The user "clicked" certain point in the screen or just returned to the same position an raised the finger
-                        }
-                }
-                return false;
             }
         });
 
@@ -336,16 +339,6 @@ public class ViewQR extends DialogFragment implements LoadPhotoListener {
                     }
                     comments.comments(commentsTemp);
                 });
-    }
-
-    @Override
-    public void onFirebaseLoadSuccess(ArrayList<String> photos) {
-
-    }
-
-    @Override
-    public void onFirebaseLoadFailed(String error) {
-
     }
 
     /**
