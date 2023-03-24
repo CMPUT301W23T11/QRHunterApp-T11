@@ -1,5 +1,6 @@
 package com.example.qrhunterapp_t11;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -54,9 +55,7 @@ public class ViewQR extends DialogFragment {
     private CommentAdapter commentAdapter;
     private EditText commentET;
     private SharedPreferences prefs;
-    private String QRCodeHash;
     private String QRCodeId;
-    private boolean QRCodeHasNoComments;
     private TextView commentNumTV;
 
     /**
@@ -74,7 +73,6 @@ public class ViewQR extends DialogFragment {
     public ViewQR(@NonNull QRCode qrCode) {
         super();
         this.qrCode = qrCode;
-        this.QRCodeHash = qrCode.getHash();
         this.QRCodeId = qrCode.getId();
     }
 
@@ -99,6 +97,7 @@ public class ViewQR extends DialogFragment {
      * @param savedInstanceState - The last saved instance state of the Fragment, or null if this is a freshly created Fragment.
      * @return - builder
      */
+    @SuppressLint("ClickableViewAccessibility")
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -141,26 +140,12 @@ public class ViewQR extends DialogFragment {
 
         noCommentsCheck(QRCodeId, new QRCodeNoCommentsCallback() {
             public void noComments(boolean noComments) {
-                QRCodeHasNoComments = noComments;
+                if (!noComments) {
+                    getComments(QRCodeId, new QRCodeGetCommentsCallback() {
+                        public void setComments(@NonNull ArrayList<Comment> comments) {
 
-                if (!QRCodeHasNoComments) {
-                    getComments(QRCodeId, new QRCodeCommentsCallback() {
-                        public void comments(@NonNull ArrayList<ArrayList<Map<String, Object>>> comments) {
+                            commentList = comments;
 
-                            commentList = new ArrayList<>();
-                            for (int i = 0; i < comments.size(); i++) {
-                                Map<String, Object> commentMap;
-                                commentMap = comments.get(i).get(0);
-                                String username = (String) commentMap.get("username");
-                                String displayName = (String) commentMap.get("displayName");
-                                String commentString = (String) commentMap.get("comment");
-
-                                assert commentString != null;
-                                assert displayName != null;
-                                assert username != null;
-                                Comment comment = new Comment(commentString, displayName, username);
-                                commentList.add(comment);
-                            }
                             commentAdapter = new CommentAdapter(getContext(), commentList);
                             commentListView.setAdapter(commentAdapter);
                             CollectionReference query = db.collection("QRCodes").document(qrCode.getId()).collection("commentList");
@@ -182,7 +167,7 @@ public class ViewQR extends DialogFragment {
 
                         }
                     });
-                }else{
+                } else {
                     commentList = new ArrayList<>();
                     commentAdapter = new CommentAdapter(getContext(), commentList);
                     commentListView.setAdapter(commentAdapter);
@@ -192,46 +177,56 @@ public class ViewQR extends DialogFragment {
             }
         });
 
-        // When the send image arrow ImageView is clicked, if a comment has been made it will be added to the QRCode object's saved array of comments and appear in the comment box with the associated user
-        commentIV.setOnClickListener(new View.OnClickListener() {
+        // When the send image arrow ImageView is clicked, if a comment has been made it will be added
+        // to the QRCode object's saved array of comments and appear in the comment box with the associated user
+        // User can only comment on QR Codes if they already have that code in their collection
+        checkUserHasQRCode(prefs.getString("currentUser", null), QRCodeId, new UserHasQRCodeCallback() {
             @Override
-            public void onClick(View view) {
-                String commentString = commentET.getText().toString();
+            public void setHasCode(boolean hasCode) {
+                if (hasCode) {
+                    commentIV.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            String commentString = commentET.getText().toString();
 
-                if (!commentString.isEmpty()) {
+                            if (!commentString.isEmpty()) {
 
-                    String currentUserDisplayName = prefs.getString("currentUserDisplayName", null);
-                    String currentUser = prefs.getString("currentUser", null);
-                    Comment c = new Comment(commentString, currentUserDisplayName, currentUser);
-                    Integer commentNum = 0;
+                                String currentUserDisplayName = prefs.getString("currentUserDisplayName", null);
+                                String currentUser = prefs.getString("currentUser", null);
+                                Comment c = new Comment(commentString, currentUserDisplayName, currentUser);
+                                int commentNum;
 
-                    commentAdapter.setCommentList(c);
-                    commentAdapter.notifyDataSetChanged();
-                    commentET.getText().clear();
+                                commentAdapter.setCommentList(c);
+                                commentAdapter.notifyDataSetChanged();
+                                commentET.getText().clear();
 
-                    Map<String, String> comment = new HashMap<>();
-                    comment.put("username", currentUser);
-                    comment.put("displayName", currentUserDisplayName);
-                    comment.put("comment", commentString);
+                                Map<String, String> comment = new HashMap<>();
+                                comment.put("username", currentUser);
+                                comment.put("displayName", currentUserDisplayName);
+                                comment.put("comment", commentString);
 
-                    Map<String, CollectionReference> QRCodeRef = new HashMap<>();
-                    CollectionReference QRCodeCollectionRef = QRCodesReference.document(QRCodeId).collection("commentList");
-                    QRCodeRef.put(QRCodeId, QRCodeCollectionRef);
+                                Map<String, CollectionReference> QRCodeRef = new HashMap<>();
+                                CollectionReference QRCodeCollectionRef = QRCodesReference.document(QRCodeId).collection("commentList");
+                                QRCodeRef.put(QRCodeId, QRCodeCollectionRef);
 
-                    QRCodesReference.document(QRCodeId).collection("commentList").add(comment);
-                    commentNum = Integer.parseInt(commentNumTV.getText().toString());
-                    commentNum ++;
-                    commentNumTV.setText(commentNum.toString());
+                                QRCodesReference.document(QRCodeId).collection("commentList").add(comment);
+                                commentNum = Integer.parseInt(commentNumTV.getText().toString());
+                                commentNum++;
+                                commentNumTV.setText(String.valueOf(commentNum));
 
-
+                            }
+                        }
+                    });
                 }
             }
         });
 
-        //This OnTouchListener code block came from Moisés Olmedo to make a list view be scrollable within a scrollview.
-        //Link: https://stackoverflow.com/questions/6210895/listview-inside-scrollview-is-not-scrolling-on-android/17503823#17503823
-        //License: CC BY-SA 3.0
+        // This OnTouchListener code block came from Moisés Olmedo to make a list view be scrollable within a scrollview.
+        // Link: https://stackoverflow.com/questions/6210895/listview-inside-scrollview-is-not-scrolling-on-android/17503823#17503823
+        // License: CC BY-SA 3.0
         commentListView.setOnTouchListener(new ListView.OnTouchListener() {
+            @SuppressLint("ClickableViewAccessibility")
+
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 int action = event.getAction();
@@ -264,7 +259,7 @@ public class ViewQR extends DialogFragment {
     /**
      * Query database to check if QR code has any comments or not
      *
-     * @param QRCodeId QR to check for comments
+     * @param QRCodeId   QR to check for comments
      * @param noComments Callback function
      */
     public void noCommentsCheck(@NonNull String QRCodeId, final @NonNull QRCodeNoCommentsCallback noComments) {
@@ -281,21 +276,45 @@ public class ViewQR extends DialogFragment {
                 });
     }
 
-    public void getComments(@NonNull String QRCodeId, final @NonNull QRCodeCommentsCallback comments) {
+    /**
+     * Gets all comments on a QR Code.
+     * Comments are stored in the callback array
+     *
+     * @param QRCodeId    ID of QR Code to get comments of
+     * @param setComments Callback for query
+     */
+    public void getComments(@NonNull String QRCodeId, final @NonNull QRCodeGetCommentsCallback setComments) {
 
-        ArrayList<ArrayList<Map<String, Object>>> commentsTemp = new ArrayList<>();
+        ArrayList<Comment> comments = new ArrayList<>();
 
-        // Retrieve DocumentReferences in the user's QR code collection and store them in an array
+        // Retrieve all comment items for the given QR Code and add them to the array
         QRCodesReference.document(QRCodeId).collection("commentList")
                 .get()
                 .addOnSuccessListener(snapshot -> {
                     for (QueryDocumentSnapshot document : snapshot) {
-                        ArrayList<Map<String, Object>> comment = new ArrayList<>();
-                        comment.add(document.getData());
-                        commentsTemp.add(comment);
+                        Comment comment;
+                        comment = document.toObject(Comment.class);
+                        comments.add(comment);
                     }
-                    comments.comments(commentsTemp);
+                    setComments.setComments(comments);
                 });
+    }
+
+    /**
+     * Check if the given user has the given QR Code
+     *
+     * @param username   Username to check
+     * @param QRCodeID   QR Code to check
+     * @param setHasCode Callback for query
+     */
+    public void checkUserHasQRCode(@NonNull String username, @NonNull String QRCodeID, final @NonNull UserHasQRCodeCallback setHasCode) {
+        usersReference.document(username).collection("User QR Codes")
+                .document(QRCodeID)
+                .get()
+                .addOnSuccessListener(userQRCode -> {
+                            setHasCode.setHasCode(userQRCode.exists());
+                        }
+                );
     }
 
     /**
@@ -319,7 +338,16 @@ public class ViewQR extends DialogFragment {
      *
      * @author Afra
      */
-    public interface QRCodeCommentsCallback {
-        void comments(@NonNull ArrayList<ArrayList<Map<String, Object>>> comments);
+    public interface QRCodeGetCommentsCallback {
+        void setComments(@NonNull ArrayList<Comment> comments);
+    }
+
+    /**
+     * Callback for querying the database to see if user has given QR Code
+     *
+     * @author Afra
+     */
+    public interface UserHasQRCodeCallback {
+        void setHasCode(boolean hasCode);
     }
 }
