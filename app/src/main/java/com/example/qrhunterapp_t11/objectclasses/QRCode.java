@@ -30,7 +30,7 @@ public class QRCode {
      * @param raw - a raw string to be hashed
      */
     public QRCode(@NonNull String raw) {
-        // Mandatory exception due to message digest library
+        // mandatory exception due to message digest library
         try {
             this.hash = setHash(raw);
         } catch (NoSuchAlgorithmException e) {
@@ -56,6 +56,7 @@ public class QRCode {
      */
     public QRCode() {
     }
+
 
     /**
      * calculatePoints uses the hash value of the QRCode to calculate the points value of the QRCode
