@@ -1,16 +1,20 @@
 package com.example.qrhunterapp_t11;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -48,6 +52,7 @@ public class ProfileFragment extends Fragment {
     private FirestoreRecyclerOptions<QRCode> options;
     private final String displayName;
     private final String username;
+    private SharedPreferences prefs;
     FirebaseFirestore db;
 
     /**
@@ -80,6 +85,8 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
+        prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        Button backButton = view.findViewById(R.id.profile_back_button);
 
         TextView loginUsernameTextView = view.findViewById(R.id.profile_name);
 
@@ -89,6 +96,21 @@ public class ProfileFragment extends Fragment {
         TextView topQRCodeText = view.findViewById(R.id.topQRText);
         TextView lowQRCodeText = view.findViewById(R.id.lowQRText);
         TextView totalQRCodesText = view.findViewById(R.id.totalQRText);
+
+        // makes a back button visible if not the current user
+        if (!CurrentUser(displayName, username, prefs)) {
+            backButton.setVisibility(View.VISIBLE);
+
+            // takes the user back to the leaderboard screen
+            backButton.setOnClickListener(view1 -> {
+                FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+                trans.replace(R.id.main_screen, new SearchFragment(db));
+                trans.commit();
+                });
+        }
+        else {
+            backButton.setVisibility(View.INVISIBLE);
+        }
 
         // If the user has at least one QR code, initialize RecyclerView
         noQRCodesCheck(username, new ProfileNoCodesCallback() {
@@ -145,39 +167,42 @@ public class ProfileFragment extends Fragment {
                             adapter.setOnItemLongClickListener(new OnItemLongClickListener() {
                                 @Override
                                 public void onItemLongClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
+                                    // only operable if the profile is the current user
+                                    if (CurrentUser(displayName, username, prefs)) {
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                                        String QRCodeID = documentSnapshot.getId();
 
-                                    String QRCodeID = documentSnapshot.getId();
+                                        builder
+                                                .setTitle("Delete QR Code?")
+                                                .setNegativeButton("Cancel", null)
+                                                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                                        usersReference.document(username).collection("User QR Codes").document(QRCodeID)
+                                                                .get()
+                                                                .addOnSuccessListener(userQRSnapshot -> {
+                                                                    DocumentReference documentReference = (DocumentReference) userQRSnapshot.get("Reference");
+                                                                    assert documentReference != null;
+                                                                    documentReference
+                                                                            .get()
+                                                                            .addOnSuccessListener(QRSnapshot -> {
+                                                                                long points = QRSnapshot.getLong("points");
+                                                                                points = -points;
+                                                                                // Delete code from user's collection
+                                                                                usersReference.document(username).collection("User QR Codes").document(QRCodeID).delete();
+                                                                                // Subtract point value of that code from user's total points
+                                                                                usersReference.document(username).update("totalPoints", FieldValue.increment(points));
 
-                                    builder
-                                            .setTitle("Delete QR Code?")
-                                            .setNegativeButton("Cancel", null)
-                                            .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialogInterface, int i) {
-                                                    usersReference.document(username).collection("User QR Codes").document(QRCodeID)
-                                                            .get()
-                                                            .addOnSuccessListener(userQRSnapshot -> {
-                                                                DocumentReference documentReference = (DocumentReference) userQRSnapshot.get("Reference");
-                                                                assert documentReference != null;
-                                                                documentReference
-                                                                        .get()
-                                                                        .addOnSuccessListener(QRSnapshot -> {
-                                                                            long points = QRSnapshot.getLong("points");
-                                                                            points = -points;
-                                                                            // Delete code from user's collection
-                                                                            usersReference.document(username).collection("User QR Codes").document(QRCodeID).delete();
-                                                                            // Subtract point value of that code from user's total points
-                                                                            usersReference.document(username).update("totalPoints", FieldValue.increment(points));
-
-                                                                        });
-                                                            });
-                                                }
-                                            })
-                                            .create();
-                                    builder.show();
+                                                                            });
+                                                                });
+                                                    }
+                                                })
+                                                .create();
+                                        builder.show();
+                                    }
                                 }
+
                             });
                         }
                     });
@@ -244,6 +269,17 @@ public class ProfileFragment extends Fragment {
                                 }
                             });
                 });
+    }
+
+    /**
+     * Helper class to check if the current profile is the current user
+     * @param displayName The current profiles display name
+     * @param username The current profiles username
+     * @param prefs The Shared Preferences of the app
+     * @return A boolean of if the profile is the current user
+     */
+    public boolean CurrentUser(@NonNull String displayName, @NonNull String username, @NonNull SharedPreferences prefs){
+        return displayName.equals(prefs.getString("currentUserDisplayName", null)) && (username.equals(prefs.getString("currentUser", null)));
     }
 
     /**
