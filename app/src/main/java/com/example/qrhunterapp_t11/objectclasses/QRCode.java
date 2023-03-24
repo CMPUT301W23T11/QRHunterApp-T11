@@ -201,6 +201,9 @@ public class QRCode {
                 R.drawable.face2
         };
 
+        System.out.println(R.drawable.colour1);
+        System.out.println(R.drawable.colour2);
+
         ArrayList<Integer> faceList = new ArrayList<>();
         // Shorten hash and convert it to binary, remove the first 1 from the binary string
         int hashSmall = Integer.parseInt(hash.substring(0, 5), 16);
