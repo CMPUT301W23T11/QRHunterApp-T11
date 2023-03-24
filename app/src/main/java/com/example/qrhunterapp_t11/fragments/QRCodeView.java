@@ -150,6 +150,10 @@ public class QRCodeView extends DialogFragment {
                         public void setComments(@NonNull ArrayList<Comment> comments) {
 
                             commentList = comments;
+
+                            commentAdapter = new CommentAdapter(getContext(), commentList);
+                            commentListView.setAdapter(commentAdapter);
+
                             // Count number of comments QR Code has
                             qrCodesReference.document(qrCode.getID()).collection("commentList")
                                     .count()
@@ -161,13 +165,13 @@ public class QRCodeView extends DialogFragment {
                                     });
                         }
                     });
-                } else{
+                } else {
                     commentList = new ArrayList<>();
+                    commentAdapter = new CommentAdapter(getContext(), commentList);
+                    commentListView.setAdapter(commentAdapter);
                     commentNumTextView.setText("0");
-                }
 
-                commentAdapter = new CommentAdapter(getContext(), commentList);
-                commentListView.setAdapter(commentAdapter);
+                }
             }
         });
 
