@@ -15,8 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -25,7 +23,6 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -49,7 +46,6 @@ public class ProfileFragment extends Fragment {
     private QRAdapterClass adapter;
     private RecyclerView QRCodeRecyclerView;
     private FirestoreRecyclerOptions<QRCode> options;
-    private boolean userHasNoCodes;
     private final String displayName;
     private final String username;
     FirebaseFirestore db;
@@ -96,10 +92,8 @@ public class ProfileFragment extends Fragment {
 
         // If the user has at least one QR code, initialize RecyclerView
         noQRCodesCheck(username, new ProfileNoCodesCallback() {
-            public void noCodes(boolean noCodes) {
-                userHasNoCodes = noCodes;
-
-                if (!userHasNoCodes) {
+            public void setNoCodes(boolean noCodes) {
+                if (!noCodes) {
 
                     // Retrieve all QR Codes the user has and calculate scores
                     queryQRCodes(username, new ProfileUserDataCallback() {
@@ -199,21 +193,15 @@ public class ProfileFragment extends Fragment {
     /**
      * Query database to check if user has any QR codes in their collection or not
      *
-     * @param username Current user's username
-     * @param noCodes  Callback function
+     * @param username   Current user's username
+     * @param setNoCodes Callback function
      */
-    public void noQRCodesCheck(@NonNull String username, final @NonNull ProfileNoCodesCallback noCodes) {
+    public void noQRCodesCheck(@NonNull String username, final @NonNull ProfileNoCodesCallback setNoCodes) {
 
         usersReference.document(username).collection("User QR Codes")
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            noCodes.noCodes(task.getResult().size() == 0);
-                        }
-                    }
-                });
+                .addOnSuccessListener(userQRCodes ->
+                        setNoCodes.setNoCodes(userQRCodes.size() == 0));
     }
 
     /**
@@ -258,14 +246,13 @@ public class ProfileFragment extends Fragment {
                 });
     }
 
-
     /**
      * Callback for querying the database to see if user has codes
      *
      * @author Afra
      */
     public interface ProfileNoCodesCallback {
-        void noCodes(boolean noCodes);
+        void setNoCodes(boolean noCodes);
     }
 
     /**

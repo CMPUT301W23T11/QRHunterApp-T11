@@ -55,7 +55,6 @@ public class ViewQR extends DialogFragment {
     private CommentAdapter commentAdapter;
     private EditText commentET;
     private SharedPreferences prefs;
-    private String QRCodeHash;
     private String QRCodeId;
     private TextView commentNumTV;
 
@@ -74,7 +73,6 @@ public class ViewQR extends DialogFragment {
     public ViewQR(@NonNull QRCode qrCode) {
         super();
         this.qrCode = qrCode;
-        this.QRCodeHash = qrCode.getHash();
         this.QRCodeId = qrCode.getId();
     }
 
@@ -143,7 +141,7 @@ public class ViewQR extends DialogFragment {
         noCommentsCheck(QRCodeId, new QRCodeNoCommentsCallback() {
             public void noComments(boolean noComments) {
                 if (!noComments) {
-                    getComments(QRCodeId, new QRCodeCommentsCallback() {
+                    getComments(QRCodeId, new QRCodeGetCommentsCallback() {
                         public void setComments(@NonNull ArrayList<Comment> comments) {
 
                             commentList = comments;
@@ -182,36 +180,43 @@ public class ViewQR extends DialogFragment {
         // When the send image arrow ImageView is clicked, if a comment has been made it will be added
         // to the QRCode object's saved array of comments and appear in the comment box with the associated user
         // User can only comment on QR Codes if they already have that code in their collection
-        commentIV.setOnClickListener(new View.OnClickListener() {
+        checkUserHasQRCode(prefs.getString("currentUser", null), QRCodeId, new UserHasQRCodeCallback() {
             @Override
-            public void onClick(View view) {
-                String commentString = commentET.getText().toString();
+            public void setHasCode(boolean hasCode) {
+                if (hasCode) {
+                    commentIV.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            String commentString = commentET.getText().toString();
 
-                if (!commentString.isEmpty()) {
+                            if (!commentString.isEmpty()) {
 
-                    String currentUserDisplayName = prefs.getString("currentUserDisplayName", null);
-                    String currentUser = prefs.getString("currentUser", null);
-                    Comment c = new Comment(commentString, currentUserDisplayName, currentUser);
-                    Integer commentNum = 0;
+                                String currentUserDisplayName = prefs.getString("currentUserDisplayName", null);
+                                String currentUser = prefs.getString("currentUser", null);
+                                Comment c = new Comment(commentString, currentUserDisplayName, currentUser);
+                                int commentNum;
 
-                    commentAdapter.setCommentList(c);
-                    commentAdapter.notifyDataSetChanged();
-                    commentET.getText().clear();
+                                commentAdapter.setCommentList(c);
+                                commentAdapter.notifyDataSetChanged();
+                                commentET.getText().clear();
 
-                    Map<String, String> comment = new HashMap<>();
-                    comment.put("username", currentUser);
-                    comment.put("displayName", currentUserDisplayName);
-                    comment.put("comment", commentString);
+                                Map<String, String> comment = new HashMap<>();
+                                comment.put("username", currentUser);
+                                comment.put("displayName", currentUserDisplayName);
+                                comment.put("comment", commentString);
 
-                    Map<String, CollectionReference> QRCodeRef = new HashMap<>();
-                    CollectionReference QRCodeCollectionRef = QRCodesReference.document(QRCodeId).collection("commentList");
-                    QRCodeRef.put(QRCodeId, QRCodeCollectionRef);
+                                Map<String, CollectionReference> QRCodeRef = new HashMap<>();
+                                CollectionReference QRCodeCollectionRef = QRCodesReference.document(QRCodeId).collection("commentList");
+                                QRCodeRef.put(QRCodeId, QRCodeCollectionRef);
 
-                    QRCodesReference.document(QRCodeId).collection("commentList").add(comment);
-                    commentNum = Integer.parseInt(commentNumTV.getText().toString());
-                    commentNum++;
-                    commentNumTV.setText(commentNum.toString());
+                                QRCodesReference.document(QRCodeId).collection("commentList").add(comment);
+                                commentNum = Integer.parseInt(commentNumTV.getText().toString());
+                                commentNum++;
+                                commentNumTV.setText(String.valueOf(commentNum));
 
+                            }
+                        }
+                    });
                 }
             }
         });
@@ -278,7 +283,7 @@ public class ViewQR extends DialogFragment {
      * @param QRCodeId    ID of QR Code to get comments of
      * @param setComments Callback for query
      */
-    public void getComments(@NonNull String QRCodeId, final @NonNull QRCodeCommentsCallback setComments) {
+    public void getComments(@NonNull String QRCodeId, final @NonNull QRCodeGetCommentsCallback setComments) {
 
         ArrayList<Comment> comments = new ArrayList<>();
 
@@ -295,9 +300,21 @@ public class ViewQR extends DialogFragment {
                 });
     }
 
-
-    public void checkUserHasQRCode(@NonNull String username, @NonNull String QRCodeHashLocation) {
-
+    /**
+     * Check if the given user has the given QR Code
+     *
+     * @param username   Username to check
+     * @param QRCodeID   QR Code to check
+     * @param setHasCode Callback for query
+     */
+    public void checkUserHasQRCode(@NonNull String username, @NonNull String QRCodeID, final @NonNull UserHasQRCodeCallback setHasCode) {
+        usersReference.document(username).collection("User QR Codes")
+                .document(QRCodeID)
+                .get()
+                .addOnSuccessListener(userQRCode -> {
+                            setHasCode.setHasCode(userQRCode.exists());
+                        }
+                );
     }
 
     /**
@@ -321,7 +338,16 @@ public class ViewQR extends DialogFragment {
      *
      * @author Afra
      */
-    public interface QRCodeCommentsCallback {
+    public interface QRCodeGetCommentsCallback {
         void setComments(@NonNull ArrayList<Comment> comments);
+    }
+
+    /**
+     * Callback for querying the database to see if user has given QR Code
+     *
+     * @author Afra
+     */
+    public interface UserHasQRCodeCallback {
+        void setHasCode(boolean hasCode);
     }
 }
