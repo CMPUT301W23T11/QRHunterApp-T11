@@ -146,7 +146,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li>androidx.appcompat.app.AppCompatActivity</li>
 <li>
 <ul class="inheritance">
-<li>com.example.qrhunterapp_t11.TakePhotoActivity</li>
+<li>com.example.qrhunterapp_t11.activities.TakePhotoActivity</li>
 </ul>
 </li>
 </ul>
@@ -397,13 +397,18 @@ extends androidx.appcompat.app.AppCompatActivity</pre>
 <div class="block">Configure CameraX for camera facing, the preview and the ImageCapture.</div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
-<td class="colFirst"><code>private void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#uploadFile(com.example.qrhunterapp_t11.TakePhotoActivity.OnUploadListener)">uploadFile</a></span>&#8203;(<a href="TakePhotoActivity.OnUploadListener.html" title="interface in com.example.qrhunterapp_t11">TakePhotoActivity.OnUploadListener</a>&nbsp;listener)</code></th>
-<td class="colLast">
-<div class="block">Function for uploading the image to Firebase database and storage.</div>
-</td>
-</tr>
+    <tr id="i7" class="rowColor">
+        <td class="colFirst"><code>private void</code></td>
+        <th class="colSecond" scope="row"><code><span class="memberNameLink"><a
+                href="#uploadFile(com.example.qrhunterapp_t11.activities.TakePhotoActivity.OnUploadListener)">uploadFile</a></span>&#8203;(<a
+                href="TakePhotoActivity.OnUploadListener.html"
+                title="interface in com.example.qrhunterapp_t11">TakePhotoActivity.OnUploadListener</a>&nbsp;listener)</code>
+        </th>
+        <td class="colLast">
+            <div class="block">Function for uploading the image to Firebase database and storage.
+            </div>
+        </td>
+    </tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.androidx.appcompat.app.AppCompatActivity">
@@ -498,10 +503,12 @@ extends androidx.appcompat.app.AppCompatActivity</pre>
 <li class="blockList">
 <h4>request</h4>
 <pre>private static final&nbsp;int request</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../constant-values.html#com.example.qrhunterapp_t11.TakePhotoActivity.request">Constant Field Values</a></dd>
-</dl>
+    <dl>
+        <dt><span class="seeLabel">See Also:</span></dt>
+        <dd>
+            <a href="../../../constant-values.html#com.example.qrhunterapp_t11.activities.TakePhotoActivity.request">Constant
+                Field Values</a></dd>
+    </dl>
 </li>
 </ul>
 <a id="photoUpload">
@@ -511,10 +518,12 @@ extends androidx.appcompat.app.AppCompatActivity</pre>
 <li class="blockList">
 <h4>photoUpload</h4>
 <pre>private static final&nbsp;java.lang.String photoUpload</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../constant-values.html#com.example.qrhunterapp_t11.TakePhotoActivity.photoUpload">Constant Field Values</a></dd>
-</dl>
+    <dl>
+        <dt><span class="seeLabel">See Also:</span></dt>
+        <dd>
+            <a href="../../../constant-values.html#com.example.qrhunterapp_t11.activities.TakePhotoActivity.photoUpload">Constant
+                Field Values</a></dd>
+    </dl>
 </li>
 </ul>
 <a id="mContext">
@@ -736,26 +745,29 @@ extends androidx.appcompat.app.AppCompatActivity</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getFileExtension</h4>
-<pre class="methodSignature">private&nbsp;java.lang.String&nbsp;getFileExtension&#8203;(android.net.Uri&nbsp;uri)</pre>
-<div class="block">Returns a string of the extension of a given image file.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>uri</code> - the local address of the image</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>the file extension, for example ".jpeg"</dd>
-</dl>
+    <pre class="methodSignature">private&nbsp;java.lang.String&nbsp;getFileExtension&#8203;(android.net.Uri&nbsp;uri)</pre>
+    <div class="block">Returns a string of the extension of a given image file.</div>
+    <dl>
+        <dt><span class="paramLabel">Parameters:</span></dt>
+        <dd><code>uri</code> - the local address of the image</dd>
+        <dt><span class="returnLabel">Returns:</span></dt>
+        <dd>the file extension, for example ".jpeg"</dd>
+    </dl>
 </li>
 </ul>
-<a id="uploadFile(com.example.qrhunterapp_t11.TakePhotoActivity.OnUploadListener)">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>uploadFile</h4>
-<pre class="methodSignature">private&nbsp;void&nbsp;uploadFile&#8203;(<a href="TakePhotoActivity.OnUploadListener.html" title="interface in com.example.qrhunterapp_t11">TakePhotoActivity.OnUploadListener</a>&nbsp;listener)</pre>
-<div class="block">Function for uploading the image to Firebase database and storage.</div>
-</li>
-</ul>
+    <a id="uploadFile(com.example.qrhunterapp_t11.activities.TakePhotoActivity.OnUploadListener)">
+        <!--   -->
+    </a>
+    <ul class="blockListLast">
+        <li class="blockList">
+            <h4>uploadFile</h4>
+            <pre class="methodSignature">private&nbsp;void&nbsp;uploadFile&#8203;(<a
+                    href="TakePhotoActivity.OnUploadListener.html"
+                    title="interface in com.example.qrhunterapp_t11">TakePhotoActivity.OnUploadListener</a>&nbsp;listener)</pre>
+            <div class="block">Function for uploading the image to Firebase database and storage.
+            </div>
+        </li>
+    </ul>
 </li>
 </ul>
 </section>

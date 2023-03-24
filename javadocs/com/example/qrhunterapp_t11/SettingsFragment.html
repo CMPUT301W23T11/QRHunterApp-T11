@@ -125,7 +125,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li>androidx.fragment.app.Fragment</li>
 <li>
 <ul class="inheritance">
-<li>com.example.qrhunterapp_t11.SettingsFragment</li>
+<li>com.example.qrhunterapp_t11.fragments.SettingsFragment</li>
 </ul>
 </li>
 </ul>
@@ -270,15 +270,18 @@ extends androidx.fragment.app.Fragment</pre>
             android.os.Bundle&nbsp;savedInstanceState)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i1" class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#usernameCheck(java.lang.String,android.widget.EditText,com.example.qrhunterapp_t11.SettingsFragment.SettingsCallback)">usernameCheck</a></span>&#8203;(java.lang.String&nbsp;usernameString,
-             android.widget.EditText&nbsp;usernameEditText,
-             <a href="SettingsFragment.SettingsCallback.html" title="interface in com.example.qrhunterapp_t11">SettingsFragment.SettingsCallback</a>&nbsp;usernameValid)</code></th>
-<td class="colLast">
-<div class="block">Checks to see if username is valid and unique</div>
-</td>
-</tr>
+    <tr id="i1" class="rowColor">
+        <td class="colFirst"><code>void</code></td>
+        <th class="colSecond" scope="row"><code><span class="memberNameLink"><a
+                href="#usernameCheck(java.lang.String,android.widget.EditText,com.example.qrhunterapp_t11.fragments.SettingsFragment.SettingsCallback)">usernameCheck</a></span>&#8203;(java.lang.String&nbsp;usernameString,
+            android.widget.EditText&nbsp;usernameEditText,
+            <a href="SettingsFragment.SettingsCallback.html"
+               title="interface in com.example.qrhunterapp_t11">SettingsFragment.SettingsCallback</a>&nbsp;usernameValid)</code>
+        </th>
+        <td class="colLast">
+            <div class="block">Checks to see if username is valid and unique</div>
+        </td>
+    </tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.androidx.fragment.app.Fragment">
@@ -414,25 +417,27 @@ public&nbsp;android.view.View&nbsp;onCreateView&#8203;(@NonNull
                                       android.view.ViewGroup&nbsp;container,
                                       @Nullable
                                       android.os.Bundle&nbsp;savedInstanceState)</pre>
-<dl>
-<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
-<dd><code>onCreateView</code>&nbsp;in class&nbsp;<code>androidx.fragment.app.Fragment</code></dd>
-</dl>
+    <dl>
+        <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+        <dd><code>onCreateView</code>&nbsp;in class&nbsp;<code>androidx.fragment.app.Fragment</code>
+        </dd>
+    </dl>
 </li>
 </ul>
-<a id="usernameCheck(java.lang.String,android.widget.EditText,com.example.qrhunterapp_t11.SettingsFragment.SettingsCallback)">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>usernameCheck</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;usernameCheck&#8203;(@NonNull
+    <a id="usernameCheck(java.lang.String,android.widget.EditText,com.example.qrhunterapp_t11.fragments.SettingsFragment.SettingsCallback)">
+        <!--   -->
+    </a>
+    <ul class="blockListLast">
+        <li class="blockList">
+            <h4>usernameCheck</h4>
+            <pre class="methodSignature">public&nbsp;void&nbsp;usernameCheck&#8203;(@NonNull
                           java.lang.String&nbsp;usernameString,
                           @NonNull
                           android.widget.EditText&nbsp;usernameEditText,
                           @NonNull
-                          <a href="SettingsFragment.SettingsCallback.html" title="interface in com.example.qrhunterapp_t11">SettingsFragment.SettingsCallback</a>&nbsp;usernameValid)</pre>
-<div class="block">Checks to see if username is valid and unique</div>
+                          <a href="SettingsFragment.SettingsCallback.html"
+                             title="interface in com.example.qrhunterapp_t11">SettingsFragment.SettingsCallback</a>&nbsp;usernameValid)</pre>
+            <div class="block">Checks to see if username is valid and unique</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>usernameString</code> - Entered username</dd>

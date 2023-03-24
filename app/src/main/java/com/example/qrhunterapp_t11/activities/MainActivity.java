@@ -1,4 +1,4 @@
-package com.example.qrhunterapp_t11;
+package com.example.qrhunterapp_t11.activities;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -8,12 +8,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+import com.example.qrhunterapp_t11.R;
+import com.example.qrhunterapp_t11.fragments.CameraFragment;
+import com.example.qrhunterapp_t11.fragments.MapFragment;
+import com.example.qrhunterapp_t11.fragments.ProfileFragment;
+import com.example.qrhunterapp_t11.fragments.SearchFragment;
+import com.example.qrhunterapp_t11.fragments.SettingsFragment;
+import com.example.qrhunterapp_t11.objectclasses.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.firestore.AggregateQuery;
-import com.google.firebase.firestore.AggregateQuerySnapshot;
 import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -22,12 +25,17 @@ import com.google.firebase.firestore.FirebaseFirestore;
  * Main app activity. Default startup screen is the player profile.
  * Users can click on the toolbar at the bottom to switch to other parts of the app.
  *
- * @author Afra, Kristina
- * @reference <a href="https://www.geeksforgeeks.org/how-to-create-fragment-using-bottom-navigation-in-social-media-android-app/">How to use fragments with a bottom navigation bar</a>
- * @reference <a href="https://youtu.be/x6-_va1R788">How to set up and align a floating action button on the BottomNavigationView</a>
- * @reference <a href="https://firebase.google.com/docs/firestore/query-data/aggregation-queries#java">For aggregation queries</a>
+ * @author Afra Rahmanfard
+ * @author Kristina
+ * @sources: <pre>
+ * <ul>
+ * <li> <a href="https://www.geeksforgeeks.org/how-to-create-fragment-using-bottom-navigation-in-social-media-android-app/">How to use fragments with a bottom navigation bar</a></li>
+ * <li> <a href="https://youtu.be/x6-_va1R788">How to set up and align a floating action button on the BottomNavigationView</a></li>
+ * <li> <a href="https://firebase.google.com/docs/firestore/query-data/aggregation-queries#java">For aggregation queries</a></li>
+ * </ul>
+ * </pre>
  */
-public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDialogListener {
+public class MainActivity extends AppCompatActivity {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");
@@ -35,12 +43,10 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
     private final CameraFragment cameraFragment = new CameraFragment(db);
     private final MapFragment mapFragment = new MapFragment(db);
     private final SearchFragment searchFragment = new SearchFragment(db);
-    private BottomNavigationView bottomToolbar;
     private int numUsers;
-
-    @Override
-    public void viewCode(@NonNull QRCode qrCode) {
-    }
+    private static final String PREFS_CURRENT_USER = "currentUserUsername";
+    private static final String PREFS_CURRENT_USER_DISPLAY_NAME = "currentUserDisplayName";
+    private SharedPreferences prefs;
 
     /**
      * Called after the activity launches and sets the activity content to the provided layout resource
@@ -55,37 +61,40 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        bottomToolbar = findViewById(R.id.bottomToolbar);
-        FloatingActionButton addFab = findViewById(R.id.addFab);
-
-        // sets the toolbar to be on profile item.
-        bottomToolbar.setSelectedItemId(R.id.profile);
-        SharedPreferences prefs = this.getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        prefs = this.getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         // If the user is logging in for the first time, create a new user
-        if (!prefs.getBoolean("LoggedIn", false)) {
+        if (!prefs.getBoolean("loggedIn", false)) {
             firstTimeLaunch(new MainActivityCallback() {
                 public void setNumUsers(int numUsers) {
 
                     String username = "user" + (numUsers + 1);
 
-                    prefs.edit().putString("currentUser", username).commit();
-                    prefs.edit().putString("currentUserDisplayName", username).commit();
-                    prefs.edit().putBoolean("LoggedIn", true).commit();
+                    prefs.edit().putString(PREFS_CURRENT_USER, username).commit();
+                    prefs.edit().putString(PREFS_CURRENT_USER_DISPLAY_NAME, username).commit();
+                    prefs.edit().putBoolean("loggedIn", true).commit();
 
                     User user = new User(username, username, 0, 0, 0, "No email");
 
                     usersReference.document(username).set(user);
-                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUser", null))).commit();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null), prefs.getString(PREFS_CURRENT_USER, null))).commit();
+
                 }
             });
         } else {
-            getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUser", null))).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null), prefs.getString(PREFS_CURRENT_USER, null))).commit();
+
         }
 
-        // floating action button that moves the fragment to the camera fragment
+        BottomNavigationView bottomToolbar = findViewById(R.id.bottomToolbar);
+        FloatingActionButton addFab = findViewById(R.id.addFab);
+
+        // Sets the toolbar to be on profile item
+        bottomToolbar.setSelectedItemId(R.id.profile);
+
+        // Floating action button that moves the fragment to the camera fragment
         addFab.setOnClickListener(view -> {
-            // sets the toolbar back to profile item
+            // Sets the toolbar back to profile item
             bottomToolbar.setSelectedItemId(R.id.profile);
             getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, cameraFragment).commit();
 
@@ -93,28 +102,23 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
 
         // Changes the fragment based on which item is clicked on the toolbar
         bottomToolbar.setOnItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.profile: // changes the main screen to the profile
-                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUser", null))).commit();
+            switch (item.getTitle().toString()) {
+                case "Profile": // Changes the main screen to the profile
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null), prefs.getString(PREFS_CURRENT_USER, null))).commit();
 
                     return true;
 
-                case R.id.camera_placeholder:
-                    // when add button clicked, the selected item in the toolbar will be set back to the profile
-                    bottomToolbar.setSelectedItemId(R.id.profile);
-                    return true;
-
-                case R.id.settings: // changes the main screen to settings
+                case "Settings": // Changes the main screen to settings
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, settingsFragment).commit();
 
                     return true;
 
-                case R.id.map: // changes the main screen to the map
+                case "Map": // Changes the main screen to the map
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, mapFragment).commit();
 
                     return true;
 
-                case R.id.search:
+                case "Search": // Changes the main screen to search
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, searchFragment).commit();
 
                     return true;
@@ -134,23 +138,19 @@ public class MainActivity extends AppCompatActivity implements ViewQR.ViewQRDial
      * @param setNumUsers Callback that will set numUsers to the number of users in the database
      */
     public void firstTimeLaunch(final @NonNull MainActivityCallback setNumUsers) {
-        AggregateQuery countQuery = usersReference.count();
-        countQuery.get(AggregateSource.SERVER).addOnCompleteListener(new OnCompleteListener<AggregateQuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<AggregateQuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    AggregateQuerySnapshot snapshot = task.getResult();
+        usersReference
+                .count()
+                .get(AggregateSource.SERVER)
+                .addOnSuccessListener(snapshot -> {
                     numUsers = (int) snapshot.getCount();
                     setNumUsers.setNumUsers(numUsers);
-                }
-            }
-        });
+                });
     }
 
     /**
      * Callback for querying database
      *
-     * @author Afra
+     * @author Afra Rahmanfard
      */
     public interface MainActivityCallback {
         void setNumUsers(int numUsers);
