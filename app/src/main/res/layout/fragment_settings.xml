@@ -1,81 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".SettingsFragment">
-
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/headers"
+        android:elevation="10dp"
+        android:fontFamily="sans-serif-medium"
+        android:padding="6dp"
         android:text="@string/settings"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textSize="30sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/username_edit_textview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:fontFamily="sans-serif-medium"
+        android:text="@string/edittext_change_username"
         android:textSize="25sp" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <EditText
+        android:id="@+id/username_edit_edittext"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:autofillHints="username"
+        android:hint="@string/edittext_username"
+        android:text="@string/edittext_username"
+        android:fontFamily="sans-serif-medium"
+        android:inputType="textPersonName" />
 
-        <TextView
-            android:id="@+id/email_edit_textview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="76dp"
-            android:text="@string/edittext_change_email"
-            android:textSize="30sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/username_edit_edittext" />
+    <TextView
+        android:id="@+id/email_edit_textview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:fontFamily="sans-serif-medium"
+        android:text="@string/edittext_change_email"
+        android:textSize="25sp" />
 
-        <TextView
-            android:id="@+id/username_edit_textview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="112dp"
-            android:text="@string/edittext_change_username"
-            android:textSize="30sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+    <EditText
+        android:id="@+id/email_edit_edittext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:autofillHints="emailAddress"
+        android:hint="@string/edittext_email"
+        android:text="@string/edittext_email"
+        android:fontFamily="sans-serif-medium"
+        android:inputType="textEmailAddress" />
 
-        <EditText
-            android:id="@+id/username_edit_edittext"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="24dp"
-            android:autofillHints="username"
-            android:ems="10"
-            android:hint="@string/edittext_username"
-            android:inputType="textPersonName"
-            android:text="@string/edittext_username"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/username_edit_textview" />
+    <Button
+        android:id="@+id/settings_confirm_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="32dp"
+        android:backgroundTint="@color/headers"
+        android:text="@string/edittext_confirm"
+        android:textColor="@color/white" />
 
-        <EditText
-            android:id="@+id/email_edit_edittext"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="24dp"
-            android:autofillHints="emailAddress"
-            android:ems="10"
-            android:hint="@string/edittext_email"
-            android:inputType="textEmailAddress"
-            android:text="@string/edittext_email"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/email_edit_textview" />
-
-        <Button
-            android:id="@+id/settings_confirm_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="116dp"
-            android:text="@string/edittext_confirm"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/email_edit_edittext" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-</FrameLayout>
+</LinearLayout>

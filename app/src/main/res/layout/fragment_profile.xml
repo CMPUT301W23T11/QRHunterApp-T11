@@ -10,10 +10,13 @@
         android:id="@+id/profile_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/headers"
         android:elevation="10dp"
-        android:padding="10dp"
+        android:fontFamily="sans-serif-medium"
+        android:padding="6dp"
         android:text="@string/profile_name_text"
-        android:textColor="@color/black"
+        android:textAlignment="center"
+        android:textColor="@color/white"
         android:textSize="30sp"
         android:textStyle="bold" />
 
@@ -25,16 +28,17 @@
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:background="@color/off_green_box"
+        android:layout_margin="9dp"
+        android:background="@drawable/stats_box"
         android:orientation="vertical"
-        android:padding="15dp">
+        android:padding="12dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="5dp"
             android:text="@string/stats_header"
+            android:fontFamily="sans-serif-medium"
             android:textAlignment="center"
             android:textColor="@color/headers"
             android:textSize="18sp"
@@ -45,9 +49,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/your_total_score_text"
+            android:fontFamily="sans-serif-medium"
             android:textAlignment="center"
             android:textColor="@color/stats_text"
-            android:textSize="20sp"
+            android:textSize="19sp"
             android:textStyle="bold" />
 
         <TextView
@@ -55,9 +60,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/your_top_qr_code_text"
+            android:fontFamily="sans-serif-medium"
             android:textAlignment="center"
             android:textColor="@color/stats_text"
-            android:textSize="20sp"
+            android:textSize="19sp"
             android:textStyle="bold" />
 
         <TextView
@@ -65,9 +71,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/your_lowest_qr_code_text"
+            android:fontFamily="sans-serif-medium"
             android:textAlignment="center"
             android:textColor="@color/stats_text"
-            android:textSize="20sp"
+            android:textSize="19sp"
             android:textStyle="bold" />
 
         <TextView
@@ -75,9 +82,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/your_total_qr_codes_text"
+            android:fontFamily="sans-serif-medium"
             android:textAlignment="center"
             android:textColor="@color/stats_text"
-            android:textSize="20sp"
+            android:textSize="19sp"
             android:textStyle="bold" />
     </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -86,6 +94,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/collection_header"
+        android:fontFamily="sans-serif-medium"
         android:textAlignment="center"
         android:textColor="@color/headers"
         android:textSize="18sp"
