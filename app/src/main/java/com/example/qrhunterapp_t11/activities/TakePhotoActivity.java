@@ -1,4 +1,4 @@
-package com.example.qrhunterapp_t11;
+package com.example.qrhunterapp_t11.activities;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -28,12 +28,11 @@ import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.qrhunterapp_t11.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -59,7 +58,6 @@ public class TakePhotoActivity extends AppCompatActivity {
     private Uri mImageUri;
     private String imageUrl;
     private String msTime;
-    private final CollectionReference uploadsReference = FirebaseFirestore.getInstance().collection("uploads");
 
     /**
      * Checks whether a permission is granted; in this case permission to access and write to the phone's storage.
@@ -263,10 +261,7 @@ public class TakePhotoActivity extends AppCompatActivity {
                                     public void onSuccess(Uri uri) { // retrieve image url of photo upload
                                         Log.d("UrlRetrieved", "Image url successfully retrieved: " + imageUrl); //TODO remove redundant key and attribute (in database collection?)
                                         imageUrl = uri.toString(); // this is *NOT* the image uri used earlier
-                                        PhotoUploader upload = new PhotoUploader(msTime, imageUrl);
                                         listener.onUpload(imageUrl);
-                                        // make entry in database, that contains the name and url of our image upload
-                                        uploadsReference.document(upload.getName()).set(upload);
                                     }
                                 }).addOnFailureListener(new OnFailureListener() {
                                     @Override

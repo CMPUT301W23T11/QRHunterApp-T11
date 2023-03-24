@@ -1,4 +1,4 @@
-package com.example.qrhunterapp_t11;
+package com.example.qrhunterapp_t11.interfaces;
 
 import androidx.annotation.NonNull;
 
@@ -6,9 +6,11 @@ import com.google.firebase.firestore.DocumentSnapshot;
 
 /**
  * Interface to handle long clicking on items in RecyclerViews
+ * <p>
+ * Sources:
+ * - Sarah's OnItemClickListener interface
  *
  * @author Afra
- * @reference Sarah's OnItemClickListener interface
  * @see OnItemClickListener
  */
 public interface OnItemLongClickListener {

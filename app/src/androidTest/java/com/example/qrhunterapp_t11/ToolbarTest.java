@@ -13,6 +13,8 @@ import android.content.SharedPreferences;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
+import com.example.qrhunterapp_t11.activities.MainActivity;
+import com.example.qrhunterapp_t11.objectclasses.User;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.robotium.solo.Solo;
@@ -50,11 +52,11 @@ public class ToolbarTest {
             String displayName;
 
             prefs.edit().clear().commit();
-            prefs.edit().putBoolean("LoggedIn", true).commit();
-            prefs.edit().putString("currentUser", testUsername).commit();
+            prefs.edit().putBoolean("loggedIn", true).commit();
+            prefs.edit().putString("currentUserUsername", testUsername).commit();
             prefs.edit().putString("currentUserDisplayName", testUsername).commit();
 
-            username = prefs.getString("currentUser", null);
+            username = prefs.getString("currentUserUsername", null);
             displayName = prefs.getString("currentUserDisplayName", null);
 
             assertEquals(testUsername, username);

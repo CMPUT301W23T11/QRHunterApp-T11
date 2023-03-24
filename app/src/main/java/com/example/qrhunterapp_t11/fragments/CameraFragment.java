@@ -1,4 +1,4 @@
-package com.example.qrhunterapp_t11;
+package com.example.qrhunterapp_t11.fragments;
 
 import android.Manifest;
 import android.content.Context;
@@ -25,6 +25,10 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.example.qrhunterapp_t11.R;
+import com.example.qrhunterapp_t11.activities.CaptureAct;
+import com.example.qrhunterapp_t11.activities.TakePhotoActivity;
+import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -65,7 +69,7 @@ public class CameraFragment extends Fragment {
     private String resizedImageUrl;
     private SharedPreferences prefs;
     private final FirebaseFirestore db;
-    private final CollectionReference QRCodesReference;
+    private final CollectionReference qrCodesReference;
     private final CollectionReference usersReference;
     private static final String locationPrompt = "LocationPrompt";
 
@@ -74,7 +78,7 @@ public class CameraFragment extends Fragment {
 
     public CameraFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
-        this.QRCodesReference = db.collection("QRCodes");
+        this.qrCodesReference = db.collection("QRCodes");
         this.usersReference = db.collection("Users");
     }
 
@@ -267,7 +271,6 @@ public class CameraFragment extends Fragment {
     /**
      * Retrieves the current location and logs the latitude and longitude of the location.
      * Adds QRCode to db with location and returns to profile
-     * TODO: adding location data to the QRCode is currently disabled due to a bug when displaying QR's on profile w/ location data
      * Adds QRCode to db and returns to profile
      */
     private void getCurrentLocation() {
@@ -287,7 +290,7 @@ public class CameraFragment extends Fragment {
                         //set longitude and latitude and store
                         qrCode.setLongitude(longitude);
                         qrCode.setLatitude(latitude);
-                        qrCode.setId(longitude, latitude);
+                        qrCode.setID(longitude, latitude);
                         addQRCode();
                         returnToProfile();
                     } else {
@@ -395,7 +398,7 @@ public class CameraFragment extends Fragment {
      */
     private void returnToProfile() {
         FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-        trans.replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUser", null)));
+        trans.replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUserUsername", null)));
         trans.commit();
     }
 
@@ -407,7 +410,7 @@ public class CameraFragment extends Fragment {
      * @reference <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
      * @reference Aidan Lynch's CameraFragmentTest for this code
      */
-    public void checkDocExists(String docToCheck, CollectionReference cr, final CameraFragment.Callback dataValid) {
+    public void checkDocExists(@NonNull String docToCheck, @NonNull CollectionReference cr, final @NonNull Callback dataValid) {
         DocumentReference docRef = cr.document(docToCheck);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -436,42 +439,48 @@ public class CameraFragment extends Fragment {
      * Helper function to add QRCode object to QRCodes and Users collections
      */
     private void addQRCode() {
-        String currentUser = prefs.getString("currentUser", null);
-        String QRCodeId = qrCode.getId();
+        String currentUser = prefs.getString("currentUserUsername", null);
+        String qrCodeID = qrCode.getID();
 
-        Map<String, Object> QRCodeRef = new HashMap<>();
-        DocumentReference QRCodeDocumentRef = QRCodesReference.document(QRCodeId);
-        QRCodeRef.put("Reference", QRCodeDocumentRef);
+        Map<String, Object> qrCodeRef = new HashMap<>();
+        DocumentReference qrCodeDocumentRef = qrCodesReference.document(qrCodeID);
+        qrCodeRef.put("Reference", qrCodeDocumentRef);
 
         // Check if qrCode exists in db in QRCodes collection
-        checkDocExists(QRCodeId, QRCodesReference, new Callback() {
+        checkDocExists(qrCodeID, qrCodesReference, new Callback() {
             public void dataValid(boolean valid) {
                 qrExists = valid;
                 System.out.println(valid);
 
                 // Check if reference to qrCode exists in db in Users collection
-                checkDocExists(QRCodeId, usersReference.document(currentUser).collection("User QR Codes"), new Callback() {
+                checkDocExists(qrCodeID, usersReference.document(currentUser).collection("User QR Codes"), new Callback() {
                     public void dataValid(boolean valid) {
                         qrRefExists = valid;
                         System.out.println(valid);
 
                         // If qrCode does not exist, add it to QRCode collection
                         if (!qrExists){
-                            QRCodesReference.document(QRCodeId).set(qrCode);
+                            qrCodesReference.document(qrCodeID).set(qrCode);
+                            if (resizedImageUrl != null){
+                                qrCodesReference.document(qrCodeID).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
+                                //QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayRemove(resizedImageUrl));
+                            }
                         }
-                        // Add image to qrCode
-                        QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
-
-                        // If user does not already have this qrCode, add a reference to it, increment their total scans
+                        // If user does not already have this qrCode, add a reference to it, increment their total scans, add new photo to qrCode
                         if(!qrRefExists){
                             System.out.println("HEUHURLSHRPIUSHEPRIHSEPOIHRPOISHEPROIPSOEHRPOISHEPRIHP");
-                            usersReference.document(currentUser).collection("User QR Codes").document(QRCodeId).set(QRCodeRef);
+                            usersReference.document(currentUser).collection("User QR Codes").document(qrCodeID).set(qrCodeRef);
                             usersReference.document(currentUser).update("totalScans", FieldValue.increment(1));
                             usersReference.document(currentUser).update("totalPoints", FieldValue.increment(qrCode.getPoints()));
+                            if (resizedImageUrl != null){
+                                qrCodesReference.document(qrCodeID).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
+                                //QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayRemove(resizedImageUrl));
+                            }
+
                         }
                         // If user does not have this qrCode but it already exists in qrCode collection, increase its total scans
                         if ((qrExists) && (!qrRefExists)){
-                            QRCodesReference.document(QRCodeId).update("numberOfScans", FieldValue.increment(1));
+                            qrCodesReference.document(qrCodeID).update("numberOfScans", FieldValue.increment(1));
                         }
                     }
                 });

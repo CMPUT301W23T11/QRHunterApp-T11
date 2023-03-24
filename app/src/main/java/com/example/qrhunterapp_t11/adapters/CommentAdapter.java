@@ -1,4 +1,4 @@
-package com.example.qrhunterapp_t11;
+package com.example.qrhunterapp_t11.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,6 +8,9 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+
+import com.example.qrhunterapp_t11.R;
+import com.example.qrhunterapp_t11.objectclasses.Comment;
 
 import java.util.ArrayList;
 
@@ -43,7 +46,7 @@ public class CommentAdapter extends BaseAdapter {
         return commentList.size();
     }
 
-    public void setCommentList(@NonNull Comment comment) {
+    public void addToCommentList(@NonNull Comment comment) {
         this.commentList.add(comment);
     }
 
@@ -86,8 +89,8 @@ public class CommentAdapter extends BaseAdapter {
         TextView profileTV = commentView.findViewById(R.id.profile_tv);
         TextView commentTV = commentView.findViewById(R.id.comment_tv);
         Comment c = this.getItem(i);
-        profileTV.setText(c.getUserDisplayName());
-        commentTV.setText(c.getComment());
+        profileTV.setText(c.getDisplayName());
+        commentTV.setText(c.getCommentString());
         return commentView;
     }
 }
