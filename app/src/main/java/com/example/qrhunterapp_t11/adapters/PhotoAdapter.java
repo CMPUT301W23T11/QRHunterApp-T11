@@ -1,7 +1,6 @@
-package com.example.qrhunterapp_t11;
+package com.example.qrhunterapp_t11.adapters;
 
 import android.content.Context;
-import android.media.Image;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -14,13 +13,14 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 public class PhotoAdapter extends PagerAdapter {
-    private Context context;
-    private ArrayList<String> photos;
+    private final Context context;
+    private final ArrayList<String> photos;
 
-    public PhotoAdapter(Context context, ArrayList<String> photos){
+    public PhotoAdapter(Context context, ArrayList<String> photos) {
         this.context = context;
         this.photos = photos;
     }
+
     @Override
     public int getCount() {
         return photos.size();

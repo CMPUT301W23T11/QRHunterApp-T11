@@ -21,16 +21,15 @@ import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.viewpager.widget.ViewPager;
 
-import com.example.qrhunterapp_t11.PhotoAdapter;
 import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.adapters.CommentAdapter;
+import com.example.qrhunterapp_t11.adapters.PhotoAdapter;
 import com.example.qrhunterapp_t11.objectclasses.Comment;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -133,11 +132,8 @@ public class QRCodeView extends DialogFragment {
         photoAdapter = new PhotoAdapter(getContext(), qrCode.getPhotoList());
         viewPager.setAdapter(photoAdapter);
 
-        System.out.println(photoAdapter.getCount());
-
-
         // If the QRCode has an associated photo, use Picasso to load it into the photoImageView (Rotated for some reason)
-        if(photoAdapter.getCount() == 0){
+        if (photoAdapter.getCount() == 0) {
             photoBox.setVisibility(View.GONE);
         }
         denominatorTextView.setText(String.valueOf(photoAdapter.getCount()));
@@ -220,10 +216,16 @@ public class QRCodeView extends DialogFragment {
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 numeratorTextView.setText(String.valueOf(viewPager.getCurrentItem() + 1));
             }
+
             @Override
-            public void onPageSelected(int position) {}
+            public void onPageSelected(int position) {
+                // Not needed
+            }
+
             @Override
-            public void onPageScrollStateChanged(int state) {}
+            public void onPageScrollStateChanged(int state) {
+                // Not needed
+            }
         });
 
         commentListView.setOnTouchListener(new ListView.OnTouchListener() {
@@ -309,16 +311,9 @@ public class QRCodeView extends DialogFragment {
     }
 
     /**
-     * Listener for the QRCodeView dialog
-     */
-    interface QRCodeViewDialogListener {
-        void viewCode(QRCode qrCode);
-    }
-
-    /**
      * Callback for querying the database to see if QR code has comments
      *
-     * @author Afra
+     * @author Afra Rahmanfard
      */
     public interface QRCodeHasCommentsCallback {
         void setHasComments(boolean hasComments);
@@ -327,7 +322,7 @@ public class QRCodeView extends DialogFragment {
     /**
      * Callback for querying the database to retrieve comments
      *
-     * @author Afra
+     * @author Afra Rahmanfard
      */
     public interface QRCodeGetCommentsCallback {
         void setComments(@NonNull ArrayList<Comment> comments);
@@ -336,7 +331,7 @@ public class QRCodeView extends DialogFragment {
     /**
      * Callback for querying the database to see if user has given QR Code
      *
-     * @author Afra
+     * @author Afra Rahmanfard
      */
     public interface UserHasQRCodeCallback {
         void setHasCode(boolean hasCode);
