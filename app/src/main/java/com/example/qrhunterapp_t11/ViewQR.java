@@ -1,5 +1,6 @@
 package com.example.qrhunterapp_t11;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -56,7 +57,6 @@ public class ViewQR extends DialogFragment {
     private SharedPreferences prefs;
     private String QRCodeHash;
     private String QRCodeId;
-    private boolean QRCodeHasNoComments;
     private TextView commentNumTV;
 
     /**
@@ -141,9 +141,7 @@ public class ViewQR extends DialogFragment {
 
         noCommentsCheck(QRCodeId, new QRCodeNoCommentsCallback() {
             public void noComments(boolean noComments) {
-                QRCodeHasNoComments = noComments;
-
-                if (!QRCodeHasNoComments) {
+                if (!noComments) {
                     getComments(QRCodeId, new QRCodeCommentsCallback() {
                         public void comments(@NonNull ArrayList<ArrayList<Map<String, Object>>> comments) {
 
@@ -182,7 +180,7 @@ public class ViewQR extends DialogFragment {
 
                         }
                     });
-                }else{
+                } else {
                     commentList = new ArrayList<>();
                     commentAdapter = new CommentAdapter(getContext(), commentList);
                     commentListView.setAdapter(commentAdapter);
@@ -192,7 +190,9 @@ public class ViewQR extends DialogFragment {
             }
         });
 
-        // When the send image arrow ImageView is clicked, if a comment has been made it will be added to the QRCode object's saved array of comments and appear in the comment box with the associated user
+        // When the send image arrow ImageView is clicked, if a comment has been made it will be added
+        // to the QRCode object's saved array of comments and appear in the comment box with the associated user
+        // User can only comment on QR Codes if they already have that code in their collection
         commentIV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -220,9 +220,8 @@ public class ViewQR extends DialogFragment {
 
                     QRCodesReference.document(QRCodeId).collection("commentList").add(comment);
                     commentNum = Integer.parseInt(commentNumTV.getText().toString());
-                    commentNum ++;
+                    commentNum++;
                     commentNumTV.setText(commentNum.toString());
-
 
                 }
             }
@@ -232,6 +231,7 @@ public class ViewQR extends DialogFragment {
         //Link: https://stackoverflow.com/questions/6210895/listview-inside-scrollview-is-not-scrolling-on-android/17503823#17503823
         //License: CC BY-SA 3.0
         commentListView.setOnTouchListener(new ListView.OnTouchListener() {
+            @SuppressLint("ClickableViewAccessibility")
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 int action = event.getAction();
@@ -264,7 +264,7 @@ public class ViewQR extends DialogFragment {
     /**
      * Query database to check if QR code has any comments or not
      *
-     * @param QRCodeId QR to check for comments
+     * @param QRCodeId   QR to check for comments
      * @param noComments Callback function
      */
     public void noCommentsCheck(@NonNull String QRCodeId, final @NonNull QRCodeNoCommentsCallback noComments) {
