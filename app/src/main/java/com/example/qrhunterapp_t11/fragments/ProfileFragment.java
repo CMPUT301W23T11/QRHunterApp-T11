@@ -284,7 +284,7 @@ public class ProfileFragment extends Fragment {
      * @return A boolean of if the profile is the current user
      */
     public boolean CurrentUser(@NonNull String displayName, @NonNull String username, @NonNull SharedPreferences prefs){
-        return displayName.equals(prefs.getString("currentUserDisplayName", null)) && (username.equals(prefs.getString("currentUser", null)));
+        return displayName.equals(prefs.getString("currentUserDisplayName", null)) && (username.equals(prefs.getString("currentUserUsername", null)));
     }
 
     /**
