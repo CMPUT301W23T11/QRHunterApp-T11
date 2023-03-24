@@ -42,23 +42,21 @@ import java.util.Collections;
  * Handles player profile screen.
  * Outputs the users' QR collection and the users' stats
  *
- * @author Afra, Kristina, Sarah
+ * @author Afra, Kristina
  * @reference <a href="https://stackoverflow.com/questions/74092262/calculate-total-from-values-stored-in-firebase-firestore-database-android">How to calculate the sum of a set of documents</a>
  * @reference <a href="https://firebase.google.com/docs/firestore/query-data/listen">How to get a new snapshot everytime the data is updated</a>
  * @reference <a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation for RecyclerView</a>
  */
 public class ProfileFragment extends Fragment {
-    private static final String tag = "ProfileFragment";
-    private static final String listenFailed = "listenFailed";
     private final CollectionReference usersReference;
     private final CollectionReference qrCodeReference;
+    private final FirebaseFirestore db;
     private QRCodeAdapter adapter;
     private RecyclerView qrCodeRecyclerView;
     private FirestoreRecyclerOptions<QRCode> options;
     private final String displayName;
     private final String username;
     private SharedPreferences prefs;
-    FirebaseFirestore db;
 
     /**
      * Constructor for profile fragment.
@@ -128,7 +126,7 @@ public class ProfileFragment extends Fragment {
 
                             qrCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
 
-                            adapter = new QRCodeAdapter(options);
+                            adapter = new QRCodeAdapter(options, db);
 
                             //super.onStart(); man idk
                             adapter.startListening();
@@ -143,7 +141,7 @@ public class ProfileFragment extends Fragment {
                             for (String qr : userData) {
                                 total += Integer.parseInt(qr);
                             }
-                            // Updates the users total score in the database
+                            // Updates the user's total score in the database
                             totalScoreText.setText(MessageFormat.format("Total score: {0}", total));
 
                             // Gets the largest QR from the user
@@ -153,7 +151,7 @@ public class ProfileFragment extends Fragment {
                             // Gets the smallest QR from the user
                             lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", userData.get(0)));
 
-                            // Gets the size of the amount of QR codes the user has
+                            // Gets the number of QR codes the user has
                             totalQRCodesText.setText(MessageFormat.format("Number of QR Codes: {0}", userData.size()));
 
 
