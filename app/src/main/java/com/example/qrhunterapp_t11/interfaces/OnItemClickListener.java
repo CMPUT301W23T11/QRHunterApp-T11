@@ -1,4 +1,4 @@
-package com.example.qrhunterapp_t11;
+package com.example.qrhunterapp_t11.interfaces;
 
 import androidx.annotation.NonNull;
 

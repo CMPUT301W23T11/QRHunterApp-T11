@@ -15,6 +15,8 @@ import androidx.annotation.NonNull;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
+import com.example.qrhunterapp_t11.activities.MainActivity;
+import com.example.qrhunterapp_t11.objectclasses.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -42,7 +44,7 @@ import java.util.Random;
 public class CameraFragmentTest {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");
-    private final CollectionReference QRCodesReference = db.collection("QRCodes");
+    private final CollectionReference qrCodesReference = db.collection("QRCodes");
     private final Random rand = new Random();
     private final String testUsername = "testUser" + rand.nextInt(1000000);
     private Solo solo;
@@ -60,11 +62,11 @@ public class CameraFragmentTest {
             String displayName;
 
             prefs.edit().clear().commit();
-            prefs.edit().putBoolean("LoggedIn", true).commit();
-            prefs.edit().putString("currentUser", testUsername).commit();
+            prefs.edit().putBoolean("loggedIn", true).commit();
+            prefs.edit().putString("currentUserUsername", testUsername).commit();
             prefs.edit().putString("currentUserDisplayName", testUsername).commit();
 
-            username = prefs.getString("currentUser", null);
+            username = prefs.getString("currentUserUsername", null);
             displayName = prefs.getString("currentUserDisplayName", null);
 
             assertEquals(testUsername, username);
@@ -107,9 +109,9 @@ public class CameraFragmentTest {
     public void takePhotoShareLocation() {
         String testHash = "8227ad036b504e39fe29393ce170908be2b1ea636554488fa86de5d9d6cd2c32";
 
-        deleteDoc(testHash, QRCodesReference); // delete the test doc to see change in collection size
+        deleteDoc(testHash, qrCodesReference); // delete the test doc to see change in collection size
 
-        checkDocExists(testHash, QRCodesReference, new Callback() {
+        checkDocExists(testHash, qrCodesReference, new Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertFalse(docExists);
@@ -126,7 +128,7 @@ public class CameraFragmentTest {
         solo.clickOnText("Yes");
         assertTrue(solo.waitForText("STATS", 1, 7000)); // confirm we're back on the profile page
 
-        checkDocExists(testHash, QRCodesReference, new Callback() {
+        checkDocExists(testHash, qrCodesReference, new Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertTrue(docExists);
@@ -144,9 +146,9 @@ public class CameraFragmentTest {
     public void takePhotoRejectLocation() {
         String testHash = "8227ad036b504e39fe29393ce170908be2b1ea636554488fa86de5d9d6cd2c32";
 
-        deleteDoc(testHash, QRCodesReference); // delete the test doc to see change in collection size
+        deleteDoc(testHash, qrCodesReference); // delete the test doc to see change in collection size
 
-        checkDocExists(testHash, QRCodesReference, new Callback() {
+        checkDocExists(testHash, qrCodesReference, new Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertFalse(docExists);
@@ -162,7 +164,7 @@ public class CameraFragmentTest {
         solo.clickOnText("No");
         assertTrue(solo.waitForText("STATS", 1, 7000)); // confirm we're back on the profile page
 
-        checkDocExists(testHash, QRCodesReference, new Callback() {
+        checkDocExists(testHash, qrCodesReference, new Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertTrue(docExists);
@@ -177,9 +179,9 @@ public class CameraFragmentTest {
     public void rejectPhotoAcceptLocation() {
         String testHash = "8227ad036b504e39fe29393ce170908be2b1ea636554488fa86de5d9d6cd2c32";
 
-        deleteDoc(testHash, QRCodesReference); // delete the test doc to see change in collection size
+        deleteDoc(testHash, qrCodesReference); // delete the test doc to see change in collection size
 
-        checkDocExists(testHash, QRCodesReference, new Callback() {
+        checkDocExists(testHash, qrCodesReference, new Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertFalse(docExists);
@@ -195,7 +197,7 @@ public class CameraFragmentTest {
         solo.clickOnText("Yes");
         assertTrue(solo.waitForText("STATS", 1, 7000)); // confirm we're back on the profile page
 
-        checkDocExists(testHash, QRCodesReference, new Callback() {
+        checkDocExists(testHash, qrCodesReference, new Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertTrue(docExists);
@@ -210,9 +212,9 @@ public class CameraFragmentTest {
     public void rejectPhotoRejectLocation() {
         String testHash = "8227ad036b504e39fe29393ce170908be2b1ea636554488fa86de5d9d6cd2c32";
 
-        deleteDoc(testHash, QRCodesReference); // delete the test doc to see change in collection size
+        deleteDoc(testHash, qrCodesReference); // delete the test doc to see change in collection size
 
-        checkDocExists(testHash, QRCodesReference, new Callback() {
+        checkDocExists(testHash, qrCodesReference, new Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertFalse(docExists);
@@ -228,7 +230,7 @@ public class CameraFragmentTest {
         solo.clickOnText("No");
         assertTrue(solo.waitForText("STATS", 1, 7000)); // confirm we're back on the profile page
 
-        checkDocExists(testHash, QRCodesReference, new Callback() {
+        checkDocExists(testHash, qrCodesReference, new Callback() {
             public void dataValid(boolean valid) {
                 docExists = valid;
                 assertTrue(docExists);

@@ -128,7 +128,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li>com.firebase.ui.firestore.FirestoreRecyclerAdapter&lt;<a href="QRCode.html" title="class in com.example.qrhunterapp_t11">QRCode</a>,&#8203;<a href="QRAdapterClass.RecyclerViewHolder.html" title="class in com.example.qrhunterapp_t11">QRAdapterClass.RecyclerViewHolder</a>&gt;</li>
 <li>
 <ul class="inheritance">
-<li>com.example.qrhunterapp_t11.QRAdapterClass</li>
+<li>com.example.qrhunterapp_t11.adapters.QRCodeAdapter</li>
 </ul>
 </li>
 </ul>
@@ -248,33 +248,43 @@ extends com.firebase.ui.firestore.FirestoreRecyclerAdapter&lt;<a href="QRCode.ht
 <th class="colSecond" scope="col">Method</th>
 <th class="colLast" scope="col">Description</th>
 </tr>
-<tr id="i0" class="altColor">
-<td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#onBindViewHolder(com.example.qrhunterapp_t11.QRAdapterClass.RecyclerViewHolder,int,com.example.qrhunterapp_t11.QRCode)">onBindViewHolder</a></span>&#8203;(@NonNull <a href="QRAdapterClass.RecyclerViewHolder.html" title="class in com.example.qrhunterapp_t11">QRAdapterClass.RecyclerViewHolder</a>&nbsp;holder,
-                int&nbsp;position,
-                @NonNull <a href="QRCode.html" title="class in com.example.qrhunterapp_t11">QRCode</a>&nbsp;model)</code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
+    <tr id="i0" class="altColor">
+        <td class="colFirst"><code>protected void</code></td>
+        <th class="colSecond" scope="row"><code><span class="memberNameLink"><a
+                href="#onBindViewHolder(com.example.qrhunterapp_t11.adapters.QRCodeAdapter.RecyclerViewHolder,int,com.example.qrhunterapp_t11.objectclasses.QRCode)">onBindViewHolder</a></span>&#8203;(@NonNull
+            <a href="QRAdapterClass.RecyclerViewHolder.html"
+               title="class in com.example.qrhunterapp_t11">QRAdapterClass.RecyclerViewHolder</a>&nbsp;holder,
+            int&nbsp;position,
+            @NonNull <a href="QRCode.html" title="class in com.example.qrhunterapp_t11">QRCode</a>&nbsp;model)</code>
+        </th>
+        <td class="colLast">&nbsp;</td>
+    </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code><a href="QRAdapterClass.RecyclerViewHolder.html" title="class in com.example.qrhunterapp_t11">QRAdapterClass.RecyclerViewHolder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#onCreateViewHolder(android.view.ViewGroup,int)">onCreateViewHolder</a></span>&#8203;(@NonNull android.view.ViewGroup&nbsp;group,
                   int&nbsp;i)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i2" class="altColor">
-<td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setOnItemClickListener(com.example.qrhunterapp_t11.OnItemClickListener)">setOnItemClickListener</a></span>&#8203;(@NonNull <a href="OnItemClickListener.html" title="interface in com.example.qrhunterapp_t11">OnItemClickListener</a>&nbsp;listener)</code></th>
-<td class="colLast">
-<div class="block">Sets the OnClickListener</div>
-</td>
-</tr>
-<tr id="i3" class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setOnItemLongClickListener(com.example.qrhunterapp_t11.OnItemLongClickListener)">setOnItemLongClickListener</a></span>&#8203;(@NonNull <a href="OnItemLongClickListener.html" title="interface in com.example.qrhunterapp_t11">OnItemLongClickListener</a>&nbsp;listener)</code></th>
-<td class="colLast">
-<div class="block">Constructor for OnItemLongClickListener</div>
-</td>
-</tr>
+    <tr id="i2" class="altColor">
+        <td class="colFirst"><code>void</code></td>
+        <th class="colSecond" scope="row"><code><span class="memberNameLink"><a
+                href="#setOnItemClickListener(com.example.qrhunterapp_t11.interfaces.OnItemClickListener)">setOnItemClickListener</a></span>&#8203;(@NonNull
+            <a href="OnItemClickListener.html" title="interface in com.example.qrhunterapp_t11">OnItemClickListener</a>&nbsp;listener)</code>
+        </th>
+        <td class="colLast">
+            <div class="block">Sets the OnClickListener</div>
+        </td>
+    </tr>
+    <tr id="i3" class="rowColor">
+        <td class="colFirst"><code>void</code></td>
+        <th class="colSecond" scope="row"><code><span class="memberNameLink"><a
+                href="#setOnItemLongClickListener(com.example.qrhunterapp_t11.interfaces.OnItemLongClickListener)">setOnItemLongClickListener</a></span>&#8203;(@NonNull
+            <a href="OnItemLongClickListener.html" title="interface in com.example.qrhunterapp_t11">OnItemLongClickListener</a>&nbsp;listener)</code>
+        </th>
+        <td class="colLast">
+            <div class="block">Constructor for OnItemLongClickListener</div>
+        </td>
+    </tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.com.firebase.ui.firestore.FirestoreRecyclerAdapter">
@@ -357,23 +367,25 @@ extends com.firebase.ui.firestore.FirestoreRecyclerAdapter&lt;<a href="QRCode.ht
 <!-- ============ METHOD DETAIL ========== -->
 <section role="region">
 <ul class="blockList">
-<li class="blockList"><a id="method.detail">
-<!--   -->
-</a>
-<h3>Method Detail</h3>
-<a id="onBindViewHolder(com.example.qrhunterapp_t11.QRAdapterClass.RecyclerViewHolder,int,com.example.qrhunterapp_t11.QRCode)">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>onBindViewHolder</h4>
-<pre class="methodSignature">protected&nbsp;void&nbsp;onBindViewHolder&#8203;(@NonNull
-                                @NonNull <a href="QRAdapterClass.RecyclerViewHolder.html" title="class in com.example.qrhunterapp_t11">QRAdapterClass.RecyclerViewHolder</a>&nbsp;holder,
+    <li class="blockList"><a id="method.detail">
+        <!--   -->
+    </a>
+        <h3>Method Detail</h3>
+        <a id="onBindViewHolder(com.example.qrhunterapp_t11.adapters.QRCodeAdapter.RecyclerViewHolder,int,com.example.qrhunterapp_t11.objectclasses.QRCode)">
+            <!--   -->
+        </a>
+        <ul class="blockList">
+            <li class="blockList">
+                <h4>onBindViewHolder</h4>
+                <pre class="methodSignature">protected&nbsp;void&nbsp;onBindViewHolder&#8203;(@NonNull
+                                @NonNull <a href="QRAdapterClass.RecyclerViewHolder.html"
+                                            title="class in com.example.qrhunterapp_t11">QRAdapterClass.RecyclerViewHolder</a>&nbsp;holder,
                                 int&nbsp;position,
                                 @NonNull
-                                @NonNull <a href="QRCode.html" title="class in com.example.qrhunterapp_t11">QRCode</a>&nbsp;model)</pre>
-<dl>
-<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+                                @NonNull <a href="QRCode.html"
+                                            title="class in com.example.qrhunterapp_t11">QRCode</a>&nbsp;model)</pre>
+                <dl>
+                    <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code>onBindViewHolder</code>&nbsp;in class&nbsp;<code>com.firebase.ui.firestore.FirestoreRecyclerAdapter&lt;<a href="QRCode.html" title="class in com.example.qrhunterapp_t11">QRCode</a>,&#8203;<a href="QRAdapterClass.RecyclerViewHolder.html" title="class in com.example.qrhunterapp_t11">QRAdapterClass.RecyclerViewHolder</a>&gt;</code></dd>
 </dl>
 </li>
@@ -384,44 +396,50 @@ extends com.firebase.ui.firestore.FirestoreRecyclerAdapter&lt;<a href="QRCode.ht
 <ul class="blockList">
 <li class="blockList">
 <h4>onCreateViewHolder</h4>
-<pre class="methodSignature">@NonNull
-public&nbsp;<a href="QRAdapterClass.RecyclerViewHolder.html" title="class in com.example.qrhunterapp_t11">QRAdapterClass.RecyclerViewHolder</a>&nbsp;onCreateViewHolder&#8203;(@NonNull
+    <pre class="methodSignature">@NonNull
+public&nbsp;<a href="QRAdapterClass.RecyclerViewHolder.html"
+               title="class in com.example.qrhunterapp_t11">QRAdapterClass.RecyclerViewHolder</a>&nbsp;onCreateViewHolder&#8203;(@NonNull
                                                             @NonNull android.view.ViewGroup&nbsp;group,
                                                             int&nbsp;i)</pre>
-<dl>
-<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code>onCreateViewHolder</code>&nbsp;in class&nbsp;<code>androidx.recyclerview.widget.RecyclerView.Adapter&lt;<a href="QRAdapterClass.RecyclerViewHolder.html" title="class in com.example.qrhunterapp_t11">QRAdapterClass.RecyclerViewHolder</a>&gt;</code></dd>
-</dl>
+    <dl>
+        <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+        <dd><code>onCreateViewHolder</code>&nbsp;in class&nbsp;<code>androidx.recyclerview.widget.RecyclerView.Adapter&lt;<a
+                href="QRAdapterClass.RecyclerViewHolder.html"
+                title="class in com.example.qrhunterapp_t11">QRAdapterClass.RecyclerViewHolder</a>&gt;</code>
+        </dd>
+    </dl>
 </li>
 </ul>
-<a id="setOnItemClickListener(com.example.qrhunterapp_t11.OnItemClickListener)">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setOnItemClickListener</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;setOnItemClickListener&#8203;(@NonNull
-                                   @NonNull <a href="OnItemClickListener.html" title="interface in com.example.qrhunterapp_t11">OnItemClickListener</a>&nbsp;listener)</pre>
-<div class="block">Sets the OnClickListener</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>listener</code> - - OnItemClickListener</dd>
-</dl>
-</li>
-</ul>
-<a id="setOnItemLongClickListener(com.example.qrhunterapp_t11.OnItemLongClickListener)">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>setOnItemLongClickListener</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;setOnItemLongClickListener&#8203;(@NonNull
-                                       @NonNull <a href="OnItemLongClickListener.html" title="interface in com.example.qrhunterapp_t11">OnItemLongClickListener</a>&nbsp;listener)</pre>
-<div class="block">Constructor for OnItemLongClickListener</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>listener</code> - OnItemLongClickListener object</dd>
-<dt><span class="seeLabel">See Also:</span></dt>
+        <a id="setOnItemClickListener(com.example.qrhunterapp_t11.interfaces.OnItemClickListener)">
+            <!--   -->
+        </a>
+        <ul class="blockList">
+            <li class="blockList">
+                <h4>setOnItemClickListener</h4>
+                <pre class="methodSignature">public&nbsp;void&nbsp;setOnItemClickListener&#8203;(@NonNull
+                                   @NonNull <a href="OnItemClickListener.html"
+                                               title="interface in com.example.qrhunterapp_t11">OnItemClickListener</a>&nbsp;listener)</pre>
+                <div class="block">Sets the OnClickListener</div>
+                <dl>
+                    <dt><span class="paramLabel">Parameters:</span></dt>
+                    <dd><code>listener</code> - - OnItemClickListener</dd>
+                </dl>
+            </li>
+        </ul>
+        <a id="setOnItemLongClickListener(com.example.qrhunterapp_t11.interfaces.OnItemLongClickListener)">
+            <!--   -->
+        </a>
+        <ul class="blockListLast">
+            <li class="blockList">
+                <h4>setOnItemLongClickListener</h4>
+                <pre class="methodSignature">public&nbsp;void&nbsp;setOnItemLongClickListener&#8203;(@NonNull
+                                       @NonNull <a href="OnItemLongClickListener.html"
+                                                   title="interface in com.example.qrhunterapp_t11">OnItemLongClickListener</a>&nbsp;listener)</pre>
+                <div class="block">Constructor for OnItemLongClickListener</div>
+                <dl>
+                    <dt><span class="paramLabel">Parameters:</span></dt>
+                    <dd><code>listener</code> - OnItemLongClickListener object</dd>
+                    <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="OnItemLongClickListener.html" title="interface in com.example.qrhunterapp_t11"><code>OnItemLongClickListener</code></a></dd>
 </dl>
 </li>

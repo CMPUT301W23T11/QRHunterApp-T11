@@ -1,10 +1,8 @@
-package com.example.qrhunterapp_t11;
+package com.example.qrhunterapp_t11.fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -25,13 +23,11 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.qrhunterapp_t11.R;
+import com.example.qrhunterapp_t11.adapters.LeaderboardProfileAdapter;
+import com.example.qrhunterapp_t11.interfaces.OnItemClickListener;
+import com.example.qrhunterapp_t11.objectclasses.User;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.tasks.OnCanceledListener;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-
-import com.google.android.material.search.SearchView;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -43,8 +39,6 @@ import com.google.firebase.firestore.QuerySnapshot;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
 
 
 /**
@@ -60,7 +54,7 @@ public class SearchFragment extends Fragment {
     private final String tag = "searchFragment";
     private final FirebaseFirestore db;
     private final CollectionReference usersReference;
-    private final CollectionReference QRCodeReference;
+    private final CollectionReference qrCodeReference;
     private LeaderboardProfileAdapter leaderboardAdapter;
     private RecyclerView leaderboardRecyclerView;
     private FirestoreRecyclerOptions<User> leaderboardOptions;
@@ -70,7 +64,7 @@ public class SearchFragment extends Fragment {
     public SearchFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
         this.usersReference = db.collection("Users");
-        this.QRCodeReference = db.collection("QRCodes");
+        this.qrCodeReference = db.collection("QRCodes");
     }
 
     @NonNull
@@ -100,7 +94,7 @@ public class SearchFragment extends Fragment {
                 }
                 if (value != null) {
                     displayNameList.clear();
-                    for (DocumentSnapshot doc : value){
+                    for (DocumentSnapshot doc : value) {
                         if (doc.exists()) {
                             User user = doc.toObject(User.class);
                             displayNameList.add(user.getDisplayName());
@@ -122,7 +116,7 @@ public class SearchFragment extends Fragment {
         autoCompleteTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                if ((keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (i == EditorInfo.IME_ACTION_DONE)){
+                if ((keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (i == EditorInfo.IME_ACTION_DONE)) {
                     String searchText = autoCompleteTextView.getText().toString();
 
 
@@ -167,8 +161,6 @@ public class SearchFragment extends Fragment {
                 autoCompleteTextView.setText("", false);
             }
         });
-
-        
 
         // Set Firestore RecyclerView query and begin monitoring that query
         leaderboardFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {

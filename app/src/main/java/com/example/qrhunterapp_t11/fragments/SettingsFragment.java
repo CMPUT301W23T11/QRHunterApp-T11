@@ -1,4 +1,4 @@
-package com.example.qrhunterapp_t11;
+package com.example.qrhunterapp_t11.fragments;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.qrhunterapp_t11.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
@@ -36,7 +37,7 @@ import java.util.ArrayList;
 public class SettingsFragment extends Fragment {
 
     private final CollectionReference usersReference;
-    private final CollectionReference QRCodeReference;
+    private final CollectionReference qrCodeReference;
     private EditText usernameEditText;
     private EditText emailEditText;
     private String usernameString;
@@ -44,7 +45,7 @@ public class SettingsFragment extends Fragment {
 
     public SettingsFragment(@NonNull FirebaseFirestore db) {
         this.usersReference = db.collection("Users");
-        this.QRCodeReference = db.collection("QRCodes");
+        this.qrCodeReference = db.collection("QRCodes");
     }
 
     @NonNull
@@ -83,8 +84,7 @@ public class SettingsFragment extends Fragment {
                                     .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
-                                            String user = prefs.getString("currentUser", null);
-                                            String oldUsername = prefs.getString("currentUserDisplayName", null);
+                                            String user = prefs.getString("currentUserUsername", null);
 
                                             usersReference.document(user).update("displayName", usernameString);
                                             usersReference.document(user).update("email", emailString);
@@ -93,7 +93,7 @@ public class SettingsFragment extends Fragment {
                                             prefs.edit().putString("currentUserEmail", emailString).commit();
 
                                             // Update username in all user's previous comments
-                                            updateUserComments(user, oldUsername, usernameString, new SettingsCallback() {
+                                            updateUserComments(user, usernameString, new SettingsCallback() {
                                                 public void valid(boolean valid) {
                                                     assert (valid);
                                                 }
@@ -154,11 +154,10 @@ public class SettingsFragment extends Fragment {
      * QR codes they have commented on, and update their display name for each one
      *
      * @param username           User's username
-     * @param oldDisplayUsername User's old display name
      * @param newDisplayUsername User's new display name
      * @param valid              Callback for query
      */
-    public void updateUserComments(@NonNull String username, @NonNull String oldDisplayUsername, @NonNull String newDisplayUsername, final @NonNull SettingsCallback valid) {
+    public void updateUserComments(@NonNull String username, @NonNull String newDisplayUsername, final @NonNull SettingsCallback valid) {
 
         ArrayList<DocumentReference> userCommentedListRef = new ArrayList<>();
 
@@ -173,7 +172,7 @@ public class SettingsFragment extends Fragment {
                     }
                     if (!userCommentedListRef.isEmpty()) {
                         // Retrieve matching QR Code data from the QRCodes collection using DocumentReferences
-                        QRCodeReference.whereIn(FieldPath.documentId(), userCommentedListRef)
+                        qrCodeReference.whereIn(FieldPath.documentId(), userCommentedListRef)
                                 .get()
                                 .addOnSuccessListener(referencedQRDocumentSnapshots -> {
                                     for (QueryDocumentSnapshot snapshot : referencedQRDocumentSnapshots) {

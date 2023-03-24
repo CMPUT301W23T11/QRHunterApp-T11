@@ -1,4 +1,4 @@
-package com.example.qrhunterapp_t11;
+package com.example.qrhunterapp_t11.fragments;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -14,9 +14,12 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.qrhunterapp_t11.R;
+import com.example.qrhunterapp_t11.adapters.QRCodeAdapter;
+import com.example.qrhunterapp_t11.interfaces.OnItemClickListener;
+import com.example.qrhunterapp_t11.interfaces.OnItemLongClickListener;
+import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -25,7 +28,6 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -45,11 +47,10 @@ public class ProfileFragment extends Fragment {
     private static final String tag = "ProfileFragment";
     private static final String listenFailed = "listenFailed";
     private final CollectionReference usersReference;
-    private final CollectionReference QRCodeReference;
-    private QRAdapterClass adapter;
-    private RecyclerView QRCodeRecyclerView;
+    private final CollectionReference qrCodeReference;
+    private QRCodeAdapter adapter;
+    private RecyclerView qrCodeRecyclerView;
     private FirestoreRecyclerOptions<QRCode> options;
-    private boolean userHasNoCodes;
     private final String displayName;
     private final String username;
     FirebaseFirestore db;
@@ -63,7 +64,7 @@ public class ProfileFragment extends Fragment {
     public ProfileFragment(@NonNull FirebaseFirestore db, @NonNull String displayName, @NonNull String username) {
         this.db = db;
         this.usersReference = db.collection("Users");
-        this.QRCodeReference = db.collection("QRCodes");
+        this.qrCodeReference = db.collection("QRCodes");
         this.displayName = displayName;
         this.username = username;
     }
@@ -96,24 +97,22 @@ public class ProfileFragment extends Fragment {
 
         // If the user has at least one QR code, initialize RecyclerView
         noQRCodesCheck(username, new ProfileNoCodesCallback() {
-            public void noCodes(boolean noCodes) {
-                userHasNoCodes = noCodes;
-
-                if (!userHasNoCodes) {
+            public void setNoCodes(boolean noCodes) {
+                if (!noCodes) {
 
                     // Retrieve all QR Codes the user has and calculate scores
                     queryQRCodes(username, new ProfileUserDataCallback() {
                         public void getUserData(@NonNull ArrayList<String> userData) {
 
-                            QRCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
+                            qrCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
 
-                            adapter = new QRAdapterClass(options);
+                            adapter = new QRCodeAdapter(options);
 
                             //super.onStart(); man idk
                             adapter.startListening();
-                            QRCodeRecyclerView.setAdapter(adapter);
-                            QRCodeRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                            QRCodeRecyclerView.setHasFixedSize(false);
+                            qrCodeRecyclerView.setAdapter(adapter);
+                            qrCodeRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                            qrCodeRecyclerView.setHasFixedSize(false);
 
                             // TODO: get the fragment to auto refresh
 
@@ -143,7 +142,7 @@ public class ProfileFragment extends Fragment {
 
                                     QRCode qrCode = documentSnapshot.toObject(QRCode.class);
                                     assert qrCode != null;
-                                    new ViewQR(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
+                                    new QRCodeView(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
                                 }
                             });
 
@@ -199,21 +198,15 @@ public class ProfileFragment extends Fragment {
     /**
      * Query database to check if user has any QR codes in their collection or not
      *
-     * @param username Current user's username
-     * @param noCodes  Callback function
+     * @param username   Current user's username
+     * @param setNoCodes Callback function
      */
-    public void noQRCodesCheck(@NonNull String username, final @NonNull ProfileNoCodesCallback noCodes) {
+    public void noQRCodesCheck(@NonNull String username, final @NonNull ProfileNoCodesCallback setNoCodes) {
 
         usersReference.document(username).collection("User QR Codes")
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            noCodes.noCodes(task.getResult().size() == 0);
-                        }
-                    }
-                });
+                .addOnSuccessListener(userQRCodes ->
+                        setNoCodes.setNoCodes(userQRCodes.size() == 0));
     }
 
     /**
@@ -240,7 +233,7 @@ public class ProfileFragment extends Fragment {
                     }
 
                     // Retrieve QR Code data from the QRCodes collection using DocumentReferences
-                    Query query = QRCodeReference.whereIn(FieldPath.documentId(), userQRCodesRef);
+                    Query query = qrCodeReference.whereIn(FieldPath.documentId(), userQRCodesRef);
                     query
                             .get()
                             .addOnSuccessListener(referencedQRDocumentSnapshots -> {
@@ -258,14 +251,13 @@ public class ProfileFragment extends Fragment {
                 });
     }
 
-
     /**
      * Callback for querying the database to see if user has codes
      *
      * @author Afra
      */
     public interface ProfileNoCodesCallback {
-        void noCodes(boolean noCodes);
+        void setNoCodes(boolean noCodes);
     }
 
     /**
