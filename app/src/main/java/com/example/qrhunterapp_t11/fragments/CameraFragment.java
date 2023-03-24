@@ -51,7 +51,7 @@ import java.util.TimerTask;
 
 /**
  * Logic for the camera fragment, which is responsible for managing everything that pertains to scanning and adding a new QR code.
- * Calls all the necessary activities for achieving this (the scan QR and take photo activities).
+ * Calls all the necessary activities for achieving this (the scan QR and take photo activities) .
  *
  * @author Aidan Lynch - methods related to QR scanning, photo-taking and main camera fragment screen logic.
  * @author Daniel Guo - methods related to geolocation and obtaining permissions for location.
