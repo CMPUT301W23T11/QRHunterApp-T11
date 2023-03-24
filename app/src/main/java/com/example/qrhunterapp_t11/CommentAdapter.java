@@ -86,7 +86,7 @@ public class CommentAdapter extends BaseAdapter {
         TextView profileTV = commentView.findViewById(R.id.profile_tv);
         TextView commentTV = commentView.findViewById(R.id.comment_tv);
         Comment c = this.getItem(i);
-        profileTV.setText(c.getUserDisplayName());
+        profileTV.setText(c.getDisplayName());
         commentTV.setText(c.getComment());
         return commentView;
     }

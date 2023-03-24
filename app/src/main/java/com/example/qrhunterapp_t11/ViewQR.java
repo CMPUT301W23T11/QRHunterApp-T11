@@ -99,6 +99,7 @@ public class ViewQR extends DialogFragment {
      * @param savedInstanceState - The last saved instance state of the Fragment, or null if this is a freshly created Fragment.
      * @return - builder
      */
+    @SuppressLint("ClickableViewAccessibility")
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -143,22 +144,10 @@ public class ViewQR extends DialogFragment {
             public void noComments(boolean noComments) {
                 if (!noComments) {
                     getComments(QRCodeId, new QRCodeCommentsCallback() {
-                        public void comments(@NonNull ArrayList<ArrayList<Map<String, Object>>> comments) {
+                        public void setComments(@NonNull ArrayList<Comment> comments) {
 
-                            commentList = new ArrayList<>();
-                            for (int i = 0; i < comments.size(); i++) {
-                                Map<String, Object> commentMap;
-                                commentMap = comments.get(i).get(0);
-                                String username = (String) commentMap.get("username");
-                                String displayName = (String) commentMap.get("displayName");
-                                String commentString = (String) commentMap.get("comment");
+                            commentList = comments;
 
-                                assert commentString != null;
-                                assert displayName != null;
-                                assert username != null;
-                                Comment comment = new Comment(commentString, displayName, username);
-                                commentList.add(comment);
-                            }
                             commentAdapter = new CommentAdapter(getContext(), commentList);
                             commentListView.setAdapter(commentAdapter);
                             CollectionReference query = db.collection("QRCodes").document(qrCode.getId()).collection("commentList");
@@ -227,11 +216,12 @@ public class ViewQR extends DialogFragment {
             }
         });
 
-        //This OnTouchListener code block came from Moisés Olmedo to make a list view be scrollable within a scrollview.
-        //Link: https://stackoverflow.com/questions/6210895/listview-inside-scrollview-is-not-scrolling-on-android/17503823#17503823
-        //License: CC BY-SA 3.0
+        // This OnTouchListener code block came from Moisés Olmedo to make a list view be scrollable within a scrollview.
+        // Link: https://stackoverflow.com/questions/6210895/listview-inside-scrollview-is-not-scrolling-on-android/17503823#17503823
+        // License: CC BY-SA 3.0
         commentListView.setOnTouchListener(new ListView.OnTouchListener() {
             @SuppressLint("ClickableViewAccessibility")
+
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 int action = event.getAction();
@@ -281,21 +271,33 @@ public class ViewQR extends DialogFragment {
                 });
     }
 
-    public void getComments(@NonNull String QRCodeId, final @NonNull QRCodeCommentsCallback comments) {
+    /**
+     * Gets all comments on a QR Code.
+     * Comments are stored in the callback array
+     *
+     * @param QRCodeId    ID of QR Code to get comments of
+     * @param setComments Callback for query
+     */
+    public void getComments(@NonNull String QRCodeId, final @NonNull QRCodeCommentsCallback setComments) {
 
-        ArrayList<ArrayList<Map<String, Object>>> commentsTemp = new ArrayList<>();
+        ArrayList<Comment> comments = new ArrayList<>();
 
-        // Retrieve DocumentReferences in the user's QR code collection and store them in an array
+        // Retrieve all comment items for the given QR Code and add them to the array
         QRCodesReference.document(QRCodeId).collection("commentList")
                 .get()
                 .addOnSuccessListener(snapshot -> {
                     for (QueryDocumentSnapshot document : snapshot) {
-                        ArrayList<Map<String, Object>> comment = new ArrayList<>();
-                        comment.add(document.getData());
-                        commentsTemp.add(comment);
+                        Comment comment;
+                        comment = document.toObject(Comment.class);
+                        comments.add(comment);
                     }
-                    comments.comments(commentsTemp);
+                    setComments.setComments(comments);
                 });
+    }
+
+
+    public void checkUserHasQRCode(@NonNull String username, @NonNull String QRCodeHashLocation) {
+
     }
 
     /**
@@ -320,6 +322,6 @@ public class ViewQR extends DialogFragment {
      * @author Afra
      */
     public interface QRCodeCommentsCallback {
-        void comments(@NonNull ArrayList<ArrayList<Map<String, Object>>> comments);
+        void setComments(@NonNull ArrayList<Comment> comments);
     }
 }
