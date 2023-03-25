@@ -73,6 +73,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-location:21.0.1'
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
     implementation 'com.google.android.gms:play-services-tasks:18.0.2'
+
     // CameraX dependencies
     def camerax_version = "1.2.1"
     implementation "androidx.camera:camera-core:${camerax_version}"
@@ -82,7 +83,7 @@ dependencies {
     implementation "androidx.camera:camera-view:${camerax_version}"
     implementation "androidx.camera:camera-extensions:${camerax_version}"
 
-    //photo dependency
+    // Picasso dependency
     implementation 'com.squareup.picasso:picasso:2.5.2'
 
     // Robotium dependencies
@@ -90,8 +91,16 @@ dependencies {
     androidTestImplementation "androidx.test:rules:1.5.0"
     androidTestImplementation "com.jayway.android.robotium:robotium-solo:5.5.3"
 
+
     // Lottie dependency
     def lottieVersion = "6.0.0"
     implementation "com.airbnb.android:lottie:$lottieVersion"
+
+    // Konfetti dependency
+    implementation 'nl.dionsegijn:konfetti-xml:2.0.2'
+
+    // Shimmer dependency
+    implementation 'com.facebook.shimmer:shimmer:0.5.0'
+
 }
 apply plugin: 'com.google.gms.google-services'
