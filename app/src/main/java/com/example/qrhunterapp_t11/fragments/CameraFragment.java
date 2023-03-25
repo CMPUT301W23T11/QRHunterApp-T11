@@ -52,6 +52,7 @@ import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+import java.lang.Math;
 
 import nl.dionsegijn.konfetti.core.Angle;
 import nl.dionsegijn.konfetti.core.PartyFactory;
@@ -421,6 +422,77 @@ public class CameraFragment extends Fragment {
         trans.replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUserUsername", null)));
         trans.commit();
     }
+
+    /**
+     * When new QRCodes are scanned, if the resulting hash already exists in
+     * the database, this function calculates the distance between the two locations
+     * using the Haversine formula, if the distance between the two points is less
+     * than the set threshold, the scanned QRCode is considered the same as QRCode object
+     * already in the database, and no new document will be inserted; user profile
+     * will reference pre-existing QRCode
+     *
+     * @return boolean - returns true if distance shorter than uniqueness threshold, else false if 2 separate instances
+     * @references https://www.trekview.org/blog/2021/reading-decimal-gps-coordinates-like-a-computer/ David G, August 27, 2021 how to read lat/long
+     *             https://en.wikipedia.org/wiki/Haversine_formula  how to calculate distance between to locations on earth using lat/long
+     *             https://linuxhint.com/import-math-in-java/   how use Math library
+     *             https://docs.oracle.com/javase/8/docs/api/java/lang/Math.html    cos, sin, arcsin
+     */
+
+    public static boolean isSameLocation() {
+        //TODO INPUT VALIDATION:
+        // some coordinates shouldn't make sense, iirc long can't have larger magnitude than +-180?
+        // and +- for lat?
+
+
+        double maxDistance = 30;    // in meters
+        double radius = 6371.0;     // earths radius in kilometers
+
+        //TODO do we want to pass to QRCode objects or just the lat/long values of two objects?
+        // latitude & longitude of first QRCode
+        // otherwise function itself works, calculations are verified correct
+
+        //TODO ** CURRENT COORDINATES HARDCODED FOR TESTING
+        double lat1 = 38.8977;
+        double lng1 = -77.0365;
+
+        // latitude & longitude of second QRCode
+        double lat2 = 48.8584;
+        double lng2 = 2.2945;
+
+        // convert degrees to radians
+        // phi = latitude, lambda = longitude
+        double phi1 = (lat1*Math.PI)/180.0;
+        double lambda1 = (lng1*Math.PI)/180.0;
+
+        double phi2 = (lat2*Math.PI)/180.0;
+        double lambda2 = (lng2*Math.PI)/180.0;
+
+        //calculate haversine(theta), the central angle between both locations relative to earth's center
+        // haversine(theta) = sin^2((phi2-phi1)/2)+cos(phi1)cos(phi2)sin^2((lamda2-lamda1)/2)
+        double haversine = ( Math.pow( Math.sin((phi2-phi1)/2) ,2) + Math.cos(phi1)*Math.cos(phi2)*( Math.pow(Math.sin( (lambda2-lambda1)/2), 2 ) ));
+
+        //calculate distance between both points using haversine
+        // distance = 2r*arcsin(sqr(haversine(theta)))
+        double distance = (2*radius)*(Math.asin(Math.sqrt(haversine)));
+
+        //System.out.printf("%f\n", haversine);
+        System.out.printf("%f\n", distance);
+
+        //convert distance to meters and compare with maxDistance
+        distance = distance*1000;
+        System.out.printf("distance in meters: %f\n", distance);
+
+        if(distance <= maxDistance) {
+            System.out.printf("Same\n");
+            return true;
+        }
+        else    {
+            System.out.printf("Different\n");
+            return false;
+        }
+    }
+
+
 
     /**
      * Helper function to check if a QR code document exists
