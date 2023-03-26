@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -418,9 +419,14 @@ public class CameraFragment extends Fragment {
      * @reference <a href="https://stackoverflow.com/a/60055145/14445107">using getParentFragmentManager() instead of getFragmentManager()</a>
      */
     private void returnToProfile() {
-        FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-        trans.replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUserUsername", null)));
-        trans.commit();
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() { // wait 500ms before returning to profile; if app returns to quickly the addition will not be registered in Firestore yet (the RecyclerView will update too early)
+                FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+                trans.replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUserUsername", null)));
+                trans.commit();
+            }
+        }, 500);
     }
 
     /**
