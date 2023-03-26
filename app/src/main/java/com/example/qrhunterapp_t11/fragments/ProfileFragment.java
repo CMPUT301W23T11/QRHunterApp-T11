@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -196,7 +197,7 @@ public class ProfileFragment extends Fragment {
                                                                                 usersReference.document(username).collection("User QR Codes").document(QRCodeID).delete();
                                                                                 // Subtract point value of that code from user's total points
                                                                                 usersReference.document(username).update("totalPoints", FieldValue.increment(points));
-
+                                                                                refreshProfile(); // reload profile fragment to update RecyclerView
                                                                             });
                                                                 });
                                                     }
@@ -272,6 +273,17 @@ public class ProfileFragment extends Fragment {
                                 }
                             });
                 });
+    }
+
+
+    /**
+     * Helper function to refresh profile screen once user has deleted a QR code; otherwise the user would have to toggle screens for the deleted QR Code to be removed.
+     * There may have been a more elegant way to do this by re-querying the database, but this seems to work fine.
+     */
+    private void refreshProfile() {
+        FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+        trans.replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUserUsername", null)));
+        trans.commit();
     }
 
     /**
