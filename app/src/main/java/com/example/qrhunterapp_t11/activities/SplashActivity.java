@@ -30,8 +30,10 @@ public class SplashActivity extends AppCompatActivity {
         appName = findViewById(R.id.app_name);
         mapAnimation = findViewById(R.id.splash_animation);
 
-        appName.animate().translationY(-600).setDuration(2100).setStartDelay(0);
-        mapAnimation.animate().translationY(-300).setDuration(1700).setStartDelay(0);
+        //appName.animate().translationY(-400).setDuration(2700).setStartDelay(0);
+        //mapAnimation.animate().translationX(2000).setDuration(2000).setStartDelay(2900);
+        appName.animate().translationY(-400).setDuration(2000).setStartDelay(350);
+        mapAnimation.animate().translationY(-400).setDuration(2000).setStartDelay(0);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
