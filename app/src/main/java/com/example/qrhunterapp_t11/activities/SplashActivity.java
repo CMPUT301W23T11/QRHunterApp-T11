@@ -32,8 +32,8 @@ public class SplashActivity extends AppCompatActivity {
 
         //appName.animate().translationY(-400).setDuration(2700).setStartDelay(0);
         //mapAnimation.animate().translationX(2000).setDuration(2000).setStartDelay(2900);
-        appName.animate().translationY(-500).setDuration(2000).setStartDelay(350);
-        mapAnimation.animate().translationY(-500).setDuration(2000).setStartDelay(0);
+        appName.animate().translationY(-400).setDuration(2000).setStartDelay(350);
+        mapAnimation.animate().translationY(-400).setDuration(2000).setStartDelay(0);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {

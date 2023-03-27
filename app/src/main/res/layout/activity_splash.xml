@@ -13,19 +13,19 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:elevation="500dp"
+        android:elevation="5dp"
         android:fontFamily="@font/nexa_heavy"
         android:text="QR Tracks"
         android:textColor="#FFFFFF"
-        android:textSize="60dp"
+        android:textSize="50dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/splash_animation"
-        android:layout_width="400dp"
-        android:layout_height="400dp"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
         android:layout_centerInParent="true"
         android:elevation="10dp"
         app:layout_constraintBottom_toTopOf="@+id/app_name"
