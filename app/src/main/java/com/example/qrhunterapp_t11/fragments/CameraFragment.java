@@ -139,13 +139,23 @@ public class CameraFragment extends Fragment {
     }
 
     /**
-     * When new QRCodes are scanned, if the resulting hash already exists in
-     * the database, this function calculates the distance between the two locations
-     * using the Haversine formula, if the distance between the two points is less
-     * than the set threshold, the scanned QRCode is considered the same as QRCode object
-     * already in the database, and no new document will be inserted; user profile
-     * will reference pre-existing QRCode
+     * This function calculates the distance between two locations on earth (input
+     * via decimal latitude longitude coordinates) using the Haversine formula;
+     * if the distance between the two points is less than the input threshold,
+     * returns true, else false
      *
+     * In the context of a freshly scanned QRCode, if the hash function of the new code
+     * matches the hash of a QRCode already in the db, this function determines if they should
+     * be considered unique objects or the same QRcode (sharing comments, photos etc...)
+     * if the function returns true using the new QRCode and the QRCode object already in the database,
+     * no new document will be inserted (user profile will reference pre-existing QRCode), otherwise
+     * a new entry will be created
+     *
+     * @param lat1 Double -latitude coordinate of first point
+     * @param lng1 Double -longitude  coordinate of first point
+     * @param lat2 Double -latitude coordinate of second point
+     * @param lng2 Double -longitude coordinate of second point
+     * @param maxDistance Double - the maximum distance allowed between the two points IN METERS
      * @return true if distance shorter than uniqueness threshold, else false if 2 separate instances
      * @sources <pre>
      * <ul>
@@ -153,30 +163,26 @@ public class CameraFragment extends Fragment {
      * <li><a href="https://en.wikipedia.org/wiki/Haversine_formula">How to calculate distance between to locations on earth using lat/long</a></li>
      * <li><a href="https://linuxhint.com/import-math-in-java/">How use Math library</a></li>
      * <li><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Math.html">cos, sin, arcsin</a></li>
+     * <li><a href="https://www.movable-type.co.uk/scripts/latlong.html"> Verified test cases w/ this calculator</a></li>
      * </ul>
      * </pre>
      */
 
-    public static boolean isSameLocation() {
+    public static boolean isSameLocation(double lat1, double lng1, double lat2, double lng2, double maxDistance) {
         //TODO INPUT VALIDATION:
         // some coordinates shouldn't make sense, iirc long can't have larger magnitude than +-180?
-        // and +- for lat?
+        // and +-90 for lat?
 
+        final double radius = 6371.0;     // earth's radius in kilometers
 
-        double maxDistance = 30;    // in meters
-        double radius = 6371.0;     // earths radius in kilometers
-
-        //TODO do we want to pass to QRCode objects or just the lat/long values of two objects?
-        // latitude & longitude of first QRCode
-        // otherwise function itself works, calculations are verified correct
-
-        //TODO ** CURRENT COORDINATES HARDCODED FOR TESTING
-        double lat1 = 38.8977;
-        double lng1 = -77.0365;
+        //COORDINATES HARDCODED FOR TESTING
+        //double maxDistance = 30;    // in meters
+        //double lat1 = 38.8977;
+        //double lng1 = -77.0365;
 
         // latitude & longitude of second QRCode
-        double lat2 = 48.8584;
-        double lng2 = 2.2945;
+        //double lat2 = 48.8584;
+        //double lng2 = 2.2945;
 
         // convert degrees to radians
         // phi = latitude, lambda = longitude
