@@ -25,6 +25,10 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
     private OnItemClickListener listener;
     private final SharedPreferences prefs;
     private final String viewMode;
+    private static final String MOST_POINTS = "Most Points";
+    private static final String MOST_SCANS = "Most Scans";
+    private static final String TOP_QR_CODE = "Top QR Code";
+    private static final String TOP_QR_CODE_REGIONAL = "Top QR Code (Regional)";
 
     public LeaderboardProfileAdapter(@NonNull FirestoreRecyclerOptions<User> options, @NonNull String viewMode, @NonNull SharedPreferences prefs) {
         super(options);
@@ -39,27 +43,26 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
         holder.ranking.setText(String.valueOf(position + 1));
 
         switch (viewMode) {
-            case "Most Points":
+            case MOST_POINTS:
                 String totalPoints = "Points: " + model.getTotalPoints();
                 holder.totalPoints.setText(totalPoints);
                 break;
-            case "Most Scans":
+            case MOST_SCANS:
                 String totalScans = "Scans: " + model.getTotalScans();
                 holder.totalScans.setText(totalScans);
                 break;
-            case "Top QR Code":
+            case TOP_QR_CODE:
                 String topQRCode = "Top QR Code: " + model.getTopQRCode();
                 holder.topQRCode.setText(topQRCode);
                 break;
-            case "Top QR Code (Regional)":
+            case TOP_QR_CODE_REGIONAL:
                 break;
         }
 
-        if (model.getDisplayName().equals(prefs.getString("currentUser", null))) {
+        if (model.getDisplayName().equals(prefs.getString("currentUserDisplayName", null))) {
             String rankingText = "Your Ranking: " + (position + 1);
             prefs.edit().putString("currentUserRanking", rankingText).commit();
         }
-
     }
 
     @androidx.annotation.NonNull
@@ -67,16 +70,16 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
     public RecyclerViewHolder onCreateViewHolder(@androidx.annotation.NonNull ViewGroup group, int i) {
         View view = null;
         switch (viewMode) {
-            case "Most Points":
+            case MOST_POINTS:
                 view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_top_points, group, false);
                 break;
-            case "Most Scans":
+            case MOST_SCANS:
                 view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_top_scans, group, false);
                 break;
-            case "Top QR Code":
+            case TOP_QR_CODE:
                 view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_top_code, group, false);
                 break;
-            case "Top QR Code (Regional)":
+            case TOP_QR_CODE_REGIONAL:
                 view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_top_code, group, false);
                 break;
         }
@@ -111,16 +114,16 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
             ranking = itemView.findViewById(R.id.ranking_textview);
 
             switch (viewMode) {
-                case "Most Points":
+                case MOST_POINTS:
                     totalPoints = itemView.findViewById(R.id.profile_points_search);
                     break;
-                case "Most Scans":
+                case MOST_SCANS:
                     totalScans = itemView.findViewById(R.id.profile_scans_search);
                     break;
-                case "Top QR Code":
+                case TOP_QR_CODE:
                     topQRCode = itemView.findViewById(R.id.profile_top_qr_code_search);
                     break;
-                case "Top QR Code (Regional)":
+                case TOP_QR_CODE_REGIONAL:
                     break;
             }
 

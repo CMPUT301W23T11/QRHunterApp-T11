@@ -37,8 +37,6 @@ public class PhotoAdapter extends PagerAdapter {
         ImageView imageView = new ImageView(context);
         imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         Picasso.with(context).load(photos.get(position)).into(imageView);
-        System.out.println("HELLOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
-        System.out.println(photos.get(position));
 
         container.addView(imageView);
         return imageView;

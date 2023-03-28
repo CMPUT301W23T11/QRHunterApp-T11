@@ -44,9 +44,13 @@ import java.util.Collections;
  * Outputs the users' QR collection and the users' stats
  *
  * @author Afra, Kristina
- * @reference <a href="https://stackoverflow.com/questions/74092262/calculate-total-from-values-stored-in-firebase-firestore-database-android">How to calculate the sum of a set of documents</a>
- * @reference <a href="https://firebase.google.com/docs/firestore/query-data/listen">How to get a new snapshot everytime the data is updated</a>
- * @reference <a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation for RecyclerView</a>
+ * @sources <pre>
+ * <ul>
+ * <li><a href="https://firebase.google.com/docs/firestore/query-data/listen">How to get a new snapshot everytime the data is updated</a></li>
+ * <li><a href="https://stackoverflow.com/questions/74092262/calculate-total-from-values-stored-in-firebase-firestore-database-android">How to calculate the sum of a set of documents</a></li>
+ * <li><a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation for RecyclerView</a></li>
+ * </ul>
+ * </pre>
  */
 public class ProfileFragment extends Fragment {
     private final CollectionReference usersReference;
@@ -101,11 +105,11 @@ public class ProfileFragment extends Fragment {
         TextView lowQRCodeText = view.findViewById(R.id.lowQRText);
         TextView totalQRCodesText = view.findViewById(R.id.totalQRText);
 
-        // makes a back button visible if not the current user
-        if (!CurrentUser(displayName, username, prefs)) {
+        // Makes a back button visible if not the current user
+        if (!currentUserCheck(displayName, username, prefs)) {
             backButton.setVisibility(View.VISIBLE);
 
-            // takes the user back to the leaderboard screen
+            // Takes the user back to the leaderboard screen
             backButton.setOnClickListener(view1 -> {
                 FragmentTransaction trans = getParentFragmentManager().beginTransaction();
                 trans.replace(R.id.main_screen, new SearchFragment(db));
@@ -116,9 +120,9 @@ public class ProfileFragment extends Fragment {
         }
 
         // If the user has at least one QR code, initialize RecyclerView
-        noQRCodesCheck(username, new QueryCallback() {
-            public void queryCompleteCheck(boolean queryComplete) {
-                if (!queryComplete) {
+        hasQRCodesCheck(username, new QueryCallback() {
+            public void queryCompleteCheck(boolean hasCodes) {
+                if (hasCodes) {
 
                     // Retrieve all QR Codes the user has and calculate scores
                     queryQRCodes(username, new ProfileUserDataCallback() {
@@ -171,7 +175,7 @@ public class ProfileFragment extends Fragment {
                                 @Override
                                 public void onItemLongClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
                                     // only operable if the profile is the current user
-                                    if (CurrentUser(displayName, username, prefs)) {
+                                    if (currentUserCheck(displayName, username, prefs)) {
                                         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
                                         String QRCodeID = documentSnapshot.getId();
@@ -221,15 +225,15 @@ public class ProfileFragment extends Fragment {
     /**
      * Query database to check if user has any QR codes in their collection or not
      *
-     * @param username           Current user's username
-     * @param queryCompleteCheck Callback function
+     * @param username Current user's username
+     * @param hasCodes Callback function
      */
-    public void noQRCodesCheck(@NonNull String username, final @NonNull QueryCallback queryCompleteCheck) {
+    public void hasQRCodesCheck(@NonNull String username, final @NonNull QueryCallback hasCodes) {
 
         usersReference.document(username).collection("User QR Codes")
                 .get()
                 .addOnSuccessListener(userQRCodes ->
-                        queryCompleteCheck.queryCompleteCheck(userQRCodes.size() == 0));
+                        hasCodes.queryCompleteCheck(!userQRCodes.isEmpty()));
     }
 
     /**
@@ -238,7 +242,7 @@ public class ProfileFragment extends Fragment {
      *
      * @param username    User's username
      * @param getUserData Callback for query
-     * @reference Firestore documentation
+     * @sources Firestore documentation
      */
     public void queryQRCodes(@NonNull String username, final @NonNull ProfileUserDataCallback getUserData) {
 
@@ -261,11 +265,11 @@ public class ProfileFragment extends Fragment {
                             .get()
                             .addOnSuccessListener(referencedQRDocumentSnapshots -> {
                                 for (QueryDocumentSnapshot snapshot : referencedQRDocumentSnapshots) {
-                                    String QRCodePoints = snapshot.get("points").toString();
+                                    String qrCodePoints = snapshot.get("points").toString();
                                     options = new FirestoreRecyclerOptions.Builder<QRCode>()
                                             .setQuery(query, QRCode.class)
                                             .build();
-                                    userPoints.add(QRCodePoints);
+                                    userPoints.add(qrCodePoints);
 
                                     Collections.sort(userPoints);
                                     getUserData.getUserData(userPoints);
@@ -293,7 +297,7 @@ public class ProfileFragment extends Fragment {
      * @param prefs       The Shared Preferences of the app
      * @return A boolean of if the profile is the current user
      */
-    public boolean CurrentUser(@NonNull String displayName, @NonNull String username, @NonNull SharedPreferences prefs) {
+    public boolean currentUserCheck(@NonNull String displayName, @NonNull String username, @NonNull SharedPreferences prefs) {
         return displayName.equals(prefs.getString("currentUserDisplayName", null)) && (username.equals(prefs.getString("currentUserUsername", null)));
     }
 

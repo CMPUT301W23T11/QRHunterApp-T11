@@ -46,11 +46,16 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * Search allows the user to search for other users to view their profiles
  *
  * @author Afra, Kristina
- * @reference <a href="https://stackoverflow.com/a/5241720">For setting spinner</a>
+ * @sources <pre>
+ * <ul>
+ * <li><a href="https://stackoverflow.com/a/5241720">For setting spinner</a></li>
+ * <li><a href="https://stackoverflow.com/questions/41670850/prevent-user-to-go-next-line-by-pressing-softkey-enter-in-autocompletetextview">How to handle a ENTER click action</a></li>
+ * </ul>
+ * </pre>
  */
 public class SearchFragment extends Fragment {
 
-    private final String tag = "searchFragment";
+    private static final String TAG = "searchFragment";
     private final FirebaseFirestore db;
     private final CollectionReference usersReference;
     private final CollectionReference qrCodeReference;
@@ -71,6 +76,7 @@ public class SearchFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
+
         // Set leaderboard options spinner
         String[] leaderboardFilterChoices = new String[]{"Most Points", "Most Scans", "Top QR Code", "Top QR Code (Regional)"};
         Spinner leaderboardFilter = view.findViewById(R.id.leaderboard_filter_spinner);
@@ -82,13 +88,13 @@ public class SearchFragment extends Fragment {
         autoCompleteTextView = view.findViewById(R.id.search_id);
         final ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1);
 
-        // populates the autocomplete list with users display names
+        // Populates the autocomplete list with users display names
         // Todo: edit set displayName to lowercase when adding to database to get case insensitivity
         usersReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@androidx.annotation.Nullable QuerySnapshot value, @androidx.annotation.Nullable FirebaseFirestoreException error) {
                 if (error != null) {
-                    Log.w(tag, "Listen failed: ", error);
+                    Log.w(TAG, "Listen failed: ", error);
                     return;
                 }
                 if (value != null) {
@@ -112,8 +118,6 @@ public class SearchFragment extends Fragment {
         autoCompleteTextView.setAdapter(autoCompleteAdapter);
 
         // Finds the user after clicking enter
-        // https://stackoverflow.com/questions/41670850/prevent-user-to-go-next-line-by-pressing-softkey-enter-in-autocompletetextview
-        // - how to handle a ENTER click action
         autoCompleteTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
@@ -144,10 +148,10 @@ public class SearchFragment extends Fragment {
 
                                     } else { // if the user is not found
                                         Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
-                                        Log.d(tag, "Document NOT found");
+                                        Log.d(TAG, "Document NOT found");
                                     }
                                 } else {
-                                    Log.d(tag, "task not successful: ", task.getException());
+                                    Log.d(TAG, "task not successful: ", task.getException());
                                 }
                             });
                 }
@@ -155,7 +159,7 @@ public class SearchFragment extends Fragment {
             }
         });
 
-        // clears the text from autoCompleteTextView
+        // Clears the text from autoCompleteTextView
         deleteSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -242,5 +246,4 @@ public class SearchFragment extends Fragment {
                     queryCompleteCheck.queryCompleteCheck(true);
                 });
     }
-
 }

@@ -47,4 +47,5 @@
     <string name="profile_scans_search_text">Scans:</string>
     <string name="profile_top_qr_code_search">Top QR Code:</string>
     <string name="search_hint">Search...</string>
+    <string name="your_ranking">Your Ranking:</string>
 </resources>

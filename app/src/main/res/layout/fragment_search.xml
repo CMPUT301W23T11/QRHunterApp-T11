@@ -97,7 +97,7 @@
                 android:layout_weight="1"
                 android:fontFamily="sans-serif-medium"
                 android:padding="5dp"
-                android:text="Your Ranking:"
+                android:text="@string/your_ranking"
                 android:textSize="18sp" />
 
             <Spinner
