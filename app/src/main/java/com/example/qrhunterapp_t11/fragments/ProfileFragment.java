@@ -101,11 +101,11 @@ public class ProfileFragment extends Fragment {
         TextView lowQRCodeText = view.findViewById(R.id.lowQRText);
         TextView totalQRCodesText = view.findViewById(R.id.totalQRText);
 
-        // makes a back button visible if not the current user
+        // Makes a back button visible if not the current user
         if (!CurrentUser(displayName, username, prefs)) {
             backButton.setVisibility(View.VISIBLE);
 
-            // takes the user back to the leaderboard screen
+            // Takes the user back to the leaderboard screen
             backButton.setOnClickListener(view1 -> {
                 FragmentTransaction trans = getParentFragmentManager().beginTransaction();
                 trans.replace(R.id.main_screen, new SearchFragment(db));
@@ -116,9 +116,9 @@ public class ProfileFragment extends Fragment {
         }
 
         // If the user has at least one QR code, initialize RecyclerView
-        noQRCodesCheck(username, new QueryCallback() {
-            public void queryCompleteCheck(boolean queryComplete) {
-                if (!queryComplete) {
+        hasQRCodesCheck(username, new QueryCallback() {
+            public void queryCompleteCheck(boolean hasCodes) {
+                if (hasCodes) {
 
                     // Retrieve all QR Codes the user has and calculate scores
                     queryQRCodes(username, new ProfileUserDataCallback() {
@@ -221,15 +221,15 @@ public class ProfileFragment extends Fragment {
     /**
      * Query database to check if user has any QR codes in their collection or not
      *
-     * @param username           Current user's username
-     * @param queryCompleteCheck Callback function
+     * @param username Current user's username
+     * @param hasCodes Callback function
      */
-    public void noQRCodesCheck(@NonNull String username, final @NonNull QueryCallback queryCompleteCheck) {
+    public void hasQRCodesCheck(@NonNull String username, final @NonNull QueryCallback hasCodes) {
 
         usersReference.document(username).collection("User QR Codes")
                 .get()
                 .addOnSuccessListener(userQRCodes ->
-                        queryCompleteCheck.queryCompleteCheck(userQRCodes.size() == 0));
+                        hasCodes.queryCompleteCheck(!userQRCodes.isEmpty()));
     }
 
     /**

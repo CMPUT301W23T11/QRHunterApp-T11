@@ -77,9 +77,9 @@ public class SettingsFragment extends Fragment {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 // Make sure new username is eligible for change
                 usernameCheck(usernameString, usernameEditText, new QueryCallback() {
-                    public void queryCompleteCheck(boolean queryComplete) {
+                    public void queryCompleteCheck(boolean usernameExists) {
 
-                        if (queryComplete) {
+                        if (!usernameExists) {
                             builder
                                     .setTitle("Confirm username and email change")
                                     .setNegativeButton("Cancel", null)
@@ -116,11 +116,11 @@ public class SettingsFragment extends Fragment {
     /**
      * Checks to see if username is valid and unique
      *
-     * @param usernameString     Entered username
-     * @param usernameEditText   EditText for entered username
-     * @param queryCompleteCheck Callback for query
+     * @param usernameString   Entered username
+     * @param usernameEditText EditText for entered username
+     * @param usernameExists   Callback for query
      */
-    public void usernameCheck(@NonNull String usernameString, @NonNull EditText usernameEditText, final @NonNull QueryCallback queryCompleteCheck) {
+    public void usernameCheck(@NonNull String usernameString, @NonNull EditText usernameEditText, final @NonNull QueryCallback usernameExists) {
 
         // Check if username matches Firestore document ID guidelines
         if (usernameString.length() == 0) {
@@ -138,10 +138,10 @@ public class SettingsFragment extends Fragment {
                     .get()
                     .addOnSuccessListener(queryResult -> {
                         if (queryResult.isEmpty()) {
-                            queryCompleteCheck.queryCompleteCheck(true);
+                            usernameExists.queryCompleteCheck(false);
                         } else {
                             usernameEditText.setError("Username is not unique");
-                            queryCompleteCheck.queryCompleteCheck(false);
+                            usernameExists.queryCompleteCheck(true);
                         }
 
                     });

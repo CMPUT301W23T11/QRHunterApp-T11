@@ -140,9 +140,9 @@ public class QRCodeView extends DialogFragment {
         denominatorTextView.setText(String.valueOf(photoAdapter.getCount()));
         numeratorTextView.setText(String.valueOf(viewPager.getCurrentItem() + 1));
 
-        noCommentsCheck(qrCodeID, new QueryCallback() {
-            public void queryCompleteCheck(boolean queryComplete) {
-                if (queryComplete) {
+        hasCommentsCheck(qrCodeID, new QueryCallback() {
+            public void queryCompleteCheck(boolean hasComments) {
+                if (hasComments) {
                     getComments(qrCodeID, new QRCodeGetCommentsCallback() {
                         public void setComments(@NonNull ArrayList<Comment> comments) {
 
@@ -177,8 +177,8 @@ public class QRCodeView extends DialogFragment {
         // User can only comment on QR Codes if they already have that code in their collection
         checkUserHasQRCode(prefs.getString("currentUserUsername", null), qrCodeID, new QueryCallback() {
             @Override
-            public void queryCompleteCheck(boolean queryComplete) {
-                if (queryComplete) {
+            public void queryCompleteCheck(boolean userHasQRCode) {
+                if (userHasQRCode) {
                     commentImageView.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -258,15 +258,15 @@ public class QRCodeView extends DialogFragment {
     /**
      * Query database to check if QR code has any comments or not
      *
-     * @param qrCodeID           QR to check for comments
-     * @param queryCompleteCheck Callback function
+     * @param qrCodeID    QR to check for comments
+     * @param hasComments Callback function
      */
-    public void noCommentsCheck(@NonNull String qrCodeID, final @NonNull QueryCallback queryCompleteCheck) {
+    public void hasCommentsCheck(@NonNull String qrCodeID, final @NonNull QueryCallback hasComments) {
 
         qrCodesReference.document(qrCodeID).collection("commentList")
                 .get()
                 .addOnSuccessListener(qrCodeCommentList ->
-                        queryCompleteCheck.queryCompleteCheck(!qrCodeCommentList.isEmpty())
+                        hasComments.queryCompleteCheck(!qrCodeCommentList.isEmpty())
                 );
     }
 
@@ -297,15 +297,15 @@ public class QRCodeView extends DialogFragment {
     /**
      * Check if the given user has the given QR Code
      *
-     * @param username           Username to check
-     * @param qrCodeID           QR Code to check
-     * @param queryCompleteCheck Callback for query
+     * @param username      Username to check
+     * @param qrCodeID      QR Code to check
+     * @param userHasQRCode Callback for query
      */
-    public void checkUserHasQRCode(@NonNull String username, @NonNull String qrCodeID, final @NonNull QueryCallback queryCompleteCheck) {
+    public void checkUserHasQRCode(@NonNull String username, @NonNull String qrCodeID, final @NonNull QueryCallback userHasQRCode) {
         usersReference.document(username).collection("User QR Codes").document(qrCodeID)
                 .get()
                 .addOnSuccessListener(userQRCode ->
-                        queryCompleteCheck.queryCompleteCheck(userQRCode.exists())
+                        userHasQRCode.queryCompleteCheck(userQRCode.exists())
                 );
     }
 
