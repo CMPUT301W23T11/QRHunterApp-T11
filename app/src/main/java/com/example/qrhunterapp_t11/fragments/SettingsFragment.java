@@ -30,7 +30,7 @@ import java.util.ArrayList;
  * Handles settings screen. Users can rename themselves and change their email.
  *
  * @author Afra
- * @reference Firestore documentation
+ * @sources Firestore documentation
  */
 public class SettingsFragment extends Fragment {
 

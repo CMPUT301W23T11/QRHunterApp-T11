@@ -18,7 +18,7 @@ import java.util.ArrayList;
  * This class is a custom adapter to handle Comment objects
  *
  * @author Sarah Thomson
- * @reference <a href="https://www.youtube.com/watch?v=cGIAZAbJJPc&t=1753s">by Programming w/ Professor Sluiter for custom array adapter help</a>
+ * @sources <a href="https://www.youtube.com/watch?v=cGIAZAbJJPc&t=1753s">For custom array adapter help</a>
  */
 
 public class CommentAdapter extends BaseAdapter {
@@ -75,10 +75,10 @@ public class CommentAdapter extends BaseAdapter {
     /**
      * Gets the view that can be used in the individual comment ListView layout
      *
-     * @param i         - position
-     * @param view      - View
-     * @param viewGroup - ViewGroup
-     * @return commentView - View
+     * @param i         position
+     * @param view      View
+     * @param viewGroup ViewGroup
+     * @return commentView View
      */
     @Override
     // send back view that can be used in list layout

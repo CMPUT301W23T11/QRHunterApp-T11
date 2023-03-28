@@ -139,13 +139,89 @@ public class CameraFragment extends Fragment {
     }
 
     /**
+     * When new QRCodes are scanned, if the resulting hash already exists in
+     * the database, this function calculates the distance between the two locations
+     * using the Haversine formula, if the distance between the two points is less
+     * than the set threshold, the scanned QRCode is considered the same as QRCode object
+     * already in the database, and no new document will be inserted; user profile
+     * will reference pre-existing QRCode
+     *
+     * @return true if distance shorter than uniqueness threshold, else false if 2 separate instances
+     * @sources <pre>
+     * <ul>
+     * <li><a href="https://www.trekview.org/blog/2021/reading-decimal-gps-coordinates-like-a-computer/">How to read lat/long</a></li>
+     * <li><a href="https://en.wikipedia.org/wiki/Haversine_formula">How to calculate distance between to locations on earth using lat/long</a></li>
+     * <li><a href="https://linuxhint.com/import-math-in-java/">How use Math library</a></li>
+     * <li><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Math.html">cos, sin, arcsin</a></li>
+     * </ul>
+     * </pre>
+     */
+
+    public static boolean isSameLocation() {
+        //TODO INPUT VALIDATION:
+        // some coordinates shouldn't make sense, iirc long can't have larger magnitude than +-180?
+        // and +- for lat?
+
+
+        double maxDistance = 30;    // in meters
+        double radius = 6371.0;     // earths radius in kilometers
+
+        //TODO do we want to pass to QRCode objects or just the lat/long values of two objects?
+        // latitude & longitude of first QRCode
+        // otherwise function itself works, calculations are verified correct
+
+        //TODO ** CURRENT COORDINATES HARDCODED FOR TESTING
+        double lat1 = 38.8977;
+        double lng1 = -77.0365;
+
+        // latitude & longitude of second QRCode
+        double lat2 = 48.8584;
+        double lng2 = 2.2945;
+
+        // convert degrees to radians
+        // phi = latitude, lambda = longitude
+        double phi1 = (lat1 * Math.PI) / 180.0;
+        double lambda1 = (lng1 * Math.PI) / 180.0;
+
+        double phi2 = (lat2 * Math.PI) / 180.0;
+        double lambda2 = (lng2 * Math.PI) / 180.0;
+
+        //calculate haversine(theta), the central angle between both locations relative to earth's center
+        // haversine(theta) = sin^2((phi2-phi1)/2)+cos(phi1)cos(phi2)sin^2((lamda2-lamda1)/2)
+        double haversine = (Math.pow(Math.sin((phi2 - phi1) / 2), 2) + Math.cos(phi1) * Math.cos(phi2) * (Math.pow(Math.sin((lambda2 - lambda1) / 2), 2)));
+
+        //calculate distance between both points using haversine
+        // distance = 2r*arcsin(sqr(haversine(theta)))
+        double distance = (2 * radius) * (Math.asin(Math.sqrt(haversine)));
+
+        //System.out.printf("%f\n", haversine);
+        System.out.printf("%f\n", distance);
+
+        //convert distance to meters and compare with maxDistance
+        distance = distance * 1000;
+        System.out.printf("distance in meters: %f\n", distance);
+
+        if (distance <= maxDistance) {
+            System.out.printf("Same\n");
+            return true;
+        } else {
+            System.out.printf("Different\n");
+            return false;
+        }
+    }
+
+    /**
      * Called when fragment is being initialized. Creates a dialog that displays the score of the scanned QR code. The dialog disappears automatically
      * after a few seconds.
      *
      * @param savedInstanceState If the fragment is being re-created from a previous saved state, this is the state.
-     * @reference <a href="https://www.youtube.com/watch?v=W4qqTcxqq48">how to create a custom dialog</a>
-     * @reference <a href="https://xjaphx.wordpress.com/2011/07/13/auto-close-dialog-after-a-specific-time/">how to have dialog automatically close after a few seconds</a>
-     * @reference Erfan - https://stackoverflow.com/a/54166609/14445107 - how to remove dim from dialog
+     * @sources <pre>
+     * <ul>
+     * <li><a href="https://www.youtube.com/watch?v=W4qqTcxqq48">how to create a custom dialog</a></li>
+     * <li><a href="https://xjaphx.wordpress.com/2011/07/13/auto-close-dialog-after-a-specific-time/">how to have dialog automatically close after a few seconds</a></li>
+     * <li><a href="https://stackoverflow.com/a/54166609/14445107">How to remove dim from dialog</a></li>
+     * </ul>
+     * </pre>
      */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -211,7 +287,7 @@ public class CameraFragment extends Fragment {
     /**
      * Function to initialize QR scanner options, and order the QR scanner to start scanning using the CaptureAct.
      *
-     * @reference <a href="https://www.youtube.com/watch?v=jtT60yFPelI">how to configure the QR camera scanner and obtain the QR contents from the CaptureAct</a>
+     * @sources <a href="https://www.youtube.com/watch?v=jtT60yFPelI">how to configure the QR camera scanner and obtain the QR contents from the CaptureAct</a>
      */
     private void scanCode() {
         ScanOptions options = new ScanOptions();
@@ -226,9 +302,13 @@ public class CameraFragment extends Fragment {
      * Creates a dialog for whether the user would like to take a photo of the object or location of the QR code.
      * If the user selects "no", this step will be skipped and the user's geo-location will be prompted next.
      *
-     * @reference <a href="https://stackoverflow.com/questions/2115758/how-do-i-display-an-alert-dialog-on-android">how to create an AlertDialog</a>
-     * @reference <a href="https://stackoverflow.com/questions/3875184/cant-create-handler-inside-thread-that-has-not-called-looper-prepare">updating UI elements from within a thread using runOnUiThread()</a>
-     * @reference <a href="https://stackoverflow.com/a/19064968/14445107">how to prevent users from touching outside a dialog box to escape it</a>
+     * @sources <pre>
+     * <ul>
+     * <li><a href="https://stackoverflow.com/questions/2115758/how-do-i-display-an-alert-dialog-on-android">how to create an AlertDialog</a></li>
+     * <li><a href="https://stackoverflow.com/questions/3875184/cant-create-handler-inside-thread-that-has-not-called-looper-prepare">updating UI elements from within a thread using runOnUiThread()</a></li>
+     * <li><a href="https://stackoverflow.com/a/19064968/14445107">how to prevent users from touching outside a dialog box to escape it</a></li>
+     * </ul>
+     * </pre>
      */
     private void promptForPhoto() {
         getActivity().runOnUiThread(new Runnable() {
@@ -254,16 +334,6 @@ public class CameraFragment extends Fragment {
                         .show();
             }
         });
-    }
-
-    /**
-     * Helper function that starts the TakePhotoActivity if the user accepts the photo prompt.
-     *
-     * @reference <a href="https://stackoverflow.com/questions/28619113/start-a-new-activity-from-fragment">how to start an activity from within a fragment</a>
-     */
-    private void takePhoto() {
-        Intent intent = new Intent(getActivity(), TakePhotoActivity.class);
-        photoLauncher.launch(intent);
     }
 
     /**
@@ -382,11 +452,25 @@ public class CameraFragment extends Fragment {
     }
 
     /**
+     * Helper function that starts the TakePhotoActivity if the user accepts the photo prompt.
+     *
+     * @sources <a href="https://stackoverflow.com/questions/28619113/start-a-new-activity-from-fragment">how to start an activity from within a fragment</a>
+     */
+    private void takePhoto() {
+        Intent intent = new Intent(getActivity(), TakePhotoActivity.class);
+        photoLauncher.launch(intent);
+    }
+
+    /**
      * Prompts the user as to whether they would like to share their geolocation for a QR code. If they click "yes", the QR code will be created with location, and
      * if they press "no" without location.
      *
-     * @reference <a href="https://www.youtube.com/watch?v=DfDj9EadOLk">how to use activityresultlauncher to execute code after an activity closes</a>
-     * @reference <a href="https://stackoverflow.com/a/63883427/14445107">where to initialize an activityresultlauncher</a>
+     * @sources <pre>
+     * <ul>
+     * <li><a href="https://www.youtube.com/watch?v=DfDj9EadOLk">how to use activityresultlauncher to execute code after an activity closes</a></li>
+     * <li><a href="https://stackoverflow.com/a/63883427/14445107">where to initialize an activityresultlauncher</a></li>
+     * </ul>
+     * </pre>
      */
     private void promptForLocation() {
         new AlertDialog.Builder(getContext())
@@ -417,7 +501,7 @@ public class CameraFragment extends Fragment {
      * to add another QR code immediately after scanning one, since they're technically still in the CameraFragment,
      * nothing would happen.
      *
-     * @reference <a href="https://stackoverflow.com/a/60055145/14445107">using getParentFragmentManager() instead of getFragmentManager()</a>
+     * @sources <a href="https://stackoverflow.com/a/60055145/14445107">using getParentFragmentManager() instead of getFragmentManager()</a>
      */
     private void returnToProfile() {
         Handler handler = new Handler();
@@ -431,82 +515,11 @@ public class CameraFragment extends Fragment {
     }
 
     /**
-     * When new QRCodes are scanned, if the resulting hash already exists in
-     * the database, this function calculates the distance between the two locations
-     * using the Haversine formula, if the distance between the two points is less
-     * than the set threshold, the scanned QRCode is considered the same as QRCode object
-     * already in the database, and no new document will be inserted; user profile
-     * will reference pre-existing QRCode
-     *
-     * @return boolean - returns true if distance shorter than uniqueness threshold, else false if 2 separate instances
-     * @references https://www.trekview.org/blog/2021/reading-decimal-gps-coordinates-like-a-computer/ David G, August 27, 2021 how to read lat/long
-     *             https://en.wikipedia.org/wiki/Haversine_formula  how to calculate distance between to locations on earth using lat/long
-     *             https://linuxhint.com/import-math-in-java/   how use Math library
-     *             https://docs.oracle.com/javase/8/docs/api/java/lang/Math.html    cos, sin, arcsin
-     */
-
-    public static boolean isSameLocation() {
-        //TODO INPUT VALIDATION:
-        // some coordinates shouldn't make sense, iirc long can't have larger magnitude than +-180?
-        // and +- for lat?
-
-
-        double maxDistance = 30;    // in meters
-        double radius = 6371.0;     // earths radius in kilometers
-
-        //TODO do we want to pass to QRCode objects or just the lat/long values of two objects?
-        // latitude & longitude of first QRCode
-        // otherwise function itself works, calculations are verified correct
-
-        //TODO ** CURRENT COORDINATES HARDCODED FOR TESTING
-        double lat1 = 38.8977;
-        double lng1 = -77.0365;
-
-        // latitude & longitude of second QRCode
-        double lat2 = 48.8584;
-        double lng2 = 2.2945;
-
-        // convert degrees to radians
-        // phi = latitude, lambda = longitude
-        double phi1 = (lat1*Math.PI)/180.0;
-        double lambda1 = (lng1*Math.PI)/180.0;
-
-        double phi2 = (lat2*Math.PI)/180.0;
-        double lambda2 = (lng2*Math.PI)/180.0;
-
-        //calculate haversine(theta), the central angle between both locations relative to earth's center
-        // haversine(theta) = sin^2((phi2-phi1)/2)+cos(phi1)cos(phi2)sin^2((lamda2-lamda1)/2)
-        double haversine = ( Math.pow( Math.sin((phi2-phi1)/2) ,2) + Math.cos(phi1)*Math.cos(phi2)*( Math.pow(Math.sin( (lambda2-lambda1)/2), 2 ) ));
-
-        //calculate distance between both points using haversine
-        // distance = 2r*arcsin(sqr(haversine(theta)))
-        double distance = (2*radius)*(Math.asin(Math.sqrt(haversine)));
-
-        //System.out.printf("%f\n", haversine);
-        System.out.printf("%f\n", distance);
-
-        //convert distance to meters and compare with maxDistance
-        distance = distance*1000;
-        System.out.printf("distance in meters: %f\n", distance);
-
-        if(distance <= maxDistance) {
-            System.out.printf("Same\n");
-            return true;
-        }
-        else    {
-            System.out.printf("Different\n");
-            return false;
-        }
-    }
-
-
-    /**
      * Helper function to check if a QR code document exists
      *
      * @param docToCheck document that should be checked for
      * @param cr         CollectionReference to the collection being accessed
-     * @reference <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
-     * @reference Aidan Lynch's CameraFragmentTest for this code
+     * @sources <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
      */
     public void checkDocExists(@NonNull String docToCheck, @NonNull CollectionReference cr, final @NonNull QueryCallback queryCompleteCheck) {
         DocumentReference docRef = cr.document(docToCheck);
@@ -561,19 +574,19 @@ public class CameraFragment extends Fragment {
                             }
                         }
                         // If user does not already have this qrCode, add a reference to it, increment their total scans, add new photo to qrCode
-                        if(!qrRefExists){
+                        if (!qrRefExists) {
                             System.out.println("HEUHURLSHRPIUSHEPRIHSEPOIHRPOISHEPROIPSOEHRPOISHEPRIHP");
                             usersReference.document(currentUser).collection("User QR Codes").document(qrCodeID).set(qrCodeRef);
                             usersReference.document(currentUser).update("totalScans", FieldValue.increment(1));
                             usersReference.document(currentUser).update("totalPoints", FieldValue.increment(qrCode.getPoints()));
-                            if (resizedImageUrl != null){
+                            if (resizedImageUrl != null) {
                                 qrCodesReference.document(qrCodeID).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
                                 //QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayRemove(resizedImageUrl));
                             }
 
                         }
                         // If user does not have this qrCode but it already exists in qrCode collection, increase its total scans
-                        if ((qrExists) && (!qrRefExists)){
+                        if ((qrExists) && (!qrRefExists)) {
                             qrCodesReference.document(qrCodeID).update("numberOfScans", FieldValue.increment(1));
                         }
                     }
@@ -585,7 +598,7 @@ public class CameraFragment extends Fragment {
     /**
      * Creates some confetti when you scan a QR code :)
      *
-     * @reference Daniel Martinus - https://github.com/DanielMartinus/Konfetti/blob/main/samples/xml-java/src/main/java/nl/dionsegijn/xml/java/MainActivity.java - used without major modification
+     * @sources <a href="https://github.com/DanielMartinus/Konfetti/blob/main/samples/xml-java/src/main/java/nl/dionsegijn/xml/java/MainActivity.java">Used without major modification</a>
      */
     public void createKonfetti() {
         konfettiView = getActivity().findViewById(R.id.konfetti_view);
@@ -615,8 +628,8 @@ public class CameraFragment extends Fragment {
      * which is the dimensions of the resized image.
      *
      * @param rawImageUrl the original url of the uploaded image, which does not provide the proper path to the resized image.
-     * @return a string containing the url of the resized image, that will be used later when retrieving it for viewing in the QR view.
-     * @reference Lee Meador - https://stackoverflow.com/a/18521373/14445107 - how to insert a string in the middle of another; used without major modification
+     * @return string containing the url of the resized image, that will be used later when retrieving it for viewing in the QR view.
+     * @sources <a href="https://stackoverflow.com/a/18521373/14445107">How to insert a string in the middle of another; used without major modification</a>
      */
     private String getResizeImageUrl(String rawImageUrl) {
         int index = rawImageUrl.indexOf(".jpg");

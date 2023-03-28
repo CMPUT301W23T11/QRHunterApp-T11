@@ -41,7 +41,7 @@ import java.util.HashMap;
  *
  * @author Afra
  * @author Sarah Thomson
- * @sources: <pre>
+ * @sources <pre>
  * <ul>
  * <li><a href="https://stackoverflow.com/a/17503823">For scrollable comment box</a></li>
  * <li><a href="https://www.youtube.com/watch?v=LMdxZ8UC00k">by Technical Skillz for the Comment box/comment layout in the qr_view layout, and the comment_box drawable</a></li>

@@ -31,7 +31,7 @@
     <inspection_tool class="AndroidLintValidActionsXml" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="AndroidLintWrongThreadInterprocedural" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="JavadocDeclaration" enabled="true" level="WARNING" enabled_by_default="true">
-      <option name="ADDITIONAL_TAGS" value="reference,references,Sources,Sources:,sources:" />
+      <option name="ADDITIONAL_TAGS" value="reference,references,Sources,Sources:,sources:,sources" />
     </inspection_tool>
   </profile>
 </component>

@@ -164,7 +164,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         Geocoder geocoder = new Geocoder(getContext());
         try {
             List<Address> addresses = geocoder.getFromLocationName(location, 1);
-            if (addresses.size() > 0) {
+            if (!addresses.isEmpty()) {
                 Address address = addresses.get(0);
                 LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f));
@@ -360,7 +360,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                 // OnMarkerClickListener to show the QRCodeView dialog fragment when a marker is clicked
                 mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                     @Override
-                    public boolean onMarkerClick(Marker marker) {
+                    public boolean onMarkerClick(@NonNull Marker marker) {
                         QRCode qrCode = (QRCode) marker.getTag();
                         if (qrCode != null) {
                             new QRCodeView(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");

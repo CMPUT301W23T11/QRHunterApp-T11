@@ -46,7 +46,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * Search allows the user to search for other users to view their profiles
  *
  * @author Afra, Kristina
- * @reference <a href="https://stackoverflow.com/a/5241720">For setting spinner</a>
+ * @sources <pre>
+ * <ul>
+ * <li><a href="https://stackoverflow.com/a/5241720">For setting spinner</a></li>
+ * <li><a href="https://stackoverflow.com/questions/41670850/prevent-user-to-go-next-line-by-pressing-softkey-enter-in-autocompletetextview">How to handle a ENTER click action</a></li>
+ * </ul>
+ * </pre>
  */
 public class SearchFragment extends Fragment {
 
@@ -113,8 +118,6 @@ public class SearchFragment extends Fragment {
         autoCompleteTextView.setAdapter(autoCompleteAdapter);
 
         // Finds the user after clicking enter
-        // https://stackoverflow.com/questions/41670850/prevent-user-to-go-next-line-by-pressing-softkey-enter-in-autocompletetextview
-        // - how to handle a ENTER click action
         autoCompleteTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
@@ -243,5 +246,4 @@ public class SearchFragment extends Fragment {
                     queryCompleteCheck.queryCompleteCheck(true);
                 });
     }
-
 }
