@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +22,7 @@ import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.adapters.QRCodeAdapter;
 import com.example.qrhunterapp_t11.interfaces.OnItemClickListener;
 import com.example.qrhunterapp_t11.interfaces.OnItemLongClickListener;
+import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.CollectionReference;
@@ -110,16 +110,15 @@ public class ProfileFragment extends Fragment {
                 FragmentTransaction trans = getParentFragmentManager().beginTransaction();
                 trans.replace(R.id.main_screen, new SearchFragment(db));
                 trans.commit();
-                });
-        }
-        else {
+            });
+        } else {
             backButton.setVisibility(View.INVISIBLE);
         }
 
         // If the user has at least one QR code, initialize RecyclerView
-        noQRCodesCheck(username, new ProfileNoCodesCallback() {
-            public void setNoCodes(boolean noCodes) {
-                if (!noCodes) {
+        noQRCodesCheck(username, new QueryCallback() {
+            public void queryCompleteCheck(boolean queryComplete) {
+                if (!queryComplete) {
 
                     // Retrieve all QR Codes the user has and calculate scores
                     queryQRCodes(username, new ProfileUserDataCallback() {
@@ -222,15 +221,15 @@ public class ProfileFragment extends Fragment {
     /**
      * Query database to check if user has any QR codes in their collection or not
      *
-     * @param username   Current user's username
-     * @param setNoCodes Callback function
+     * @param username           Current user's username
+     * @param queryCompleteCheck Callback function
      */
-    public void noQRCodesCheck(@NonNull String username, final @NonNull ProfileNoCodesCallback setNoCodes) {
+    public void noQRCodesCheck(@NonNull String username, final @NonNull QueryCallback queryCompleteCheck) {
 
         usersReference.document(username).collection("User QR Codes")
                 .get()
                 .addOnSuccessListener(userQRCodes ->
-                        setNoCodes.setNoCodes(userQRCodes.size() == 0));
+                        queryCompleteCheck.queryCompleteCheck(userQRCodes.size() == 0));
     }
 
     /**
@@ -288,22 +287,14 @@ public class ProfileFragment extends Fragment {
 
     /**
      * Helper class to check if the current profile is the current user
+     *
      * @param displayName The current profiles display name
-     * @param username The current profiles username
-     * @param prefs The Shared Preferences of the app
+     * @param username    The current profiles username
+     * @param prefs       The Shared Preferences of the app
      * @return A boolean of if the profile is the current user
      */
-    public boolean CurrentUser(@NonNull String displayName, @NonNull String username, @NonNull SharedPreferences prefs){
+    public boolean CurrentUser(@NonNull String displayName, @NonNull String username, @NonNull SharedPreferences prefs) {
         return displayName.equals(prefs.getString("currentUserDisplayName", null)) && (username.equals(prefs.getString("currentUserUsername", null)));
-    }
-
-    /**
-     * Callback for querying the database to see if user has codes
-     *
-     * @author Afra
-     */
-    public interface ProfileNoCodesCallback {
-        void setNoCodes(boolean noCodes);
     }
 
     /**
