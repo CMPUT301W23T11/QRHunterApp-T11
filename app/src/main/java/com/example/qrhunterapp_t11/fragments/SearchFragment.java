@@ -159,7 +159,7 @@ public class SearchFragment extends Fragment {
             }
         });
 
-        // clears the text from autoCompleteTextView
+        // Clears the text from autoCompleteTextView
         deleteSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

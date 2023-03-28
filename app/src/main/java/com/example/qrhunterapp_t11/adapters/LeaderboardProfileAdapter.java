@@ -63,7 +63,6 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
             String rankingText = "Your Ranking: " + (position + 1);
             prefs.edit().putString("currentUserRanking", rankingText).commit();
         }
-
     }
 
     @androidx.annotation.NonNull
