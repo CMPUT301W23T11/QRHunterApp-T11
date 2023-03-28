@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.adapters.LeaderboardProfileAdapter;
 import com.example.qrhunterapp_t11.interfaces.OnItemClickListener;
+import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.User;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.CollectionReference;
@@ -37,8 +38,6 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
-
-import java.util.ArrayList;
 
 
 /**
@@ -96,10 +95,10 @@ public class SearchFragment extends Fragment {
                     autoCompleteAdapter.clear();
                     for (DocumentSnapshot doc : value) {
                         if (doc.exists()) {
-                           User user = doc.toObject(User.class);
-                           if (user != null) {
-                               autoCompleteAdapter.add(user.getDisplayName());
-                           }
+                            User user = doc.toObject(User.class);
+                            if (user != null) {
+                                autoCompleteAdapter.add(user.getDisplayName());
+                            }
                             //}
                         }
                     }
@@ -174,8 +173,8 @@ public class SearchFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 String leaderboardSpinnerChoice = leaderboardFilter.getSelectedItem().toString();
-                filterQuery(leaderboardSpinnerChoice, new LeaderboardCallback() {
-                    public void queryCallback(boolean queryComplete) {
+                filterQuery(leaderboardSpinnerChoice, new QueryCallback() {
+                    public void queryCompleteCheck(boolean queryComplete) {
                         assert (queryComplete);
                         leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
 
@@ -213,10 +212,10 @@ public class SearchFragment extends Fragment {
     /**
      * Set query for Firestore RecyclerView depending on what spinner option is selected
      *
-     * @param filterType    String representing how the leaderboard is filtered
-     * @param queryCallback Callback for query
+     * @param filterType         String representing how the leaderboard is filtered
+     * @param queryCompleteCheck Callback for query
      */
-    public void filterQuery(@NonNull String filterType, final @NonNull LeaderboardCallback queryCallback) {
+    public void filterQuery(@NonNull String filterType, final @NonNull QueryCallback queryCompleteCheck) {
         String queryField = "";
         switch (filterType) {
             case "Most Points":
@@ -240,16 +239,8 @@ public class SearchFragment extends Fragment {
                     leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
                             .setQuery(query, User.class)
                             .build();
-                    queryCallback.queryCallback(true);
+                    queryCompleteCheck.queryCompleteCheck(true);
                 });
     }
 
-    /**
-     * Callback for querying the database to get type of results
-     *
-     * @author Afra
-     */
-    public interface LeaderboardCallback {
-        void queryCallback(boolean queryComplete);
-    }
 }

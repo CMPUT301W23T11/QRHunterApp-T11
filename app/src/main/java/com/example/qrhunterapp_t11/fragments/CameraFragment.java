@@ -1,5 +1,7 @@
 package com.example.qrhunterapp_t11.fragments;
 
+import static nl.dionsegijn.konfetti.core.Position.Relative;
+
 import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -30,6 +32,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.activities.CaptureAct;
 import com.example.qrhunterapp_t11.activities.TakePhotoActivity;
+import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -53,7 +56,6 @@ import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
-import java.lang.Math;
 
 import nl.dionsegijn.konfetti.core.Angle;
 import nl.dionsegijn.konfetti.core.PartyFactory;
@@ -62,7 +64,6 @@ import nl.dionsegijn.konfetti.core.emitter.Emitter;
 import nl.dionsegijn.konfetti.core.emitter.EmitterConfig;
 import nl.dionsegijn.konfetti.core.models.Shape;
 import nl.dionsegijn.konfetti.xml.KonfettiView;
-import static nl.dionsegijn.konfetti.core.Position.Relative;
 
 /**
  * Logic for the camera fragment, which is responsible for managing everything that pertains to scanning and adding a new QR code.
@@ -499,7 +500,6 @@ public class CameraFragment extends Fragment {
     }
 
 
-
     /**
      * Helper function to check if a QR code document exists
      *
@@ -508,7 +508,7 @@ public class CameraFragment extends Fragment {
      * @reference <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
      * @reference Aidan Lynch's CameraFragmentTest for this code
      */
-    public void checkDocExists(@NonNull String docToCheck, @NonNull CollectionReference cr, final @NonNull Callback dataValid) {
+    public void checkDocExists(@NonNull String docToCheck, @NonNull CollectionReference cr, final @NonNull QueryCallback queryCompleteCheck) {
         DocumentReference docRef = cr.document(docToCheck);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -517,20 +517,16 @@ public class CameraFragment extends Fragment {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         Log.d("DocExist", "DocumentSnapshot data: " + document.getData());
-                        dataValid.dataValid(true);
+                        queryCompleteCheck.queryCompleteCheck(true);
                     } else {
                         Log.d("DocExist", "No such document");
-                        dataValid.dataValid(false);
+                        queryCompleteCheck.queryCompleteCheck(false);
                     }
                 } else {
                     Log.d("DocExist", "get failed with ", task.getException());
                 }
             }
         });
-    }
-
-    public interface Callback {
-        void dataValid(boolean valid);
     }
 
     /**
@@ -545,21 +541,21 @@ public class CameraFragment extends Fragment {
         qrCodeRef.put("Reference", qrCodeDocumentRef);
 
         // Check if qrCode exists in db in QRCodes collection
-        checkDocExists(qrCodeID, qrCodesReference, new Callback() {
-            public void dataValid(boolean valid) {
-                qrExists = valid;
-                System.out.println(valid);
+        checkDocExists(qrCodeID, qrCodesReference, new QueryCallback() {
+            public void queryCompleteCheck(boolean queryComplete) {
+                qrExists = queryComplete;
+                System.out.println(queryComplete);
 
                 // Check if reference to qrCode exists in db in Users collection
-                checkDocExists(qrCodeID, usersReference.document(currentUser).collection("User QR Codes"), new Callback() {
-                    public void dataValid(boolean valid) {
-                        qrRefExists = valid;
-                        System.out.println(valid);
+                checkDocExists(qrCodeID, usersReference.document(currentUser).collection("User QR Codes"), new QueryCallback() {
+                    public void queryCompleteCheck(boolean queryComplete) {
+                        qrRefExists = queryComplete;
+                        System.out.println(queryComplete);
 
                         // If qrCode does not exist, add it to QRCode collection
-                        if (!qrExists){
+                        if (!qrExists) {
                             qrCodesReference.document(qrCodeID).set(qrCode);
-                            if (resizedImageUrl != null){
+                            if (resizedImageUrl != null) {
                                 qrCodesReference.document(qrCodeID).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
                                 //QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayRemove(resizedImageUrl));
                             }
