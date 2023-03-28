@@ -14,5 +14,15 @@
         <!-- Customize your theme here. -->
         <item name="android:windowIsTranslucent">true</item>
     </style>
+
+    <style name="DropDownTheme" parent="Theme.QRHunterAppT11">
+        <item name="android:dropDownListViewStyle">@style/ListViewStyle</item>
+    </style>
+
+    <style name="ListViewStyle" parent="@android:style/Widget.ListView">
+        <item name="android:divider">#000000</item>
+        <item name="android:dividerHeight">1dp</item>
+    </style>
+
 </resources>
 <!-- Yaroslav Vasilenko - https://stackoverflow.com/a/73137611/14445107 - hiding the default android splashscreen-->

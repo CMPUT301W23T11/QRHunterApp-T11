@@ -48,7 +48,10 @@
                     android:hint="@string/search_hint"
                     android:fontFamily="sans-serif-medium"
                     android:inputType="text"
-                    android:textSize="22sp" />
+                    android:textSize="22sp"
+                    android:dropDownHeight="150dp"
+                    android:theme="@style/DropDownTheme"
+                    />
 
                 <Button
                     android:id="@+id/close_id"
