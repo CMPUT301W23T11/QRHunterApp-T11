@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     android:orientation="vertical"
     tools:context=".fragments.SettingsFragment">
 
@@ -28,6 +28,7 @@
         android:layout_marginTop="32dp"
         android:fontFamily="sans-serif-medium"
         android:text="@string/edittext_change_username"
+        android:textColor="@color/text_colour"
         android:textSize="25sp" />
 
     <EditText
@@ -35,13 +36,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
         android:autofillHints="username"
-        android:hint="@string/edittext_username"
-        android:text="@string/edittext_username"
         android:fontFamily="sans-serif-medium"
-        android:inputType="textPersonName" />
+        android:hint="@string/edittext_username"
+        android:inputType="textPersonName"
+        android:text="@string/edittext_username" />
 
     <TextView
         android:id="@+id/email_edit_textview"
@@ -51,6 +52,7 @@
         android:layout_marginTop="32dp"
         android:fontFamily="sans-serif-medium"
         android:text="@string/edittext_change_email"
+        android:textColor="@color/text_colour"
         android:textSize="25sp" />
 
     <EditText
@@ -58,13 +60,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
         android:autofillHints="emailAddress"
-        android:hint="@string/edittext_email"
-        android:text="@string/edittext_email"
         android:fontFamily="sans-serif-medium"
-        android:inputType="textEmailAddress" />
+        android:hint="@string/edittext_email"
+        android:inputType="textEmailAddress"
+        android:text="@string/edittext_email" />
 
     <Button
         android:id="@+id/settings_confirm_button"
