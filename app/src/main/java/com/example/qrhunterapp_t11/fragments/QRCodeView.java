@@ -133,7 +133,7 @@ public class QRCodeView extends DialogFragment {
         photoAdapter = new PhotoAdapter(getContext(), qrCode.getPhotoList());
         viewPager.setAdapter(photoAdapter);
 
-        // If the QRCode has an associated photo, use Picasso to load it into the photoImageView (Rotated for some reason)
+        // If the QRCode has no associated photo, hide the photo box
         if (photoAdapter.getCount() == 0) {
             photoBox.setVisibility(View.GONE);
         }
