@@ -16,14 +16,12 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
 import com.example.qrhunterapp_t11.activities.MainActivity;
+import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.User;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.robotium.solo.Solo;
 
@@ -111,11 +109,9 @@ public class CameraFragmentTest {
 
         deleteDoc(testHash, qrCodesReference); // delete the test doc to see change in collection size
 
-        checkDocExists(testHash, qrCodesReference, new Callback() {
-            public void dataValid(boolean valid) {
-                docExists = valid;
+        checkDocExists(testHash, qrCodesReference, new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
                 assertFalse(docExists);
-
             }
         });
 
@@ -128,9 +124,8 @@ public class CameraFragmentTest {
         solo.clickOnText("Yes");
         assertTrue(solo.waitForText("STATS", 1, 7000)); // confirm we're back on the profile page
 
-        checkDocExists(testHash, qrCodesReference, new Callback() {
-            public void dataValid(boolean valid) {
-                docExists = valid;
+        checkDocExists(testHash, qrCodesReference, new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
                 assertTrue(docExists);
             }
         });
@@ -148,9 +143,8 @@ public class CameraFragmentTest {
 
         deleteDoc(testHash, qrCodesReference); // delete the test doc to see change in collection size
 
-        checkDocExists(testHash, qrCodesReference, new Callback() {
-            public void dataValid(boolean valid) {
-                docExists = valid;
+        checkDocExists(testHash, qrCodesReference, new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
                 assertFalse(docExists);
 
             }
@@ -164,9 +158,8 @@ public class CameraFragmentTest {
         solo.clickOnText("No");
         assertTrue(solo.waitForText("STATS", 1, 7000)); // confirm we're back on the profile page
 
-        checkDocExists(testHash, qrCodesReference, new Callback() {
-            public void dataValid(boolean valid) {
-                docExists = valid;
+        checkDocExists(testHash, qrCodesReference, new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
                 assertTrue(docExists);
             }
         });
@@ -181,11 +174,9 @@ public class CameraFragmentTest {
 
         deleteDoc(testHash, qrCodesReference); // delete the test doc to see change in collection size
 
-        checkDocExists(testHash, qrCodesReference, new Callback() {
-            public void dataValid(boolean valid) {
-                docExists = valid;
+        checkDocExists(testHash, qrCodesReference, new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
                 assertFalse(docExists);
-
             }
         });
 
@@ -197,9 +188,8 @@ public class CameraFragmentTest {
         solo.clickOnText("Yes");
         assertTrue(solo.waitForText("STATS", 1, 7000)); // confirm we're back on the profile page
 
-        checkDocExists(testHash, qrCodesReference, new Callback() {
-            public void dataValid(boolean valid) {
-                docExists = valid;
+        checkDocExists(testHash, qrCodesReference, new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
                 assertTrue(docExists);
             }
         });
@@ -214,11 +204,9 @@ public class CameraFragmentTest {
 
         deleteDoc(testHash, qrCodesReference); // delete the test doc to see change in collection size
 
-        checkDocExists(testHash, qrCodesReference, new Callback() {
-            public void dataValid(boolean valid) {
-                docExists = valid;
+        checkDocExists(testHash, qrCodesReference, new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
                 assertFalse(docExists);
-
             }
         });
 
@@ -230,9 +218,8 @@ public class CameraFragmentTest {
         solo.clickOnText("No");
         assertTrue(solo.waitForText("STATS", 1, 7000)); // confirm we're back on the profile page
 
-        checkDocExists(testHash, qrCodesReference, new Callback() {
-            public void dataValid(boolean valid) {
-                docExists = valid;
+        checkDocExists(testHash, qrCodesReference, new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
                 assertTrue(docExists);
             }
         });
@@ -269,28 +256,18 @@ public class CameraFragmentTest {
      * @param cr         CollectionReference to the collection being accessed
      * @reference <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
      */
-    public void checkDocExists(String docToCheck, CollectionReference cr, final Callback dataValid) {
+    public void checkDocExists(String docToCheck, CollectionReference cr, final QueryCallback docExists) {
         DocumentReference docRef = cr.document(docToCheck);
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        Log.d("DocExist", "DocumentSnapshot data: " + document.getData());
-                        dataValid.dataValid(true);
-                    } else {
-                        Log.d("DocExist", "No such document");
-                        dataValid.dataValid(false);
-                    }
-                } else {
-                    Log.d("DocExist", "get failed with ", task.getException());
-                }
-            }
-        });
-    }
+        docRef.get().addOnSuccessListener(result -> {
 
-    public interface Callback {
-        void dataValid(boolean valid);
+            if (result.exists()) {
+                Log.d("DocExist", "DocumentSnapshot data: " + result.getData());
+                docExists.queryCompleteCheck(true);
+            } else {
+                Log.d("DocExist", "No such document");
+                docExists.queryCompleteCheck(false);
+            }
+
+        });
     }
 }

@@ -10,17 +10,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.widget.EditText;
 
-import androidx.annotation.NonNull;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
 import com.example.qrhunterapp_t11.activities.MainActivity;
+import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.User;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.robotium.solo.Solo;
 
 import org.junit.After;
@@ -131,16 +128,16 @@ public class SettingsFragmentTest {
         solo.clickOnView(solo.getView(R.id.settings_confirm_button));
         solo.clickOnText("Confirm");
 
-        checkUniqueDisplayName("testUserUnique", new checkUniqueUsernameCallback() {
-            public void uniqueDisplayName(boolean unique) {
+        checkUniqueDisplayName("testUserUnique", new QueryCallback() {
+            public void queryCompleteCheck(boolean unique) {
                 uniqueUser = unique;
                 assertTrue(uniqueUser);
 
                 usersReference.document(testUsername).update("displayName", "testUserUnique");
 
                 // Make sure user was successfully added
-                checkUniqueDisplayName("testUserUnique", new checkUniqueUsernameCallback() {
-                    public void uniqueDisplayName(boolean unique) {
+                checkUniqueDisplayName("testUserUnique", new QueryCallback() {
+                    public void queryCompleteCheck(boolean unique) {
                         assertTrue(unique);
                     }
                 });
@@ -164,24 +161,16 @@ public class SettingsFragmentTest {
     /**
      * Checks if the given username exists in the database.
      */
-    public void checkUniqueDisplayName(String username, final checkUniqueUsernameCallback uniqueUsername) {
-        usersReference.whereEqualTo("displayName", username).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    uniqueUsername.uniqueDisplayName(task.getResult().isEmpty());
-                }
-            }
-        });
+    public void checkUniqueDisplayName(String username, final QueryCallback uniqueUsername) {
+        usersReference
+                .whereEqualTo("displayName", username)
+                .get()
+                .addOnSuccessListener(results -> {
+
+                    uniqueUsername.queryCompleteCheck(results.isEmpty());
+
+                });
     }
 
-    /**
-     * Callback for checkUniqueUsername query
-     *
-     * @author Afra
-     */
-    public interface checkUniqueUsernameCallback {
-        void uniqueDisplayName(boolean unique);
-    }
 }
 
