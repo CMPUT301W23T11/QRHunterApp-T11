@@ -81,10 +81,10 @@ public class SearchFragment extends Fragment {
 
         Button deleteSearch = view.findViewById(R.id.close_id);
         autoCompleteTextView = view.findViewById(R.id.search_id);
-        ArrayList<String> displayNameList = new ArrayList<String>();
+        final ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1);
 
         // populates the autocomplete list with users display names
-        // Todo: update list when new user is added or display name is changed
+        // Todo: edit set displayName to lowercase when adding to database to get case insensitivity
         usersReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@androidx.annotation.Nullable QuerySnapshot value, @androidx.annotation.Nullable FirebaseFirestoreException error) {
@@ -93,11 +93,14 @@ public class SearchFragment extends Fragment {
                     return;
                 }
                 if (value != null) {
-                    displayNameList.clear();
+                    autoCompleteAdapter.clear();
                     for (DocumentSnapshot doc : value) {
                         if (doc.exists()) {
-                            User user = doc.toObject(User.class);
-                            displayNameList.add(user.getDisplayName());
+                           User user = doc.toObject(User.class);
+                           if (user != null) {
+                               autoCompleteAdapter.add(user.getDisplayName());
+                           }
+                            //}
                         }
                     }
                 }
@@ -105,10 +108,9 @@ public class SearchFragment extends Fragment {
         });
 
 
-        // sets up the autocomplete with the provided list
-        ArrayAdapter searchAdapter = new ArrayAdapter(getContext(), android.R.layout.simple_list_item_1, displayNameList);
+        // sets up the autocomplete with the provided array Adapter
         autoCompleteTextView.setThreshold(1);
-        autoCompleteTextView.setAdapter(searchAdapter);
+        autoCompleteTextView.setAdapter(autoCompleteAdapter);
 
         // Finds the user after clicking enter
         // https://stackoverflow.com/questions/41670850/prevent-user-to-go-next-line-by-pressing-softkey-enter-in-autocompletetextview
@@ -117,8 +119,8 @@ public class SearchFragment extends Fragment {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if ((keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (i == EditorInfo.IME_ACTION_DONE)) {
+                    autoCompleteTextView.dismissDropDown();
                     String searchText = autoCompleteTextView.getText().toString();
-
 
                     Query getUser = usersReference.whereEqualTo("displayName", searchText);
                     getUser.get()

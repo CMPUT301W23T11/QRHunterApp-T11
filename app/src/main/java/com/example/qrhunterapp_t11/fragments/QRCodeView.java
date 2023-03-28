@@ -17,17 +17,19 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.fragment.app.DialogFragment;
+import androidx.viewpager.widget.ViewPager;
 
 import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.adapters.CommentAdapter;
+import com.example.qrhunterapp_t11.adapters.PhotoAdapter;
 import com.example.qrhunterapp_t11.objectclasses.Comment;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,6 +61,8 @@ public class QRCodeView extends DialogFragment {
     private SharedPreferences prefs;
     private String qrCodeID;
     private TextView commentNumTextView;
+    private ViewPager viewPager;
+    private PhotoAdapter photoAdapter;
 
     /**
      * Empty constructor
@@ -100,6 +104,10 @@ public class QRCodeView extends DialogFragment {
         TextView pointsTextView = view.findViewById(R.id.pointsTV);
         TextView scansTextView = view.findViewById(R.id.scansTV);
 
+        LinearLayoutCompat photoBox = view.findViewById(R.id.photoBackground);
+        TextView numeratorTextView = view.findViewById(R.id.numeratorTV);
+        TextView denominatorTextView = view.findViewById(R.id.denominatorTV);
+
         ImageView commentImageView = view.findViewById(R.id.imageViewSend);
         ImageView eyesImageView = view.findViewById(R.id.imageEyes);
         ImageView colourImageView = view.findViewById(R.id.imageColour);
@@ -107,12 +115,6 @@ public class QRCodeView extends DialogFragment {
         ImageView noseImageView = view.findViewById(R.id.imageNose);
         ImageView mouthImageView = view.findViewById(R.id.imageMouth);
         ImageView eyebrowsImageView = view.findViewById(R.id.imageEyebrows);
-        ImageView photoImageView = view.findViewById(R.id.imagePhoto);
-
-        String points = "Points: " + qrCode.getPoints();
-        pointsTextView.setText(points);
-        String scans = "Total Scans: " + qrCode.getNumberOfScans();
-        scansTextView.setText(scans);
 
         // Creates the appearance of the QRCode object based on the drawable ids stored in its faceList array
         colourImageView.setImageResource((qrCode.getFaceList()).get(2));
@@ -122,10 +124,20 @@ public class QRCodeView extends DialogFragment {
         mouthImageView.setImageResource((qrCode.getFaceList()).get(4));
         eyebrowsImageView.setImageResource((qrCode.getFaceList()).get(5));
 
-        // If the QRCode object has an associated photo, use Picasso to load it into the photoImageView (Rotated for some reason)
-        if ((!qrCode.getPhotoList().isEmpty()) && (qrCode.getPhotoList().get(0) != null)) {
-            Picasso.with(getContext()).load(qrCode.getPhotoList().get(0)).into(photoImageView);
+        String points = "Points: " + qrCode.getPoints();
+        pointsTextView.setText(points);
+        String scans = "Total Scans: " + qrCode.getNumberOfScans();
+        scansTextView.setText(scans);
+        viewPager = view.findViewById(R.id.pager);
+        photoAdapter = new PhotoAdapter(getContext(), qrCode.getPhotoList());
+        viewPager.setAdapter(photoAdapter);
+
+        // If the QRCode has an associated photo, use Picasso to load it into the photoImageView (Rotated for some reason)
+        if (photoAdapter.getCount() == 0) {
+            photoBox.setVisibility(View.GONE);
         }
+        denominatorTextView.setText(String.valueOf(photoAdapter.getCount()));
+        numeratorTextView.setText(String.valueOf(viewPager.getCurrentItem() + 1));
 
         noCommentsCheck(qrCodeID, new QRCodeHasCommentsCallback() {
             public void setHasComments(boolean hasComments) {
@@ -196,6 +208,23 @@ public class QRCodeView extends DialogFragment {
                         }
                     });
                 }
+            }
+        });
+
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                numeratorTextView.setText(String.valueOf(viewPager.getCurrentItem() + 1));
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                // Not needed
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                // Not needed
             }
         });
 
@@ -282,16 +311,9 @@ public class QRCodeView extends DialogFragment {
     }
 
     /**
-     * Listener for the QRCodeView dialog
-     */
-    interface QRCodeViewDialogListener {
-        void viewCode(QRCode qrCode);
-    }
-
-    /**
      * Callback for querying the database to see if QR code has comments
      *
-     * @author Afra
+     * @author Afra Rahmanfard
      */
     public interface QRCodeHasCommentsCallback {
         void setHasComments(boolean hasComments);
@@ -300,7 +322,7 @@ public class QRCodeView extends DialogFragment {
     /**
      * Callback for querying the database to retrieve comments
      *
-     * @author Afra
+     * @author Afra Rahmanfard
      */
     public interface QRCodeGetCommentsCallback {
         void setComments(@NonNull ArrayList<Comment> comments);
@@ -309,7 +331,7 @@ public class QRCodeView extends DialogFragment {
     /**
      * Callback for querying the database to see if user has given QR Code
      *
-     * @author Afra
+     * @author Afra Rahmanfard
      */
     public interface UserHasQRCodeCallback {
         void setHasCode(boolean hasCode);

@@ -39,7 +39,7 @@
         android:id="@+id/addFab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:backgroundTint="@color/green"
+        android:backgroundTint="@color/green_fab"
         android:contentDescription="@string/adds_a_qr_code"
         android:src="@drawable/add_icon"
         app:layout_anchor="@id/bottomAppBar" />

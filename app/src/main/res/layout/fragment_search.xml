@@ -18,6 +18,7 @@
             android:layout_height="wrap_content"
             android:padding="10dp"
             android:text="@string/find_other_players"
+            android:fontFamily="sans-serif-medium"
             android:textAlignment="center"
             android:textColor="@color/white"
             android:textSize="18sp"
@@ -45,8 +46,12 @@
                     android:layout_weight="1"
                     android:background="@null"
                     android:hint="@string/search_hint"
+                    android:fontFamily="sans-serif-medium"
                     android:inputType="text"
-                    android:textSize="22sp" />
+                    android:textSize="22sp"
+                    android:dropDownHeight="150dp"
+                    android:theme="@style/DropDownTheme"
+                    />
 
                 <Button
                     android:id="@+id/close_id"
@@ -74,6 +79,7 @@
             android:layout_height="wrap_content"
             android:padding="5dp"
             android:text="@string/leaderboard"
+            android:fontFamily="sans-serif-medium"
             android:textAlignment="center"
             android:textColor="@color/headers"
             android:textSize="18sp"
@@ -91,12 +97,15 @@
                 android:layout_weight="1"
                 android:padding="5dp"
                 android:text="Your Ranking:"
+                android:fontFamily="sans-serif-medium"
                 android:textSize="18sp" />
 
             <Spinner
                 android:id="@+id/leaderboard_filter_spinner"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:spinnerMode="dropdown"
+                android:gravity="end" />
         </LinearLayout>
 
     </LinearLayout>

@@ -7,7 +7,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,10 +46,23 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+import java.lang.Math;
+
+import nl.dionsegijn.konfetti.core.Angle;
+import nl.dionsegijn.konfetti.core.PartyFactory;
+import nl.dionsegijn.konfetti.core.Spread;
+import nl.dionsegijn.konfetti.core.emitter.Emitter;
+import nl.dionsegijn.konfetti.core.emitter.EmitterConfig;
+import nl.dionsegijn.konfetti.core.models.Shape;
+import nl.dionsegijn.konfetti.xml.KonfettiView;
+import static nl.dionsegijn.konfetti.core.Position.Relative;
 
 /**
  * Logic for the camera fragment, which is responsible for managing everything that pertains to scanning and adding a new QR code.
@@ -68,6 +83,7 @@ public class CameraFragment extends Fragment {
     private String imageUrl;
     private String resizedImageUrl;
     private SharedPreferences prefs;
+    private KonfettiView konfettiView;
     private final FirebaseFirestore db;
     private final CollectionReference qrCodesReference;
     private final CollectionReference usersReference;
@@ -128,6 +144,7 @@ public class CameraFragment extends Fragment {
      * @param savedInstanceState If the fragment is being re-created from a previous saved state, this is the state.
      * @reference <a href="https://www.youtube.com/watch?v=W4qqTcxqq48">how to create a custom dialog</a>
      * @reference <a href="https://xjaphx.wordpress.com/2011/07/13/auto-close-dialog-after-a-specific-time/">how to have dialog automatically close after a few seconds</a>
+     * @reference Erfan - https://stackoverflow.com/a/54166609/14445107 - how to remove dim from dialog
      */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -165,11 +182,16 @@ public class CameraFragment extends Fragment {
                 TextView scoredTV = dialogView.findViewById(R.id.scoredTV);
                 builder.setView(dialogView);
                 builder.setCancelable(false);
-                String scored = "Scored " + qrCode.getPoints() + " Points";
+                String scored = qrCode.getPoints() + " Points";
                 scoredTV.setText(scored);
 
                 final AlertDialog alertDialog = builder.create();
                 alertDialog.show(); // create and display the dialog
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    Objects.requireNonNull(alertDialog.getWindow()).setDimAmount(0);
+                }
+
+                createKonfetti(); // party rock is in the house tonight
 
                 final Timer timer = new Timer();
                 timer.schedule(new TimerTask() {
@@ -282,15 +304,15 @@ public class CameraFragment extends Fragment {
                 public void onSuccess(Location location) {
                     if (location != null) {
                         // Location data is available
-                        double longitude = location.getLongitude();
                         double latitude = location.getLatitude();
+                        double longitude = location.getLongitude();
 
                         Log.d(locationPrompt, "Latitude: " + latitude + ", Longitude: " + longitude);
 
                         //set longitude and latitude and store
-                        qrCode.setLongitude(longitude);
                         qrCode.setLatitude(latitude);
-                        qrCode.setID(longitude, latitude);
+                        qrCode.setLongitude(longitude);
+                        qrCode.setID(latitude, longitude);
                         addQRCode();
                         returnToProfile();
                     } else {
@@ -397,10 +419,86 @@ public class CameraFragment extends Fragment {
      * @reference <a href="https://stackoverflow.com/a/60055145/14445107">using getParentFragmentManager() instead of getFragmentManager()</a>
      */
     private void returnToProfile() {
-        FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-        trans.replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUserUsername", null)));
-        trans.commit();
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() { // wait 500ms before returning to profile; if app returns to quickly the addition will not be registered in Firestore yet (the RecyclerView will update too early)
+                FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+                trans.replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUserUsername", null)));
+                trans.commit();
+            }
+        }, 500);
     }
+
+    /**
+     * When new QRCodes are scanned, if the resulting hash already exists in
+     * the database, this function calculates the distance between the two locations
+     * using the Haversine formula, if the distance between the two points is less
+     * than the set threshold, the scanned QRCode is considered the same as QRCode object
+     * already in the database, and no new document will be inserted; user profile
+     * will reference pre-existing QRCode
+     *
+     * @return boolean - returns true if distance shorter than uniqueness threshold, else false if 2 separate instances
+     * @references https://www.trekview.org/blog/2021/reading-decimal-gps-coordinates-like-a-computer/ David G, August 27, 2021 how to read lat/long
+     *             https://en.wikipedia.org/wiki/Haversine_formula  how to calculate distance between to locations on earth using lat/long
+     *             https://linuxhint.com/import-math-in-java/   how use Math library
+     *             https://docs.oracle.com/javase/8/docs/api/java/lang/Math.html    cos, sin, arcsin
+     */
+
+    public static boolean isSameLocation() {
+        //TODO INPUT VALIDATION:
+        // some coordinates shouldn't make sense, iirc long can't have larger magnitude than +-180?
+        // and +- for lat?
+
+
+        double maxDistance = 30;    // in meters
+        double radius = 6371.0;     // earths radius in kilometers
+
+        //TODO do we want to pass to QRCode objects or just the lat/long values of two objects?
+        // latitude & longitude of first QRCode
+        // otherwise function itself works, calculations are verified correct
+
+        //TODO ** CURRENT COORDINATES HARDCODED FOR TESTING
+        double lat1 = 38.8977;
+        double lng1 = -77.0365;
+
+        // latitude & longitude of second QRCode
+        double lat2 = 48.8584;
+        double lng2 = 2.2945;
+
+        // convert degrees to radians
+        // phi = latitude, lambda = longitude
+        double phi1 = (lat1*Math.PI)/180.0;
+        double lambda1 = (lng1*Math.PI)/180.0;
+
+        double phi2 = (lat2*Math.PI)/180.0;
+        double lambda2 = (lng2*Math.PI)/180.0;
+
+        //calculate haversine(theta), the central angle between both locations relative to earth's center
+        // haversine(theta) = sin^2((phi2-phi1)/2)+cos(phi1)cos(phi2)sin^2((lamda2-lamda1)/2)
+        double haversine = ( Math.pow( Math.sin((phi2-phi1)/2) ,2) + Math.cos(phi1)*Math.cos(phi2)*( Math.pow(Math.sin( (lambda2-lambda1)/2), 2 ) ));
+
+        //calculate distance between both points using haversine
+        // distance = 2r*arcsin(sqr(haversine(theta)))
+        double distance = (2*radius)*(Math.asin(Math.sqrt(haversine)));
+
+        //System.out.printf("%f\n", haversine);
+        System.out.printf("%f\n", distance);
+
+        //convert distance to meters and compare with maxDistance
+        distance = distance*1000;
+        System.out.printf("distance in meters: %f\n", distance);
+
+        if(distance <= maxDistance) {
+            System.out.printf("Same\n");
+            return true;
+        }
+        else    {
+            System.out.printf("Different\n");
+            return false;
+        }
+    }
+
+
 
     /**
      * Helper function to check if a QR code document exists
@@ -459,18 +557,24 @@ public class CameraFragment extends Fragment {
                         System.out.println(valid);
 
                         // If qrCode does not exist, add it to QRCode collection
-                        if (!qrExists) {
+                        if (!qrExists){
                             qrCodesReference.document(qrCodeID).set(qrCode);
+                            if (resizedImageUrl != null){
+                                qrCodesReference.document(qrCodeID).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
+                                //QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayRemove(resizedImageUrl));
+                            }
                         }
-                        // Add image to qrCode
-                        qrCodesReference.document(qrCodeID).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
-
-                        // If user does not already have this qrCode, add a reference to it, increment their total scans
-                        if (!qrRefExists) {
+                        // If user does not already have this qrCode, add a reference to it, increment their total scans, add new photo to qrCode
+                        if(!qrRefExists){
                             System.out.println("HEUHURLSHRPIUSHEPRIHSEPOIHRPOISHEPROIPSOEHRPOISHEPRIHP");
                             usersReference.document(currentUser).collection("User QR Codes").document(qrCodeID).set(qrCodeRef);
                             usersReference.document(currentUser).update("totalScans", FieldValue.increment(1));
                             usersReference.document(currentUser).update("totalPoints", FieldValue.increment(qrCode.getPoints()));
+                            if (resizedImageUrl != null){
+                                qrCodesReference.document(qrCodeID).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
+                                //QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayRemove(resizedImageUrl));
+                            }
+
                         }
                         // If user does not have this qrCode but it already exists in qrCode collection, increase its total scans
                         if ((qrExists) && (!qrRefExists)){
@@ -480,6 +584,34 @@ public class CameraFragment extends Fragment {
                 });
             }
         });
+    }
+
+    /**
+     * Creates some confetti when you scan a QR code :)
+     *
+     * @reference Daniel Martinus - https://github.com/DanielMartinus/Konfetti/blob/main/samples/xml-java/src/main/java/nl/dionsegijn/xml/java/MainActivity.java - used without major modification
+     */
+    public void createKonfetti() {
+        konfettiView = getActivity().findViewById(R.id.konfetti_view);
+        EmitterConfig emitterConfig = new Emitter(6, TimeUnit.SECONDS).perSecond(125);
+        konfettiView.start(
+                new PartyFactory(emitterConfig)
+                        .angle(Angle.RIGHT - 65)
+                        .spread(Spread.WIDE)
+                        .shapes(Arrays.asList(Shape.Square.INSTANCE, Shape.Circle.INSTANCE))
+                        .colors(Arrays.asList(0xfce18a, 0xff726d, 0xf4306d, 0xb48def))
+                        .setSpeedBetween(10f, 30f)
+                        .position(new Relative(0.0, 0.3))
+                        .build(),
+                new PartyFactory(emitterConfig)
+                        .angle(Angle.LEFT + 65)
+                        .spread(Spread.WIDE)
+                        .shapes(Arrays.asList(Shape.Square.INSTANCE, Shape.Circle.INSTANCE))
+                        .colors(Arrays.asList(0xfce18a, 0xff726d, 0xf4306d, 0xb48def))
+                        .setSpeedBetween(10f, 30f)
+                        .position(new Relative(1.0, 0.3))
+                        .build()
+        );
     }
 
     /**
