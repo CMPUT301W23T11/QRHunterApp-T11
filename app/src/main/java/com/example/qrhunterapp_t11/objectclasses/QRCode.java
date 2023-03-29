@@ -17,8 +17,8 @@ public class QRCode {
     private String id;
     private int points;
     private int numberOfScans;
-    private Double longitude;
     private Double latitude;
+    private Double longitude;
     private ArrayList<Integer> faceList;
     private ArrayList<String> photoList;
 
@@ -30,7 +30,7 @@ public class QRCode {
      * @param raw - a raw string to be hashed
      */
     public QRCode(@NonNull String raw) {
-        // mandatory exception due to message digest library
+        // Mandatory exception due to message digest library
         try {
             this.hash = setHash(raw);
         } catch (NoSuchAlgorithmException e) {
@@ -41,8 +41,8 @@ public class QRCode {
         this.faceList = uniqueImage(hash);
         this.numberOfScans = 1;
         this.photoList = new ArrayList<>();
-        this.longitude = null;
         this.latitude = null;
+        this.longitude = null;
         this.id = this.hash;
         // if for some reason null doesn't work out, we can fall back on init to 0
         //this.longitude = Double.valueOf(0);
@@ -56,7 +56,6 @@ public class QRCode {
      */
     public QRCode() {
     }
-
 
     /**
      * calculatePoints uses the hash value of the QRCode to calculate the points value of the QRCode
@@ -153,14 +152,14 @@ public class QRCode {
      * default value is the QRCode's hashkey, if location is added
      * by player, location value is concatenated to create a unique id
      *
-     * @param longitude Double representing longitude of where QRCode was captured
      * @param latitude  Double representing latitude of where QRCode was captured
+     * @param longitude Double representing longitude of where QRCode was captured
      * @reference https://docs.oracle.com/javase/tutorial/java/data/converting.html
      */
-    public void setID(@NonNull Double longitude, @NonNull Double latitude) {
-        String strLong = Double.toString(longitude);
+    public void setID(@NonNull Double latitude, @NonNull Double longitude) {
         String strLat = Double.toString(latitude);
-        this.id = this.hash + strLong + strLat;
+        String strLong = Double.toString(longitude);
+        this.id = this.hash + strLat + strLong;
     }
 
     /**
@@ -321,31 +320,10 @@ public class QRCode {
     }
 
     /**
-     * Getter for QRCode Object's Longitude attribute, which represents the
-     * Longitude where the code was scanned. initialized at 0
-     *
-     * @return longitude - a string ArrayList with 2 elements representing [Longitude , Latitude ]
-     */
-    @NonNull
-    public Double getLongitude() {
-        return this.longitude;
-    }
-
-    /**
-     * Setter for QRCode Object's longitude attribute, which represents the
-     * Longitude where the code was scanned.
-     *
-     * @param longitude - longitude of the Location where QR was scanned
-     */
-    public void setLongitude(@NonNull Double longitude) {
-        this.longitude = longitude;
-    }
-
-    /**
      * Getter for QRCode Object's latitude attribute, which represents the
      * Latitude where the code was scanned. initialized at 0
      *
-     * @return latitude - a string ArrayList with 2 elements representing [Longitude , Latitude ]
+     * @return latitude - a double representing QRCode's Latitude coordinate
      */
     @NonNull
     public Double getLatitude() {
@@ -356,13 +334,34 @@ public class QRCode {
      * Setter for QRCode Object's latitude attribute, which represents the
      * Latitude where the code was scanned.
      *
-     * @param latitude - latitude of the location where QR was scanned
+     * @param latitude - a double representing QRCode's Latitude coordinate
      */
     public void setLatitude(@NonNull Double latitude) {
         this.latitude = latitude;
     }
 
     /**
+     * Getter for QRCode Object's Longitude attribute, which represents the
+     * Longitude where the code was scanned. initialized at 0
+     *
+     * @return longitude - a double representing QRCode's Longitude coordinate
+     */
+    @NonNull
+    public Double getLongitude() {
+        return this.longitude;
+    }
+
+    /**
+     * Setter for QRCode Object's longitude attribute, which represents the
+     * Longitude where the code was scanned.
+     *
+     * @param longitude - a double representing QRCode's Longitude coordinate
+     */
+    public void setLongitude(@NonNull Double longitude) {
+        this.longitude = longitude;
+    }
+
+        /**
      * Getter for QRCode Object's faceList attribute
      *
      * @return faceList - An ArrayList containing information to create face visual display

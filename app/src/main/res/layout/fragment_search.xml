@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginBottom="2dp"
+    android:background="@color/background"
     android:orientation="vertical"
     tools:context=".fragments.SearchFragment">
 
@@ -16,6 +17,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
             android:padding="10dp"
             android:text="@string/find_other_players"
             android:textAlignment="center"
@@ -44,9 +46,12 @@
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     android:background="@null"
+                    android:dropDownHeight="150dp"
+                    android:fontFamily="sans-serif-medium"
                     android:hint="@string/search_hint"
                     android:inputType="text"
-                    android:textSize="22sp" />
+                    android:textSize="22sp"
+                    android:theme="@style/DropDownTheme" />
 
                 <Button
                     android:id="@+id/close_id"
@@ -72,6 +77,7 @@
             android:id="@+id/leaderboard_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
             android:padding="5dp"
             android:text="@string/leaderboard"
             android:textAlignment="center"
@@ -89,14 +95,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:fontFamily="sans-serif-medium"
                 android:padding="5dp"
-                android:text="Your Ranking:"
+                android:text="@string/your_ranking"
                 android:textSize="18sp" />
 
             <Spinner
                 android:id="@+id/leaderboard_filter_spinner"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:gravity="end"
+                android:spinnerMode="dropdown" />
         </LinearLayout>
 
     </LinearLayout>

@@ -7,6 +7,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.fragments.CameraFragment;
@@ -25,7 +26,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
  * Main app activity. Default startup screen is the player profile.
  * Users can click on the toolbar at the bottom to switch to other parts of the app.
  *
- * @author Afra Rahmanfard
+ * @author Afra
  * @author Kristina
  * @sources: <pre>
  * <ul>
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
      */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -150,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Callback for querying database
      *
-     * @author Afra Rahmanfard
+     * @author Afra
      */
     public interface MainActivityCallback {
         void setNumUsers(int numUsers);

@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.adapters.LeaderboardProfileAdapter;
 import com.example.qrhunterapp_t11.interfaces.OnItemClickListener;
+import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.User;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.CollectionReference;
@@ -38,8 +39,6 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.util.ArrayList;
-
 
 /**
  * Handles search and leaderboard screen.
@@ -47,11 +46,16 @@ import java.util.ArrayList;
  * Search allows the user to search for other users to view their profiles
  *
  * @author Afra, Kristina
- * @reference <a href="https://stackoverflow.com/a/5241720">For setting spinner</a>
+ * @sources <pre>
+ * <ul>
+ * <li><a href="https://stackoverflow.com/a/5241720">For setting spinner</a></li>
+ * <li><a href="https://stackoverflow.com/questions/41670850/prevent-user-to-go-next-line-by-pressing-softkey-enter-in-autocompletetextview">How to handle a ENTER click action</a></li>
+ * </ul>
+ * </pre>
  */
 public class SearchFragment extends Fragment {
 
-    private final String tag = "searchFragment";
+    private static final String TAG = "searchFragment";
     private final FirebaseFirestore db;
     private final CollectionReference usersReference;
     private final CollectionReference qrCodeReference;
@@ -72,6 +76,7 @@ public class SearchFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
+
         // Set leaderboard options spinner
         String[] leaderboardFilterChoices = new String[]{"Most Points", "Most Scans", "Top QR Code", "Top QR Code (Regional)"};
         Spinner leaderboardFilter = view.findViewById(R.id.leaderboard_filter_spinner);
@@ -81,23 +86,26 @@ public class SearchFragment extends Fragment {
 
         Button deleteSearch = view.findViewById(R.id.close_id);
         autoCompleteTextView = view.findViewById(R.id.search_id);
-        ArrayList<String> displayNameList = new ArrayList<String>();
+        final ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1);
 
-        // populates the autocomplete list with users display names
-        // Todo: update list when new user is added or display name is changed
+        // Populates the autocomplete list with users display names
+        // Todo: edit set displayName to lowercase when adding to database to get case insensitivity
         usersReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@androidx.annotation.Nullable QuerySnapshot value, @androidx.annotation.Nullable FirebaseFirestoreException error) {
                 if (error != null) {
-                    Log.w(tag, "Listen failed: ", error);
+                    Log.w(TAG, "Listen failed: ", error);
                     return;
                 }
                 if (value != null) {
-                    displayNameList.clear();
+                    autoCompleteAdapter.clear();
                     for (DocumentSnapshot doc : value) {
                         if (doc.exists()) {
                             User user = doc.toObject(User.class);
-                            displayNameList.add(user.getDisplayName());
+                            if (user != null) {
+                                autoCompleteAdapter.add(user.getDisplayName());
+                            }
+                            //}
                         }
                     }
                 }
@@ -105,20 +113,17 @@ public class SearchFragment extends Fragment {
         });
 
 
-        // sets up the autocomplete with the provided list
-        ArrayAdapter searchAdapter = new ArrayAdapter(getContext(), android.R.layout.simple_list_item_1, displayNameList);
+        // sets up the autocomplete with the provided array Adapter
         autoCompleteTextView.setThreshold(1);
-        autoCompleteTextView.setAdapter(searchAdapter);
+        autoCompleteTextView.setAdapter(autoCompleteAdapter);
 
         // Finds the user after clicking enter
-        // https://stackoverflow.com/questions/41670850/prevent-user-to-go-next-line-by-pressing-softkey-enter-in-autocompletetextview
-        // - how to handle a ENTER click action
         autoCompleteTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if ((keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (i == EditorInfo.IME_ACTION_DONE)) {
+                    autoCompleteTextView.dismissDropDown();
                     String searchText = autoCompleteTextView.getText().toString();
-
 
                     Query getUser = usersReference.whereEqualTo("displayName", searchText);
                     getUser.get()
@@ -143,10 +148,10 @@ public class SearchFragment extends Fragment {
 
                                     } else { // if the user is not found
                                         Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
-                                        Log.d(tag, "Document NOT found");
+                                        Log.d(TAG, "Document NOT found");
                                     }
                                 } else {
-                                    Log.d(tag, "task not successful: ", task.getException());
+                                    Log.d(TAG, "task not successful: ", task.getException());
                                 }
                             });
                 }
@@ -154,7 +159,7 @@ public class SearchFragment extends Fragment {
             }
         });
 
-        // clears the text from autoCompleteTextView
+        // Clears the text from autoCompleteTextView
         deleteSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -172,8 +177,8 @@ public class SearchFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 String leaderboardSpinnerChoice = leaderboardFilter.getSelectedItem().toString();
-                filterQuery(leaderboardSpinnerChoice, new LeaderboardCallback() {
-                    public void queryCallback(boolean queryComplete) {
+                filterQuery(leaderboardSpinnerChoice, new QueryCallback() {
+                    public void queryCompleteCheck(boolean queryComplete) {
                         assert (queryComplete);
                         leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
 
@@ -211,10 +216,10 @@ public class SearchFragment extends Fragment {
     /**
      * Set query for Firestore RecyclerView depending on what spinner option is selected
      *
-     * @param filterType    String representing how the leaderboard is filtered
-     * @param queryCallback Callback for query
+     * @param filterType         String representing how the leaderboard is filtered
+     * @param queryCompleteCheck Callback for query
      */
-    public void filterQuery(@NonNull String filterType, final @NonNull LeaderboardCallback queryCallback) {
+    public void filterQuery(@NonNull String filterType, final @NonNull QueryCallback queryCompleteCheck) {
         String queryField = "";
         switch (filterType) {
             case "Most Points":
@@ -238,16 +243,7 @@ public class SearchFragment extends Fragment {
                     leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
                             .setQuery(query, User.class)
                             .build();
-                    queryCallback.queryCallback(true);
+                    queryCompleteCheck.queryCompleteCheck(true);
                 });
-    }
-
-    /**
-     * Callback for querying the database to get type of results
-     *
-     * @author Afra
-     */
-    public interface LeaderboardCallback {
-        void queryCallback(boolean queryComplete);
     }
 }

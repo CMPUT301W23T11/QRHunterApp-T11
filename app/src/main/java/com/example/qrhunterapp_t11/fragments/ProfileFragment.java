@@ -22,6 +22,7 @@ import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.adapters.QRCodeAdapter;
 import com.example.qrhunterapp_t11.interfaces.OnItemClickListener;
 import com.example.qrhunterapp_t11.interfaces.OnItemLongClickListener;
+import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.CollectionReference;
@@ -42,23 +43,25 @@ import java.util.Collections;
  * Handles player profile screen.
  * Outputs the users' QR collection and the users' stats
  *
- * @author Afra, Kristina, Sarah
- * @reference <a href="https://stackoverflow.com/questions/74092262/calculate-total-from-values-stored-in-firebase-firestore-database-android">How to calculate the sum of a set of documents</a>
- * @reference <a href="https://firebase.google.com/docs/firestore/query-data/listen">How to get a new snapshot everytime the data is updated</a>
- * @reference <a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation for RecyclerView</a>
+ * @author Afra, Kristina
+ * @sources <pre>
+ * <ul>
+ * <li><a href="https://firebase.google.com/docs/firestore/query-data/listen">How to get a new snapshot everytime the data is updated</a></li>
+ * <li><a href="https://stackoverflow.com/questions/74092262/calculate-total-from-values-stored-in-firebase-firestore-database-android">How to calculate the sum of a set of documents</a></li>
+ * <li><a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation for RecyclerView</a></li>
+ * </ul>
+ * </pre>
  */
 public class ProfileFragment extends Fragment {
-    private static final String tag = "ProfileFragment";
-    private static final String listenFailed = "listenFailed";
     private final CollectionReference usersReference;
     private final CollectionReference qrCodeReference;
+    private final FirebaseFirestore db;
     private QRCodeAdapter adapter;
     private RecyclerView qrCodeRecyclerView;
     private FirestoreRecyclerOptions<QRCode> options;
     private final String displayName;
     private final String username;
     private SharedPreferences prefs;
-    FirebaseFirestore db;
 
     /**
      * Constructor for profile fragment.
@@ -102,25 +105,24 @@ public class ProfileFragment extends Fragment {
         TextView lowQRCodeText = view.findViewById(R.id.lowQRText);
         TextView totalQRCodesText = view.findViewById(R.id.totalQRText);
 
-        // makes a back button visible if not the current user
-        if (!CurrentUser(displayName, username, prefs)) {
+        // Makes a back button visible if not the current user
+        if (!currentUserCheck(displayName, username, prefs)) {
             backButton.setVisibility(View.VISIBLE);
 
-            // takes the user back to the leaderboard screen
+            // Takes the user back to the leaderboard screen
             backButton.setOnClickListener(view1 -> {
                 FragmentTransaction trans = getParentFragmentManager().beginTransaction();
                 trans.replace(R.id.main_screen, new SearchFragment(db));
                 trans.commit();
-                });
-        }
-        else {
+            });
+        } else {
             backButton.setVisibility(View.INVISIBLE);
         }
 
         // If the user has at least one QR code, initialize RecyclerView
-        noQRCodesCheck(username, new ProfileNoCodesCallback() {
-            public void setNoCodes(boolean noCodes) {
-                if (!noCodes) {
+        hasQRCodesCheck(username, new QueryCallback() {
+            public void queryCompleteCheck(boolean hasCodes) {
+                if (hasCodes) {
 
                     // Retrieve all QR Codes the user has and calculate scores
                     queryQRCodes(username, new ProfileUserDataCallback() {
@@ -128,7 +130,7 @@ public class ProfileFragment extends Fragment {
 
                             qrCodeRecyclerView = view.findViewById(R.id.collectionRecyclerView);
 
-                            adapter = new QRCodeAdapter(options);
+                            adapter = new QRCodeAdapter(options, db);
 
                             //super.onStart(); man idk
                             adapter.startListening();
@@ -143,7 +145,7 @@ public class ProfileFragment extends Fragment {
                             for (String qr : userData) {
                                 total += Integer.parseInt(qr);
                             }
-                            // Updates the users total score in the database
+                            // Updates the user's total score in the database
                             totalScoreText.setText(MessageFormat.format("Total score: {0}", total));
 
                             // Gets the largest QR from the user
@@ -153,7 +155,7 @@ public class ProfileFragment extends Fragment {
                             // Gets the smallest QR from the user
                             lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", userData.get(0)));
 
-                            // Gets the size of the amount of QR codes the user has
+                            // Gets the number of QR codes the user has
                             totalQRCodesText.setText(MessageFormat.format("Number of QR Codes: {0}", userData.size()));
 
 
@@ -173,7 +175,7 @@ public class ProfileFragment extends Fragment {
                                 @Override
                                 public void onItemLongClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
                                     // only operable if the profile is the current user
-                                    if (CurrentUser(displayName, username, prefs)) {
+                                    if (currentUserCheck(displayName, username, prefs)) {
                                         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
                                         String QRCodeID = documentSnapshot.getId();
@@ -198,7 +200,7 @@ public class ProfileFragment extends Fragment {
                                                                                 usersReference.document(username).collection("User QR Codes").document(QRCodeID).delete();
                                                                                 // Subtract point value of that code from user's total points
                                                                                 usersReference.document(username).update("totalPoints", FieldValue.increment(points));
-
+                                                                                refreshProfile(); // reload profile fragment to update RecyclerView
                                                                             });
                                                                 });
                                                     }
@@ -223,15 +225,15 @@ public class ProfileFragment extends Fragment {
     /**
      * Query database to check if user has any QR codes in their collection or not
      *
-     * @param username   Current user's username
-     * @param setNoCodes Callback function
+     * @param username Current user's username
+     * @param hasCodes Callback function
      */
-    public void noQRCodesCheck(@NonNull String username, final @NonNull ProfileNoCodesCallback setNoCodes) {
+    public void hasQRCodesCheck(@NonNull String username, final @NonNull QueryCallback hasCodes) {
 
         usersReference.document(username).collection("User QR Codes")
                 .get()
                 .addOnSuccessListener(userQRCodes ->
-                        setNoCodes.setNoCodes(userQRCodes.size() == 0));
+                        hasCodes.queryCompleteCheck(!userQRCodes.isEmpty()));
     }
 
     /**
@@ -240,7 +242,7 @@ public class ProfileFragment extends Fragment {
      *
      * @param username    User's username
      * @param getUserData Callback for query
-     * @reference Firestore documentation
+     * @sources Firestore documentation
      */
     public void queryQRCodes(@NonNull String username, final @NonNull ProfileUserDataCallback getUserData) {
 
@@ -263,11 +265,11 @@ public class ProfileFragment extends Fragment {
                             .get()
                             .addOnSuccessListener(referencedQRDocumentSnapshots -> {
                                 for (QueryDocumentSnapshot snapshot : referencedQRDocumentSnapshots) {
-                                    String QRCodePoints = snapshot.get("points").toString();
+                                    String qrCodePoints = snapshot.get("points").toString();
                                     options = new FirestoreRecyclerOptions.Builder<QRCode>()
                                             .setQuery(query, QRCode.class)
                                             .build();
-                                    userPoints.add(QRCodePoints);
+                                    userPoints.add(qrCodePoints);
 
                                     Collections.sort(userPoints);
                                     getUserData.getUserData(userPoints);
@@ -276,24 +278,27 @@ public class ProfileFragment extends Fragment {
                 });
     }
 
+
     /**
-     * Helper class to check if the current profile is the current user
-     * @param displayName The current profiles display name
-     * @param username The current profiles username
-     * @param prefs The Shared Preferences of the app
-     * @return A boolean of if the profile is the current user
+     * Helper function to refresh profile screen once user has deleted a QR code; otherwise the user would have to toggle screens for the deleted QR Code to be removed.
+     * There may have been a more elegant way to do this by re-querying the database, but this seems to work fine.
      */
-    public boolean CurrentUser(@NonNull String displayName, @NonNull String username, @NonNull SharedPreferences prefs){
-        return displayName.equals(prefs.getString("currentUserDisplayName", null)) && (username.equals(prefs.getString("currentUserUsername", null)));
+    private void refreshProfile() {
+        FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+        trans.replace(R.id.main_screen, new ProfileFragment(db, prefs.getString("currentUserDisplayName", null), prefs.getString("currentUserUsername", null)));
+        trans.commit();
     }
 
     /**
-     * Callback for querying the database to see if user has codes
+     * Helper class to check if the current profile is the current user
      *
-     * @author Afra
+     * @param displayName The current profiles display name
+     * @param username    The current profiles username
+     * @param prefs       The Shared Preferences of the app
+     * @return A boolean of if the profile is the current user
      */
-    public interface ProfileNoCodesCallback {
-        void setNoCodes(boolean noCodes);
+    public boolean currentUserCheck(@NonNull String displayName, @NonNull String username, @NonNull SharedPreferences prefs) {
+        return displayName.equals(prefs.getString("currentUserDisplayName", null)) && (username.equals(prefs.getString("currentUserUsername", null)));
     }
 
     /**

@@ -16,15 +16,13 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.qrhunterapp_t11.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
@@ -32,7 +30,7 @@ import java.util.ArrayList;
  * Handles settings screen. Users can rename themselves and change their email.
  *
  * @author Afra
- * @reference Firestore documentation
+ * @sources Firestore documentation
  */
 public class SettingsFragment extends Fragment {
 
@@ -42,6 +40,10 @@ public class SettingsFragment extends Fragment {
     private EditText emailEditText;
     private String usernameString;
     private String emailString;
+    private static final String PREFS_CURRENT_USER_EMAIL = "currentUserEmail";
+    private static final String PREFS_CURRENT_USER_DISPLAY_NAME = "currentUserDisplayName";
+    private static final String DATABASE_DISPLAY_NAME_FIELD = "displayName";
+    private SharedPreferences prefs;
 
     public SettingsFragment(@NonNull FirebaseFirestore db) {
         this.usersReference = db.collection("Users");
@@ -54,14 +56,14 @@ public class SettingsFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
-        SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         usernameEditText = view.findViewById(R.id.username_edit_edittext);
         emailEditText = view.findViewById(R.id.email_edit_edittext);
         Button confirmButton = view.findViewById(R.id.settings_confirm_button);
 
-        usernameString = prefs.getString("currentUserDisplayName", null);
-        emailString = prefs.getString("currentUserEmail", "No email");
+        usernameString = prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null);
+        emailString = prefs.getString(PREFS_CURRENT_USER_EMAIL, "No email");
         usernameEditText.setText(usernameString);
         emailEditText.setText(emailString);
 
@@ -74,10 +76,10 @@ public class SettingsFragment extends Fragment {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 // Make sure new username is eligible for change
-                usernameCheck(usernameString, usernameEditText, new SettingsCallback() {
-                    public void valid(boolean valid) {
+                usernameCheck(usernameString, usernameEditText, new QueryCallback() {
+                    public void queryCompleteCheck(boolean usernameExists) {
 
-                        if (valid) {
+                        if (!usernameExists) {
                             builder
                                     .setTitle("Confirm username and email change")
                                     .setNegativeButton("Cancel", null)
@@ -86,16 +88,16 @@ public class SettingsFragment extends Fragment {
                                         public void onClick(DialogInterface dialogInterface, int i) {
                                             String user = prefs.getString("currentUserUsername", null);
 
-                                            usersReference.document(user).update("displayName", usernameString);
+                                            usersReference.document(user).update(DATABASE_DISPLAY_NAME_FIELD, usernameString);
                                             usersReference.document(user).update("email", emailString);
 
-                                            prefs.edit().putString("currentUserDisplayName", usernameString).commit();
-                                            prefs.edit().putString("currentUserEmail", emailString).commit();
+                                            prefs.edit().putString(PREFS_CURRENT_USER_DISPLAY_NAME, usernameString).commit();
+                                            prefs.edit().putString(PREFS_CURRENT_USER_EMAIL, emailString).commit();
 
                                             // Update username in all user's previous comments
-                                            updateUserComments(user, usernameString, new SettingsCallback() {
-                                                public void valid(boolean valid) {
-                                                    assert (valid);
+                                            updateUserComments(user, usernameString, new QueryCallback() {
+                                                public void queryCompleteCheck(boolean queryComplete) {
+                                                    assert (queryComplete);
                                                 }
                                             });
                                         }
@@ -116,36 +118,33 @@ public class SettingsFragment extends Fragment {
      *
      * @param usernameString   Entered username
      * @param usernameEditText EditText for entered username
-     * @param valid            Callback for query
+     * @param usernameExists   Callback for query
      */
-    public void usernameCheck(@NonNull String usernameString, @NonNull EditText usernameEditText, final @NonNull SettingsCallback valid) {
+    public void usernameCheck(@NonNull String usernameString, @NonNull EditText usernameEditText, final @NonNull QueryCallback usernameExists) {
 
         // Check if username matches Firestore document ID guidelines
         if (usernameString.length() == 0) {
             usernameEditText.setError("Field cannot be blank");
         } else if (usernameString.contains("/")) {
             usernameEditText.setError("Invalid character: '/'");
-        } else if (usernameString.equals(".") || usernameString.equals("..")) {
-            usernameEditText.setError("Invalid username");
-        } else if (usernameString.equals("__.*__")) {
+        } else if (usernameString.equals(".") || usernameString.equals("..") || usernameString.equals("__.*__")) {
             usernameEditText.setError("Invalid username");
         }
 
         // Check if username exists already
         else {
-            usersReference.whereEqualTo("displayName", usernameString).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    if (task.isSuccessful()) {
-                        if (task.getResult().isEmpty()) {
-                            valid.valid(true);
+            usersReference
+                    .whereEqualTo(DATABASE_DISPLAY_NAME_FIELD, usernameString)
+                    .get()
+                    .addOnSuccessListener(queryResult -> {
+                        if (queryResult.isEmpty()) {
+                            usernameExists.queryCompleteCheck(false);
                         } else {
                             usernameEditText.setError("Username is not unique");
-                            valid.valid(false);
+                            usernameExists.queryCompleteCheck(true);
                         }
-                    }
-                }
-            });
+
+                    });
         }
     }
 
@@ -155,9 +154,9 @@ public class SettingsFragment extends Fragment {
      *
      * @param username           User's username
      * @param newDisplayUsername User's new display name
-     * @param valid              Callback for query
+     * @param queryCompleteCheck Callback for query
      */
-    public void updateUserComments(@NonNull String username, @NonNull String newDisplayUsername, final @NonNull SettingsCallback valid) {
+    public void updateUserComments(@NonNull String username, @NonNull String newDisplayUsername, final @NonNull QueryCallback queryCompleteCheck) {
 
         ArrayList<DocumentReference> userCommentedListRef = new ArrayList<>();
 
@@ -179,28 +178,19 @@ public class SettingsFragment extends Fragment {
                                         CollectionReference commentList = snapshot.getReference().collection("commentList");
                                         // Find exactly which comments need to be updated and update them
                                         commentList.whereEqualTo("username", username)
-                                                .whereNotEqualTo("displayName", newDisplayUsername)
+                                                .whereNotEqualTo(DATABASE_DISPLAY_NAME_FIELD, newDisplayUsername)
                                                 .get()
                                                 .addOnSuccessListener(commentedQRDocumentSnapshots -> {
                                                     ArrayList<DocumentSnapshot> commentedQR;
                                                     commentedQR = (ArrayList) commentedQRDocumentSnapshots.getDocuments();
                                                     for (DocumentSnapshot commented : commentedQR) {
-                                                        commented.getReference().update("displayName", newDisplayUsername);
+                                                        commented.getReference().update(DATABASE_DISPLAY_NAME_FIELD, newDisplayUsername);
                                                     }
-                                                    valid.valid(true);
+                                                    queryCompleteCheck.queryCompleteCheck(true);
                                                 });
                                     }
                                 });
                     }
                 });
-    }
-
-    /**
-     * Callback for querying the database
-     *
-     * @author Afra
-     */
-    public interface SettingsCallback {
-        void valid(boolean valid);
     }
 }

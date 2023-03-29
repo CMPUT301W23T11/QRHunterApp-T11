@@ -11,22 +11,16 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
 import com.example.qrhunterapp_t11.activities.MainActivity;
+import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.example.qrhunterapp_t11.objectclasses.User;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.robotium.solo.Solo;
 
 import org.junit.After;
@@ -100,12 +94,11 @@ public class ProfileTest {
         qrCode = mockQRCode(String.valueOf(randomNum));
         name = qrCode.getName();
         CollectionReference qrReference = usersReference.document(testUsername).collection("QR Codes");
-        addDoc(qrCode, qrReference);
+        qrReference.document(qrCode.getID()).set(qrCode);
 
         // check if new QrCode was added
-        checkDocExists(qrCode.getID(), qrReference, new ProfileTest.Callback() {
-            public void dataValid(boolean valid) {
-                docExists = valid;
+        checkDocExists(qrCode.getID(), qrReference, new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
                 assertTrue(docExists);
             }
         });
@@ -134,9 +127,8 @@ public class ProfileTest {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
 
         // Check that current user exists
-        checkDocExists(testUsername, usersReference, new ProfileTest.Callback() {
-            public void dataValid(boolean valid) {
-                docExists = valid;
+        checkDocExists(testUsername, usersReference, new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
                 assertTrue(docExists);
             }
         });
@@ -174,9 +166,8 @@ public class ProfileTest {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
 
         // Check that current user exists
-        checkDocExists(testUsername, usersReference, new ProfileTest.Callback() {
-            public void dataValid(boolean valid) {
-                docExists = valid;
+        checkDocExists(testUsername, usersReference, new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
                 assertTrue(docExists);
             }
         });
@@ -216,9 +207,8 @@ public class ProfileTest {
         CollectionReference qrReference = usersReference.document(testUsername).collection("QR Codes");
 
         // Check that current user exists
-        checkDocExists(testUsername, usersReference, new ProfileTest.Callback() {
-            public void dataValid(boolean valid) {
-                docExists = valid;
+        checkDocExists(testUsername, usersReference, new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
                 assertTrue(docExists);
             }
         });
@@ -238,7 +228,7 @@ public class ProfileTest {
 
         // create another QR object
         QRCode qrCode1 = mockQRCode("Test");
-        addDoc(qrCode1, qrReference);
+        qrReference.document(qrCode1.getID()).set(qrCode1);
 
         // Check if the total has been updated
         assertTrue(solo.waitForText(String.valueOf(qrCode1.getPoints() + qrCode.getPoints()), 1, 10000));
@@ -263,9 +253,8 @@ public class ProfileTest {
         CollectionReference qrReference = usersReference.document(testUsername).collection("QR Codes");
 
         // Check that current user exists
-        checkDocExists(testUsername, usersReference, new ProfileTest.Callback() {
-            public void dataValid(boolean valid) {
-                docExists = valid;
+        checkDocExists(testUsername, usersReference, new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
                 assertTrue(docExists);
             }
         });
@@ -281,9 +270,8 @@ public class ProfileTest {
         solo.clickOnText("Delete");
 
         // Check document has been deleted from the database
-        checkDocExists(qrCode.getID(), qrReference, new ProfileTest.Callback() {
-            public void dataValid(boolean valid) {
-                docExists = valid;
+        checkDocExists(qrCode.getID(), qrReference, new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
                 assertFalse(docExists);
             }
         });
@@ -300,9 +288,8 @@ public class ProfileTest {
         CollectionReference qrReference = usersReference.document(testUsername).collection("QR Codes");
 
         // Check that current user exists
-        checkDocExists(testUsername, usersReference, new ProfileTest.Callback() {
-            public void dataValid(boolean valid) {
-                docExists = valid;
+        checkDocExists(testUsername, usersReference, new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
                 assertTrue(docExists);
             }
         });
@@ -326,61 +313,23 @@ public class ProfileTest {
     /**
      * Helper function to check if a QR code document exists
      *
-     * @param docToCheck document that should be checked for
+     * @param docToCheck Document to check for
      * @param cr         CollectionReference to the collection being accessed
      * @reference <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
      * @reference Aidan Lynch's CameraFragmentTest for this code
      */
-    public void checkDocExists(String docToCheck, CollectionReference cr, final ProfileTest.Callback dataValid) {
+    public void checkDocExists(String docToCheck, CollectionReference cr, final QueryCallback docExists) {
         DocumentReference docRef = cr.document(docToCheck);
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        Log.d("DocExist", "DocumentSnapshot data: " + document.getData());
-                        dataValid.dataValid(true);
-                    } else {
-                        Log.d("DocExist", "No such document");
-                        dataValid.dataValid(false);
-                    }
-                } else {
-                    Log.d("DocExist", "get failed with ", task.getException());
-                }
+        docRef.get().addOnSuccessListener(result -> {
+
+            if (result.exists()) {
+                Log.d("DocExist", "DocumentSnapshot data: " + result.getData());
+                docExists.queryCompleteCheck(true);
+            } else {
+                Log.d("DocExist", "No such document");
+                docExists.queryCompleteCheck(false);
             }
+
         });
-    }
-
-    /**
-     * Helper function to add the test QR code document
-     *
-     * @param qrCode document that should be added
-     * @param cr     CollectionReference to the collection being accessed
-     * @reference <a href="https://firebase.google.com/docs/firestore/manage-data/delete-data">used without major modification</a>
-     * @reference Aidan Lynch's CameraFragmentTest
-     */
-    public void addDoc(QRCode qrCode, CollectionReference cr) {
-        cr.document(qrCode.getID()).set(qrCode)
-                .addOnSuccessListener(new OnSuccessListener<Object>() {
-                    @Override
-                    public void onSuccess(Object o) {
-                        Log.d("AddedDocument", "DocumentSnapshot successfully added!");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w("AddedDocument", "Error adding document", e);
-                    }
-                });
-    }
-
-    public interface Callback {
-        void dataValid(boolean valid);
-    }
-
-    public interface Callback2 {
-        void collect(QuerySnapshot querySnapshot);
     }
 }
