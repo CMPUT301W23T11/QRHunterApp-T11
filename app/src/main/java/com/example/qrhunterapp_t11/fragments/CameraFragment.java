@@ -1,6 +1,5 @@
 package com.example.qrhunterapp_t11.fragments;
 
-import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 import static nl.dionsegijn.konfetti.core.Position.Relative;
 
 import android.Manifest;
@@ -39,12 +38,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
@@ -85,21 +81,18 @@ public class CameraFragment extends Fragment {
     private SharedPreferences prefs;
     private String currentUserDisplayName;
     private String currentUserUsername;
+    static final double MAX_RADIUS = 30; // Max distance from a qrlocation in meters
     private final FirebaseFirestore db;
     private final CollectionReference qrCodesReference;
     private final CollectionReference usersReference;
     private static final String locationPrompt = "LocationPrompt";
-
-    boolean qrExists;
-    boolean qrRefExists;
-    String qrCodeID;
+    private String qrCodeID;
 
     public CameraFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
         this.qrCodesReference = db.collection("QRCodes");
         this.usersReference = db.collection("Users");
     }
-
 
     /**
      * Inflates the layout for the camera fragment.
@@ -123,6 +116,23 @@ public class CameraFragment extends Fragment {
     }
 
     /**
+     * Once the layout view is initialized, call the function to scan a code.
+     * Having a view for the camera fragment may be redundant at the moment (since it's never really used),
+     * but will keep this for now in case we need to display something in the layout later.
+     * <p>
+     * Also for some reason scanCode() must be called here or the app will crash.
+     *
+     * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     *                           from a previous saved state as given here.
+     */
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        scanCode(); // Start scanning a QR code
+    }
+
+    /**
      * This function calculates the distance between two locations on earth (input
      * via decimal latitude longitude coordinates) using the Haversine formula;
      * if the distance between the two points is less than the input threshold,
@@ -135,10 +145,8 @@ public class CameraFragment extends Fragment {
      * no new document will be inserted (user profile will reference pre-existing QRCode), otherwise
      * a new entry will be created
      *
-     * @param lat1        Double -latitude coordinate of first point
-     * @param lng1        Double -longitude  coordinate of first point
-     * @param lat2        Double -latitude coordinate of second point
-     * @param lng2        Double -longitude coordinate of second point
+     * @param qr          QRCode -
+     * @param dbQR        QRCode -
      * @param maxDistance Double - the maximum distance allowed between the two points IN METERS
      * @return true if distance shorter than uniqueness threshold, else false if 2 separate instances
      * @sources <pre>
@@ -152,27 +160,25 @@ public class CameraFragment extends Fragment {
      * </pre>
      */
 
-    public static boolean isSameLocation(QRCode qr, QRCode dbqr, double maxDistance) {
+    public static boolean isSameLocation(@Nullable QRCode qr, @Nullable QRCode dbQR, double maxDistance) {
         //TODO INPUT VALIDATION:
         // some coordinates shouldn't make sense, iirc long can't have larger magnitude than +-180?
         // and +-90 for lat?
 
-        final double RADIUS = 6371.0;     // earth's radius in kilometers
+        final double RADIUS = 6371.0;     // Earth's radius in kilometers
         // input validation
-        // hash's are same, no location data for either, treat as same QRCode object
-        if( (qr.getLatitude() == null) && (qr.getLongitude()==null) && (dbqr.getLatitude()==null) && (dbqr.getLongitude()==null) ) {
+        // hashes are same, no location data for either, treat as same QRCode object
+        if ((qr.getLatitude() == null) && (qr.getLongitude() == null) && (dbQR.getLatitude() == null) && (dbQR.getLongitude() == null)) {
             return true;
-        // at least one of the qr's is null but not both, treat as separate objects
-        } else if ( (qr.getLatitude() == null) || (qr.getLongitude()==null) || (dbqr.getLatitude()==null) || (dbqr.getLongitude()==null) ) {
+            // at least one of the qrs is null but not both, treat as separate objects
+        } else if ((qr.getLatitude() == null) || (qr.getLongitude() == null) || (dbQR.getLatitude() == null) || (dbQR.getLongitude() == null)) {
             return false;
         }
 
-        final double radius = 6371.0;     // earth's radius in kilometers
-
         double lat1 = qr.getLatitude();
         double lng1 = qr.getLongitude();
-        double lat2 = dbqr.getLatitude();
-        double lng2 = dbqr.getLongitude();
+        double lat2 = dbQR.getLatitude();
+        double lng2 = dbQR.getLongitude();
         System.out.printf("lat1 %.20f\n", lat1);
         System.out.printf("lng2 %.20f\n", lng1);
         System.out.printf("lat2 %.20f\n", lat2);
@@ -218,98 +224,6 @@ public class CameraFragment extends Fragment {
             System.out.printf("Different\n");
             return false;
         }
-    }
-
-    /**
-     * Once the layout view is initialized, call the function to scan a code.
-     * Having a view for the camera fragment may be redundant at the moment (since it's never really used),
-     * but will keep this for now in case we need to display something in the layout later.
-     * <p>
-     * Also for some reason scanCode() must be called here or the app will crash.
-     *
-     * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
-     * @param savedInstanceState If non-null, this fragment is being re-constructed
-     *                           from a previous saved state as given here.
-     */
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        scanCode(); // Start scanning a QR code
-    }
-
-    /**
-     * Called when fragment is being initialized. Creates a dialog that displays the score of the scanned QR code. The dialog disappears automatically
-     * after a few seconds.
-     *
-     * @param savedInstanceState If the fragment is being re-created from a previous saved state, this is the state.
-     * @sources <pre>
-     * <ul>
-     * <li><a href="https://www.youtube.com/watch?v=W4qqTcxqq48">how to create a custom dialog</a></li>
-     * <li><a href="https://xjaphx.wordpress.com/2011/07/13/auto-close-dialog-after-a-specific-time/">how to have dialog automatically close after a few seconds</a></li>
-     * <li><a href="https://stackoverflow.com/a/54166609/14445107">How to remove dim from dialog</a></li>
-     * </ul>
-     * </pre>
-     */
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
-        currentUserDisplayName = prefs.getString("currentUserDisplayName", null);
-        currentUserUsername = prefs.getString("currentUserUsername", null);
-
-        photoLauncher = registerForActivityResult( // should be okay to initialize before scanner
-                new ActivityResultContracts.StartActivityForResult(),
-                new ActivityResultCallback<ActivityResult>() {
-                    @Override
-                    public void onActivityResult(ActivityResult result) {
-                        Intent intent = result.getData();
-                        assert intent != null;
-                        Bundle extras = intent.getExtras();
-                        imageUrl = extras.getString("url");
-
-                        resizedImageUrl = getResizeImageUrl(imageUrl); //TODO get true url of image
-
-                        promptForLocation(); // prompt for location once the TakePhotoActivity has finished
-                    }
-                }
-        );
-
-        barLauncher = registerForActivityResult(new ScanContract(), result -> {
-            if (result.getContents() != null) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getContext()); // create a builder for the alert dialog
-                String resultString = result.getContents(); // access QR code contents
-
-                // object instantiated
-                qrCode = new QRCode(resultString);
-
-                // create custom dialog to display QR score
-                LayoutInflater inflater = this.getLayoutInflater();
-                View dialogView = inflater.inflate(R.layout.qr_scored_dialog, null);
-                TextView scoredTV = dialogView.findViewById(R.id.scoredTV);
-                builder.setView(dialogView);
-                builder.setCancelable(false);
-                String scored = qrCode.getPoints() + " Points";
-                scoredTV.setText(scored);
-
-                final AlertDialog alertDialog = builder.create();
-                alertDialog.show(); // create and display the dialog
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    Objects.requireNonNull(alertDialog.getWindow()).setDimAmount(0);
-                }
-
-                createKonfetti(); // party rock is in the house tonight
-
-                final Timer timer = new Timer();
-                timer.schedule(new TimerTask() {
-                    public void run() {
-                        alertDialog.dismiss();
-                        timer.cancel();
-                        promptForPhoto(); // prompt the user for a photo of the QR object or location once the score dialog disappears
-
-                    }
-                }, 5000); // set a timer to automatically close the dialog after 5 seconds
-            }
-        });
     }
 
     /**
@@ -539,15 +453,91 @@ public class CameraFragment extends Fragment {
     }
 
     /**
+     * Called when fragment is being initialized. Creates a dialog that displays the score of the scanned QR code. The dialog disappears automatically
+     * after a few seconds.
+     *
+     * @param savedInstanceState If the fragment is being re-created from a previous saved state, this is the state.
+     * @sources <pre>
+     * <ul>
+     * <li><a href="https://www.youtube.com/watch?v=W4qqTcxqq48">how to create a custom dialog</a></li>
+     * <li><a href="https://xjaphx.wordpress.com/2011/07/13/auto-close-dialog-after-a-specific-time/">how to have dialog automatically close after a few seconds</a></li>
+     * <li><a href="https://stackoverflow.com/a/54166609/14445107">How to remove dim from dialog</a></li>
+     * </ul>
+     * </pre>
+     */
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        currentUserDisplayName = prefs.getString("currentUserDisplayName", null);
+        currentUserUsername = prefs.getString("currentUserUsername", null);
+
+        photoLauncher = registerForActivityResult( // should be okay to initialize before scanner
+                new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        Intent intent = result.getData();
+                        assert intent != null;
+                        Bundle extras = intent.getExtras();
+                        imageUrl = extras.getString("url");
+
+                        resizedImageUrl = getResizeImageUrl(imageUrl); //TODO get true url of image
+
+                        promptForLocation(); // prompt for location once the TakePhotoActivity has finished
+                    }
+                }
+        );
+
+        barLauncher = registerForActivityResult(new ScanContract(), result -> {
+            if (result.getContents() != null) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext()); // create a builder for the alert dialog
+                String resultString = result.getContents(); // access QR code contents
+
+                // Object instantiated
+                qrCode = new QRCode(resultString);
+
+                // Create custom dialog to display QR score
+                LayoutInflater inflater = this.getLayoutInflater();
+                View dialogView = inflater.inflate(R.layout.qr_scored_dialog, null);
+                TextView scoredTV = dialogView.findViewById(R.id.scoredTV);
+                builder.setView(dialogView);
+                builder.setCancelable(false);
+                String scored = qrCode.getPoints() + " Points";
+                scoredTV.setText(scored);
+
+                final AlertDialog alertDialog = builder.create();
+                alertDialog.show(); // create and display the dialog
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    Objects.requireNonNull(alertDialog.getWindow()).setDimAmount(0);
+                }
+
+                createKonfetti(); // party rock is in the house tonight
+                // *its party rockers in the hous tonihgt
+
+                final Timer timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    public void run() {
+                        alertDialog.dismiss();
+                        timer.cancel();
+                        promptForPhoto(); // prompt the user for a photo of the QR object or location once the score dialog disappears
+
+                    }
+                }, 5000); // set a timer to automatically close the dialog after 5 seconds
+            }
+        });
+    }
+
+    /**
      * Helper function to check if a QR code document exists
      *
-     * @param docToCheck document that should be checked for
-     * @param cr         CollectionReference to the collection being accessed
+     * @param qrToCheck QR document that should be checked for
+     * @param username  User whose collection is being checked
      * @sources <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
      */
-    public void checkDocExists(@NonNull String docToCheck, @NonNull CollectionReference cr, final @NonNull QueryCallback docExists) {
-        DocumentReference docRef = cr.document(docToCheck);
-        docRef
+    public void checkUserHasQR(@NonNull String qrToCheck, @NonNull String username, final @NonNull QueryCallback docExists) {
+
+        usersReference.document(username).collection("User QR Codes").document(qrToCheck)
                 .get()
                 .addOnSuccessListener(doc -> {
 
@@ -562,61 +552,55 @@ public class CameraFragment extends Fragment {
     }
 
     /**
-     *
-     * @param qr - qr code to find matches of in db
-     * @param cr - collection reference where to search for matches
-     * @param queryCompleteCheck
-     * @reference https://firebase.google.com/docs/firestore/query-data/queries#java_6
+     * @param qr                 QR code to find matches of in db
+     * @param queryCompleteCheck Query callback
+     * @sources <a href="https://firebase.google.com/docs/firestore/query-data/queries#java_6">Firestore documentation</a>
      */
 
-    public void checkQRCodeExists(@NonNull QRCode qr, @NonNull CollectionReference cr, final @NonNull QueryCallback queryCompleteCheck) {
+    public void checkQRCodeExists(@NonNull QRCode qr, final @NonNull QueryCallback queryCompleteCheck) {
         String hashValue = qr.getHash();
-        double maxRadius = 30; //max distance from a qrlocation in meters
-        cr.whereEqualTo("hash", hashValue).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
+
+        qrCodesReference
+                .whereEqualTo("hash", hashValue)
+                .get()
+                .addOnSuccessListener(matchingQRCodes -> {
+
                     boolean isSame = false;
-                    for (QueryDocumentSnapshot document : task.getResult()) {
+                    for (QueryDocumentSnapshot document : matchingQRCodes) {
                         Log.d("QRExist", document.getId() + " => " + document.getData());
-                        QRCode dbqr = document.toObject(QRCode.class);      // rebuilds a QRCode object from db information
-                        isSame = isSameLocation(qr, dbqr, maxRadius);
-                        if(isSame == true) {                             // locations within threshold, treat as same qr, break from loop
-                            qrCodeID = dbqr.getID();
+                        QRCode dbQR = document.toObject(QRCode.class);      // rebuilds a QRCode object from db information
+                        isSame = isSameLocation(qr, dbQR, MAX_RADIUS);
+                        if (isSame) {                             // locations within threshold, treat as same qr, break from loop
+                            qrCodeID = dbQR.getID();
                             //queryCompleteCheck.queryCompleteCheck(true);
                             Log.d("QRExist", "locations close enough, count as equal object");
                             break;
                         }
                         Log.d("QRExists", "location distance too far, not a match");
                     }
-                    queryCompleteCheck.queryCompleteCheck(isSame);       // no matches in db withing distance threshold
-                    if(isSame == false) {
+                    queryCompleteCheck.queryCompleteCheck(isSame);       // no matches in db within distance threshold
+                    if (!isSame) {
                         Log.d("QRExists", "no matches within distance, create a new object");
                     }
-                }
-                else {
-                    Log.d("QRExist", "Error getting documents: ", task.getException());
-                    queryCompleteCheck.queryCompleteCheck(false);
-                }
-            }
-        });
+
+                });
     }
 
     /**
      * Helper function to add QRCode object to QRCodes and Users collections
      */
     private void addQRCode() {
-        String qrCodeID = qrCode.getID();
+        qrCodeID = qrCode.getID();
 
         Map<String, Object> qrCodeRef = new HashMap<>();
         qrCodeRef.put("Reference", qrCodesReference.document(qrCodeID));
 
         // Check if qrCode within location threshold already exists in db in QRCodes collection
-        checkDocExists(qrCodeID, qrCodesReference, new QueryCallback() {
+        checkQRCodeExists(qrCode, new QueryCallback() {
             public void queryCompleteCheck(boolean qrExists) {
 
                 // Check if reference to qrCode exists in db in Users collection
-                checkDocExists(qrCodeID, usersReference.document(currentUserUsername).collection("User QR Codes"), new QueryCallback() {
+                checkUserHasQR(qrCodeID, currentUserUsername, new QueryCallback() {
                     public void queryCompleteCheck(boolean qrRefExists) {
 
                         // If qrCode does not exist, add it to QRCode collection
