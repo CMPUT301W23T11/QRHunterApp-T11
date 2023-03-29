@@ -8,7 +8,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -38,12 +37,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.journeyapps.barcodescanner.ScanContract;
@@ -84,7 +79,6 @@ public class CameraFragment extends Fragment {
     private String imageUrl;
     private String resizedImageUrl;
     private SharedPreferences prefs;
-    private KonfettiView konfettiView;
     private final FirebaseFirestore db;
     private final CollectionReference qrCodesReference;
     private final CollectionReference usersReference;
@@ -122,28 +116,11 @@ public class CameraFragment extends Fragment {
     }
 
     /**
-     * Once the layout view is initialized, call the function to scan a code.
-     * Having a view for the camera fragment may be redundant at the moment (since it's never really used),
-     * but will keep this for now in case we need to display something in the layout later.
-     * <p>
-     * Also for some reason scanCode() must be called here or the app will crash.
-     *
-     * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
-     * @param savedInstanceState If non-null, this fragment is being re-constructed
-     *                           from a previous saved state as given here.
-     */
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        scanCode(); // start scanning a QR code
-    }
-
-    /**
      * This function calculates the distance between two locations on earth (input
      * via decimal latitude longitude coordinates) using the Haversine formula;
      * if the distance between the two points is less than the input threshold,
      * returns true, else false
-     *
+     * <p>
      * In the context of a freshly scanned QRCode, if the hash function of the new code
      * matches the hash of a QRCode already in the db, this function determines if they should
      * be considered unique objects or the same QRcode (sharing comments, photos etc...)
@@ -151,10 +128,10 @@ public class CameraFragment extends Fragment {
      * no new document will be inserted (user profile will reference pre-existing QRCode), otherwise
      * a new entry will be created
      *
-     * @param lat1 Double -latitude coordinate of first point
-     * @param lng1 Double -longitude  coordinate of first point
-     * @param lat2 Double -latitude coordinate of second point
-     * @param lng2 Double -longitude coordinate of second point
+     * @param lat1        Double -latitude coordinate of first point
+     * @param lng1        Double -longitude  coordinate of first point
+     * @param lat2        Double -latitude coordinate of second point
+     * @param lng2        Double -longitude coordinate of second point
      * @param maxDistance Double - the maximum distance allowed between the two points IN METERS
      * @return true if distance shorter than uniqueness threshold, else false if 2 separate instances
      * @sources <pre>
@@ -173,7 +150,7 @@ public class CameraFragment extends Fragment {
         // some coordinates shouldn't make sense, iirc long can't have larger magnitude than +-180?
         // and +-90 for lat?
 
-        final double radius = 6371.0;     // earth's radius in kilometers
+        final double RADIUS = 6371.0;     // earth's radius in kilometers
 
         //COORDINATES HARDCODED FOR TESTING
         //double maxDistance = 30;    // in meters
@@ -192,19 +169,19 @@ public class CameraFragment extends Fragment {
         double phi2 = (lat2 * Math.PI) / 180.0;
         double lambda2 = (lng2 * Math.PI) / 180.0;
 
-        //calculate haversine(theta), the central angle between both locations relative to earth's center
-        // haversine(theta) = sin^2((phi2-phi1)/2)+cos(phi1)cos(phi2)sin^2((lamda2-lamda1)/2)
+        // Calculate haversine(theta), the central angle between both locations relative to earth's center
+        // Haversine(theta) = sin^2((phi2-phi1)/2)+cos(phi1)cos(phi2)sin^2((lambda2-lambda1)/2)
         double haversine = (Math.pow(Math.sin((phi2 - phi1) / 2), 2) + Math.cos(phi1) * Math.cos(phi2) * (Math.pow(Math.sin((lambda2 - lambda1) / 2), 2)));
 
-        //calculate distance between both points using haversine
-        // distance = 2r*arcsin(sqr(haversine(theta)))
-        double distance = (2 * radius) * (Math.asin(Math.sqrt(haversine)));
+        // Calculate distance between both points using haversine
+        // Distance = 2r*arcsin(sqr(haversine(theta)))
+        double distance = (2 * RADIUS) * (Math.asin(Math.sqrt(haversine)));
 
         //System.out.printf("%f\n", haversine);
         System.out.printf("%f\n", distance);
 
         //convert distance to meters and compare with maxDistance
-        distance = distance * 1000;
+        distance *= 1000;
         System.out.printf("distance in meters: %f\n", distance);
 
         if (distance <= maxDistance) {
@@ -214,6 +191,23 @@ public class CameraFragment extends Fragment {
             System.out.printf("Different\n");
             return false;
         }
+    }
+
+    /**
+     * Once the layout view is initialized, call the function to scan a code.
+     * Having a view for the camera fragment may be redundant at the moment (since it's never really used),
+     * but will keep this for now in case we need to display something in the layout later.
+     * <p>
+     * Also for some reason scanCode() must be called here or the app will crash.
+     *
+     * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     *                           from a previous saved state as given here.
+     */
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        scanCode(); // Start scanning a QR code
     }
 
     /**
@@ -376,31 +370,28 @@ public class CameraFragment extends Fragment {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
         if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
-                @Override
-                public void onSuccess(Location location) {
-                    if (location != null) {
-                        // Location data is available
-                        double latitude = location.getLatitude();
-                        double longitude = location.getLongitude();
+            fusedLocationClient
+                    .getLastLocation()
+                    .addOnSuccessListener(location -> {
+                        if (location != null) {
+                            // Location data is available
+                            double latitude = location.getLatitude();
+                            double longitude = location.getLongitude();
 
-                        Log.d(locationPrompt, "Latitude: " + latitude + ", Longitude: " + longitude);
+                            Log.d(locationPrompt, "Latitude: " + latitude + ", Longitude: " + longitude);
 
-                        //set longitude and latitude and store
-                        qrCode.setLatitude(latitude);
-                        qrCode.setLongitude(longitude);
-                        qrCode.setID(latitude, longitude);
+                            // Set longitude and latitude and store
+                            qrCode.setLatitude(latitude);
+                            qrCode.setLongitude(longitude);
+                            qrCode.setID(latitude, longitude);
+                        } else {
+                            // Location data is not available
+                            Log.d(locationPrompt, "ERROR Location data is not available.");
+                            // Stores QRCode into db with just hash as document id and location = null
+                        }
                         addQRCode();
                         returnToProfile();
-                    } else {
-                        // Location data is not available
-                        Log.d(locationPrompt, "ERROR Location data is not available.");
-                        //stores QRCode into db with just hash as document id and location = null
-                        addQRCode();
-                        returnToProfile();
-                    }
-                }
-            });
+                    });
         }
     }
 
@@ -527,25 +518,21 @@ public class CameraFragment extends Fragment {
      * @param cr         CollectionReference to the collection being accessed
      * @sources <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
      */
-    public void checkDocExists(@NonNull String docToCheck, @NonNull CollectionReference cr, final @NonNull QueryCallback queryCompleteCheck) {
+    public void checkDocExists(@NonNull String docToCheck, @NonNull CollectionReference cr, final @NonNull QueryCallback docExists) {
         DocumentReference docRef = cr.document(docToCheck);
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        Log.d("DocExist", "DocumentSnapshot data: " + document.getData());
-                        queryCompleteCheck.queryCompleteCheck(true);
+        docRef
+                .get()
+                .addOnSuccessListener(doc -> {
+
+                    if (doc.exists()) {
+                        Log.d("DocExist", "DocumentSnapshot data: " + doc.getData());
+                        docExists.queryCompleteCheck(true);
                     } else {
                         Log.d("DocExist", "No such document");
-                        queryCompleteCheck.queryCompleteCheck(false);
+                        docExists.queryCompleteCheck(false);
                     }
-                } else {
-                    Log.d("DocExist", "get failed with ", task.getException());
-                }
-            }
-        });
+
+                });
     }
 
     /**
@@ -563,13 +550,11 @@ public class CameraFragment extends Fragment {
         checkDocExists(qrCodeID, qrCodesReference, new QueryCallback() {
             public void queryCompleteCheck(boolean queryComplete) {
                 qrExists = queryComplete;
-                System.out.println(queryComplete);
 
                 // Check if reference to qrCode exists in db in Users collection
                 checkDocExists(qrCodeID, usersReference.document(currentUser).collection("User QR Codes"), new QueryCallback() {
                     public void queryCompleteCheck(boolean queryComplete) {
                         qrRefExists = queryComplete;
-                        System.out.println(queryComplete);
 
                         // If qrCode does not exist, add it to QRCode collection
                         if (!qrExists) {
@@ -581,7 +566,6 @@ public class CameraFragment extends Fragment {
                         }
                         // If user does not already have this qrCode, add a reference to it, increment their total scans, add new photo to qrCode
                         if (!qrRefExists) {
-                            System.out.println("HEUHURLSHRPIUSHEPRIHSEPOIHRPOISHEPROIPSOEHRPOISHEPRIHP");
                             usersReference.document(currentUser).collection("User QR Codes").document(qrCodeID).set(qrCodeRef);
                             usersReference.document(currentUser).update("totalScans", FieldValue.increment(1));
                             usersReference.document(currentUser).update("totalPoints", FieldValue.increment(qrCode.getPoints()));
@@ -607,6 +591,7 @@ public class CameraFragment extends Fragment {
      * @sources <a href="https://github.com/DanielMartinus/Konfetti/blob/main/samples/xml-java/src/main/java/nl/dionsegijn/xml/java/MainActivity.java">Used without major modification</a>
      */
     public void createKonfetti() {
+        KonfettiView konfettiView;
         konfettiView = getActivity().findViewById(R.id.konfetti_view);
         EmitterConfig emitterConfig = new Emitter(6, TimeUnit.SECONDS).perSecond(125);
         konfettiView.start(
