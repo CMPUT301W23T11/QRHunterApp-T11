@@ -37,7 +37,7 @@ import java.util.Random;
  *
  * @author Aidan Lynch - writing the tests.
  * @author Afra - set up querying information from the database, setUp(), tearDown(), ActivityTestRule initialization.
- * @reference code mostly repurposed from lab 7.
+ * @sources code mostly repurposed from lab 7.
  */
 public class CameraFragmentTest {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();

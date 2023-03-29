@@ -143,7 +143,6 @@ public class SettingsFragment extends Fragment {
                             usernameEditText.setError("Username is not unique");
                             usernameExists.queryCompleteCheck(true);
                         }
-
                     });
         }
     }
@@ -163,26 +162,31 @@ public class SettingsFragment extends Fragment {
         // Retrieve DocumentReferences in the user's QR code collection and store them in an array
         usersReference.document(username).collection("User QR Codes")
                 .get()
-                .addOnSuccessListener(documentReferenceSnapshots -> {
-                    for (QueryDocumentSnapshot snapshot : documentReferenceSnapshots) {
+                .addOnSuccessListener(documentReferences -> {
+                    for (QueryDocumentSnapshot reference : documentReferences) {
 
-                        DocumentReference documentReference = (DocumentReference) snapshot.get("Reference");
+                        DocumentReference documentReference = (DocumentReference) reference.get("Reference");
                         userCommentedListRef.add(documentReference);
                     }
                     if (!userCommentedListRef.isEmpty()) {
+
                         // Retrieve matching QR Code data from the QRCodes collection using DocumentReferences
                         qrCodeReference.whereIn(FieldPath.documentId(), userCommentedListRef)
                                 .get()
-                                .addOnSuccessListener(referencedQRDocumentSnapshots -> {
-                                    for (QueryDocumentSnapshot snapshot : referencedQRDocumentSnapshots) {
-                                        CollectionReference commentList = snapshot.getReference().collection("commentList");
+                                .addOnSuccessListener(referencedQRDocuments -> {
+                                    for (QueryDocumentSnapshot referencedQR : referencedQRDocuments) {
+
+                                        // Get collection reference to specific commentList to check
+                                        CollectionReference commentList = referencedQR.getReference().collection("commentList");
+
                                         // Find exactly which comments need to be updated and update them
-                                        commentList.whereEqualTo("username", username)
-                                                .whereNotEqualTo(DATABASE_DISPLAY_NAME_FIELD, newDisplayUsername)
+                                        commentList
+                                                .whereEqualTo("username", username)
+                                                .whereNotEqualTo(DATABASE_DISPLAY_NAME_FIELD, newDisplayUsername) // Filter out documents that don't need updating
                                                 .get()
-                                                .addOnSuccessListener(commentedQRDocumentSnapshots -> {
+                                                .addOnSuccessListener(commentedQRDocuments -> {
                                                     ArrayList<DocumentSnapshot> commentedQR;
-                                                    commentedQR = (ArrayList) commentedQRDocumentSnapshots.getDocuments();
+                                                    commentedQR = (ArrayList) commentedQRDocuments.getDocuments();
                                                     for (DocumentSnapshot commented : commentedQR) {
                                                         commented.getReference().update(DATABASE_DISPLAY_NAME_FIELD, newDisplayUsername);
                                                     }
