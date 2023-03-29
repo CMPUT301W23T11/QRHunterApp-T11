@@ -281,7 +281,6 @@ public class CameraFragment extends Fragment {
                         timer.cancel();
                         promptForPhoto(); // prompt the user for a photo of the QR object or location once the score dialog disappears
 
-
                     }
                 }, 5000); // set a timer to automatically close the dialog after 5 seconds
             }
@@ -490,7 +489,6 @@ public class CameraFragment extends Fragment {
                         Log.d(locationPrompt, "User rejected geolocation prompt.");
                         //stores QRCode into db with just hash as document id and location = null
                         addQRCode();
-
                         returnToProfile();
                     }
                 })
@@ -507,7 +505,7 @@ public class CameraFragment extends Fragment {
     private void returnToProfile() {
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
-            public void run() { // wait 500ms before returning to profile; if app returns to quickly the addition will not be registered in Firestore yet (the RecyclerView will update too early)
+            public void run() { // Wait 500ms before returning to profile; if app returns to quickly the addition will not be registered in Firestore yet (the RecyclerView will update too early)
                 FragmentTransaction trans = getParentFragmentManager().beginTransaction();
                 trans.replace(R.id.main_screen, new ProfileFragment(db, currentUserDisplayName, currentUserUsername));
                 trans.commit();
@@ -535,7 +533,6 @@ public class CameraFragment extends Fragment {
                         Log.d("DocExist", "No such document");
                         docExists.queryCompleteCheck(false);
                     }
-
                 });
     }
 
@@ -543,7 +540,6 @@ public class CameraFragment extends Fragment {
      * Helper function to add QRCode object to QRCodes and Users collections
      */
     private void addQRCode() {
-        System.out.println(currentUserUsername);
         String qrCodeID = qrCode.getID();
 
         Map<String, Object> qrCodeRef = new HashMap<>();
