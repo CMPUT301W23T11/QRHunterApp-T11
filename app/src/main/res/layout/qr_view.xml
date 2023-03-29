@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@drawable/liquid_cheese_background">
+    android:background="@color/background">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -17,7 +17,7 @@
             android:layout_height="180dp"
             android:layout_margin="15dp"
             android:layout_marginTop="16dp"
-            android:background="@drawable/white_rounded_background"
+            android:background="@drawable/green_rounded_background"
             android:orientation="vertical"
             android:padding="15dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -94,9 +94,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
+                    android:fontFamily="sans-serif-medium"
                     android:padding="3dp"
                     android:text="Total Scans:"
-                    android:fontFamily="sans-serif-medium"
                     android:textColor="#000000"
                     android:textSize="20sp"
                     app:layout_constraintStart_toEndOf="@+id/imageColour"
@@ -107,9 +107,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
+                    android:fontFamily="sans-serif-medium"
                     android:padding="3dp"
                     android:text="@string/edittext_points"
-                    android:fontFamily="sans-serif-medium"
                     android:textColor="#000000"
                     android:textSize="20sp"
                     app:layout_constraintStart_toEndOf="@+id/imageColour"
@@ -120,9 +120,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
+                    android:fontFamily="sans-serif-medium"
                     android:padding="3dp"
                     android:text="Comments:"
-                    android:fontFamily="sans-serif-medium"
                     android:textColor="#000000"
                     android:textSize="20sp"
                     app:layout_constraintStart_toEndOf="@+id/imageColour"
@@ -132,9 +132,9 @@
                     android:id="@+id/commentsNumTv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
                     android:padding="3dp"
                     android:text="0"
-                    android:fontFamily="sans-serif-medium"
                     android:textColor="#000000"
                     android:textSize="20sp"
                     app:layout_constraintStart_toEndOf="@+id/commentsTV"
@@ -142,7 +142,21 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+
+
         </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toTopOf="@+id/photoBackground"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayoutCompat">
+
+
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
 
 
         <androidx.appcompat.widget.LinearLayoutCompat
@@ -152,17 +166,28 @@
             android:layout_gravity="center_vertical"
             android:layout_marginTop="15dp"
             android:layout_margin="15dp"
-            android:padding = "10dp"
-            android:background="@drawable/green_rounded_background"
+            android:padding = "5dp"
             android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.448"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/linearLayoutCompat">
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="PHOTOS"
+                android:padding="5dp"
+                android:textAlignment="center"
+                android:textColor="@color/headers"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/photoBackground"
+                app:layout_constraintTop_toBottomOf="@+id/linearLayoutCompat" />
+
             <androidx.viewpager.widget.ViewPager
                 android:id="@+id/pager"
-                android:layout_marginTop="20sp"
                 android:layout_width="280dp"
                 android:layout_height="280dp"
                 android:layout_gravity="center"
@@ -266,8 +291,9 @@
 
         <ImageView
             android:id="@+id/imageViewSend"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginRight="3dp"
             android:contentDescription="@string/imageview_send"
             app:layout_constraintBottom_toBottomOf="@+id/editTextComment"
             app:layout_constraintEnd_toEndOf="@+id/editTextComment"
