@@ -1,5 +1,6 @@
 package com.example.qrhunterapp_t11.fragments;
 
+import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 import static nl.dionsegijn.konfetti.core.Position.Relative;
 
 import android.Manifest;
@@ -46,6 +47,9 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
@@ -549,6 +553,34 @@ public class CameraFragment extends Fragment {
     }
 
     /**
+     *
+     * @param hashValue
+     * @param cr
+     * @param queryCompleteCheck
+     * @reference https://firebase.google.com/docs/firestore/query-data/queries#java_6
+     */
+
+    public void checkQRCodeExists(@NonNull String hashValue, @NonNull CollectionReference cr, final @NonNull QueryCallback queryCompleteCheck) {
+        System.out.printf("WE GOT TO THE QR EXISTS FUNCTION\n");
+        Query query = cr.whereEqualTo("hash", hashValue);
+        cr.whereEqualTo("hash", hashValue).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        Log.d("QRExist", document.getId() + " => " + document.getData());
+                        System.out.printf("WE GOTTA MATCH!!\n");
+                        queryCompleteCheck.queryCompleteCheck(true);
+                    }
+                } else {
+                    Log.d("QRExist", "Error getting documents: ", task.getException());
+                    queryCompleteCheck.queryCompleteCheck(false);
+                }
+            }
+        });
+    }
+
+    /**
      * Helper function to add QRCode object to QRCodes and Users collections
      */
     private void addQRCode() {
@@ -558,6 +590,15 @@ public class CameraFragment extends Fragment {
         Map<String, Object> qrCodeRef = new HashMap<>();
         DocumentReference qrCodeDocumentRef = qrCodesReference.document(qrCodeID);
         qrCodeRef.put("Reference", qrCodeDocumentRef);
+
+        checkQRCodeExists("8227ad036b504e39fe29393ce170908be2b1ea636554488fa86de5d9d6cd2c32", qrCodesReference, new QueryCallback() {
+            @Override
+            public void queryCompleteCheck(boolean queryComplete) {
+                boolean test = queryComplete;
+                System.out.println("Josh's test method" +queryComplete);
+            }
+        });
+
 
         // Check if qrCode exists in db in QRCodes collection
         checkDocExists(qrCodeID, qrCodesReference, new QueryCallback() {
