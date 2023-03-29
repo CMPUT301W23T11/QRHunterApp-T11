@@ -85,8 +85,8 @@ public class CameraFragment extends Fragment {
     private ActivityResultLauncher<ScanOptions> barLauncher;
     private ActivityResultLauncher<Intent> photoLauncher;
     private QRCode qrCode;
-    private String imageUrl;
-    private String resizedImageUrl;
+    private String imageUrl = null;
+    private String resizedImageUrl = null;
     private SharedPreferences prefs;
     private KonfettiView konfettiView;
     private final FirebaseFirestore db;
