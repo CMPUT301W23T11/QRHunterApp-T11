@@ -118,12 +118,6 @@ public class QRCodeView extends DialogFragment {
         ImageView eyebrowsImageView = view.findViewById(R.id.imageEyebrows);
 
         // Creates the appearance of the QRCode object based on the drawable names stored in its faceList array
-        String eyes = qrCode.getFaceList().get(0);
-        String eyebrows = qrCode.getFaceList().get(1);
-
-        //int eyesID =
-
-
         eyesImageView.setImageResource(getResources().getIdentifier(qrCode.getFaceList().get(0), "drawable", getContext().getPackageName()));
         faceImageView.setImageResource(getResources().getIdentifier(qrCode.getFaceList().get(1), "drawable", getContext().getPackageName()));
         colourImageView.setImageResource(getResources().getIdentifier(qrCode.getFaceList().get(2), "drawable", getContext().getPackageName()));
