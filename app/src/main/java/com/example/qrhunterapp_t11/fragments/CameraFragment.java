@@ -1,5 +1,6 @@
 package com.example.qrhunterapp_t11.fragments;
 
+import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 import static nl.dionsegijn.konfetti.core.Position.Relative;
 
 import android.Manifest;
@@ -46,6 +47,9 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
@@ -92,6 +96,7 @@ public class CameraFragment extends Fragment {
 
     boolean qrExists;
     boolean qrRefExists;
+    String qrCodeID;
 
     public CameraFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
@@ -168,12 +173,31 @@ public class CameraFragment extends Fragment {
      * </pre>
      */
 
-    public static boolean isSameLocation(double lat1, double lng1, double lat2, double lng2, double maxDistance) {
+    public static boolean isSameLocation(QRCode qr, QRCode dbqr, double maxDistance) {
         //TODO INPUT VALIDATION:
         // some coordinates shouldn't make sense, iirc long can't have larger magnitude than +-180?
         // and +-90 for lat?
 
+        // input validation
+        // hash's are same, no location data for either, treat as same QRCode object
+        if( (qr.getLatitude() == null) && (qr.getLongitude()==null) && (dbqr.getLatitude()==null) && (dbqr.getLongitude()==null) ) {
+            return true;
+        // at least one of the qr's is null but not both, treat as separate objects
+        } else if ( (qr.getLatitude() == null) || (qr.getLongitude()==null) || (dbqr.getLatitude()==null) || (dbqr.getLongitude()==null) ) {
+            return false;
+        }
+
         final double radius = 6371.0;     // earth's radius in kilometers
+
+        double lat1 = qr.getLatitude();
+        double lng1 = qr.getLongitude();
+        double lat2 = dbqr.getLatitude();
+        double lng2 = dbqr.getLongitude();
+        System.out.printf("lat1 %.20f\n", lat1);
+        System.out.printf("lng2 %.20f\n", lng1);
+        System.out.printf("lat2 %.20f\n", lat2);
+        System.out.printf("lng2 %.20f\n", lng2);
+
 
         //COORDINATES HARDCODED FOR TESTING
         //double maxDistance = 30;    // in meters
@@ -201,11 +225,11 @@ public class CameraFragment extends Fragment {
         double distance = (2 * radius) * (Math.asin(Math.sqrt(haversine)));
 
         //System.out.printf("%f\n", haversine);
-        System.out.printf("%f\n", distance);
+        System.out.printf("%.20f\n", distance);
 
         //convert distance to meters and compare with maxDistance
         distance = distance * 1000;
-        System.out.printf("distance in meters: %f\n", distance);
+        System.out.printf("distance in meters: %.20f\n", distance);
 
         if (distance <= maxDistance) {
             System.out.printf("Same\n");
@@ -549,21 +573,63 @@ public class CameraFragment extends Fragment {
     }
 
     /**
+     *
+     * @param qr - qr code to find matches of in db
+     * @param cr - collection reference where to search for matches
+     * @param queryCompleteCheck
+     * @reference https://firebase.google.com/docs/firestore/query-data/queries#java_6
+     */
+
+    public void checkQRCodeExists(@NonNull QRCode qr, @NonNull CollectionReference cr, final @NonNull QueryCallback queryCompleteCheck) {
+        String hashValue = qr.getHash();
+        double maxRadius = 30; //max distance from a qrlocation in meters
+        cr.whereEqualTo("hash", hashValue).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    boolean isSame = false;
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        Log.d("QRExist", document.getId() + " => " + document.getData());
+                        QRCode dbqr = document.toObject(QRCode.class);      // rebuilds a QRCode object from db information
+                        isSame = isSameLocation(qr, dbqr, maxRadius);
+                        if(isSame == true) {                             // locations within threshold, treat as same qr, break from loop
+                            qrCodeID = dbqr.getID();
+                            //queryCompleteCheck.queryCompleteCheck(true);
+                            Log.d("QRExist", "locations close enough, count as equal object");
+                            break;
+                        }
+                        Log.d("QRExists", "location distance too far, not a match");
+                    }
+                    queryCompleteCheck.queryCompleteCheck(isSame);       // no matches in db withing distance threshold
+                    if(isSame == false) {
+                        Log.d("QRExists", "no matches within distance, create a new object");
+                    }
+                }
+                else {
+                    Log.d("QRExist", "Error getting documents: ", task.getException());
+                    queryCompleteCheck.queryCompleteCheck(false);
+                }
+            }
+        });
+    }
+
+    /**
      * Helper function to add QRCode object to QRCodes and Users collections
      */
     private void addQRCode() {
         String currentUser = prefs.getString("currentUserUsername", null);
-        String qrCodeID = qrCode.getID();
+        qrCodeID = qrCode.getID();
 
         Map<String, Object> qrCodeRef = new HashMap<>();
         DocumentReference qrCodeDocumentRef = qrCodesReference.document(qrCodeID);
         qrCodeRef.put("Reference", qrCodeDocumentRef);
 
-        // Check if qrCode exists in db in QRCodes collection
-        checkDocExists(qrCodeID, qrCodesReference, new QueryCallback() {
+        // Check if qrCode within location threshold already exists in db in QRCodes collection
+        checkQRCodeExists(qrCode, qrCodesReference, new QueryCallback() {
+            @Override
             public void queryCompleteCheck(boolean queryComplete) {
                 qrExists = queryComplete;
-                System.out.println(queryComplete);
+                System.out.println("Josh's test method" +queryComplete);
 
                 // Check if reference to qrCode exists in db in Users collection
                 checkDocExists(qrCodeID, usersReference.document(currentUser).collection("User QR Codes"), new QueryCallback() {
