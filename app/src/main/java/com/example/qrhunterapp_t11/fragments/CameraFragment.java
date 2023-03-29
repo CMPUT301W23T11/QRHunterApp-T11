@@ -578,10 +578,10 @@ public class CameraFragment extends Fragment {
                         Log.d("QRExists", "location distance too far, not a match");
                     }
 
-                    if (!isSame) {
+                    if (!isSame) {       // no matches in db within distance threshold
                         Log.d("QRExists", "no matches within distance, create a new object");
                     }
-                    qrCodeExists.queryCompleteCheck(isSame);       // no matches in db within distance threshold
+                    qrCodeExists.queryCompleteCheck(isSame);
 
                 });
     }
