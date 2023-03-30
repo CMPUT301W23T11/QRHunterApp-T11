@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,12 +26,19 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Handles settings screen. Users can rename themselves and change their email.
  *
  * @author Afra
  * @sources Firestore documentation
+ * @sources <pre>
+ *  * <ul>
+ *  * <li><a href="https://www.javatpoint.com/java-email-validation">Validating email input using regex</a></li>
+ *  * </ul>
+ *  * </pre>
  */
 public class SettingsFragment extends Fragment {
 
@@ -63,7 +71,7 @@ public class SettingsFragment extends Fragment {
         Button confirmButton = view.findViewById(R.id.settings_confirm_button);
 
         usernameString = prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null);
-        emailString = prefs.getString(PREFS_CURRENT_USER_EMAIL, "No email");
+        emailString = prefs.getString(PREFS_CURRENT_USER_EMAIL, null);
         usernameEditText.setText(usernameString);
         emailEditText.setText(emailString);
 
@@ -71,15 +79,15 @@ public class SettingsFragment extends Fragment {
             @Override
             public void onClick(View view) {
 
-                usernameString = usernameEditText.getText().toString();
-                emailString = emailEditText.getText().toString();
+                usernameString = usernameEditText.getText().toString().toLowerCase();
+                emailString = emailEditText.getText().toString().toLowerCase();
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 // Make sure new username is eligible for change
                 usernameCheck(usernameString, usernameEditText, new QueryCallback() {
                     public void queryCompleteCheck(boolean usernameExists) {
 
-                        if (!usernameExists) {
+                        if (!usernameExists && validEmail(emailString)) {
                             builder
                                     .setTitle("Confirm username and email change")
                                     .setNegativeButton("Cancel", null)
@@ -111,6 +119,33 @@ public class SettingsFragment extends Fragment {
         });
 
         return view;
+    }
+
+    /**
+     *  Checks to see if inputted email is in a valid format
+     * @param emailString Entered email
+     */
+    public boolean validEmail(@NonNull String emailString) {
+        System.out.println(emailString);
+        if (emailString.equals("No email")) {
+            return true;
+        }
+        else {
+            // string to see the correct format of an email, allowed characters, and restricted character format
+            String regex = "^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*@(?:[a-zA-Z\\d-]+\\.)+[a-zA-Z]{2,6}$";
+            Pattern pattern = Pattern.compile(regex);
+
+            // sees if provided email matches the regex email format string
+            Matcher matcher = pattern.matcher(emailString);
+            if (matcher.matches()){
+                return true;
+            }
+            else {
+                emailEditText.setError("Invalid Email");
+                return false;
+            }
+        }
+
     }
 
     /**

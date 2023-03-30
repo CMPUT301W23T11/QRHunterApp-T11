@@ -97,7 +97,6 @@ public class SearchFragment extends Fragment {
         final ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1);
 
         // Populates the autocomplete list with users display names
-        // Todo: edit set displayName to lowercase when adding to database to get case insensitivity
         usersReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -131,7 +130,7 @@ public class SearchFragment extends Fragment {
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if ((keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (i == EditorInfo.IME_ACTION_DONE)) {
                     autoCompleteTextView.dismissDropDown();
-                    String searchText = autoCompleteTextView.getText().toString();
+                    String searchText = autoCompleteTextView.getText().toString().toLowerCase();
 
                     Query getUser = usersReference.whereEqualTo("displayName", searchText);
                     getUser.get()
@@ -154,7 +153,7 @@ public class SearchFragment extends Fragment {
                                             trans.commit();
                                         }
 
-                                    } else { // if the user is not found
+                                    } else {  // if the user is not found
                                         Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
                                         Log.d(TAG, "Document NOT found");
                                     }
