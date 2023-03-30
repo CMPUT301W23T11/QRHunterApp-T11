@@ -246,7 +246,9 @@ public class QRCodeView extends DialogFragment {
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        adapter.notifyDataSetChanged();
+                        if (adapter != null) {
+                            adapter.notifyDataSetChanged();
+                        }
                         dialogInterface.dismiss();
                     }
                 })

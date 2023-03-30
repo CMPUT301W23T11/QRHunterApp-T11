@@ -41,7 +41,7 @@ import java.util.Collections;
 
 /**
  * Handles player profile screen.
- * Outputs the users' QR collection and the users' stats
+ * Displays the user's QR collection and stats
  *
  * @author Afra, Kristina
  * @sources <pre>
@@ -65,7 +65,6 @@ public class ProfileFragment extends Fragment {
 
     /**
      * Constructor for profile fragment.
-     * Also instantiates a reference to the Users collection for ease of access.
      *
      * @param db Firestore database instance
      */
@@ -102,11 +101,6 @@ public class ProfileFragment extends Fragment {
 
         Button backButton = view.findViewById(R.id.profile_back_button);
 
-        TextView totalScoreText = view.findViewById(R.id.totalScoreText);
-        TextView topQRCodeText = view.findViewById(R.id.topQRText);
-        TextView lowQRCodeText = view.findViewById(R.id.lowQRText);
-        TextView totalQRCodesText = view.findViewById(R.id.totalQRText);
-
         // Makes a back button visible if not the current user
         if (!currentUserCheck(username, prefs)) {
             backButton.setVisibility(View.VISIBLE);
@@ -140,24 +134,7 @@ public class ProfileFragment extends Fragment {
                             qrCodeRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
                             qrCodeRecyclerView.setHasFixedSize(false);
 
-                            // Gets the total score of the user
-                            int total = 0;
-                            for (String qr : userData) {
-                                total += Integer.parseInt(qr);
-                            }
-                            // Updates the user's total score in the database
-                            totalScoreText.setText(MessageFormat.format("Total score: {0}", total));
-
-                            // Gets the largest QR from the user
-                            topQRCodeText.setText(MessageFormat.format("Your top QR Code: {0}", userData.get(userData.size() - 1)));
-                            usersReference.document(username).update("topQRCode", Integer.parseInt(userData.get(userData.size() - 1)));
-
-                            // Gets the smallest QR from the user
-                            lowQRCodeText.setText(MessageFormat.format("Your lowest QR Code: {0}", userData.get(0)));
-
-                            // Gets the number of QR codes the user has
-                            totalQRCodesText.setText(MessageFormat.format("Number of QR Codes: {0}", userData.size()));
-
+                            updateScores(userData);
 
                             // Handles clicking on an item to view the QR Code
                             adapter.setOnItemClickListener(new OnItemClickListener() {
@@ -299,6 +276,37 @@ public class ProfileFragment extends Fragment {
                                 deleted.queryCompleteCheck(true);
                             });
                 });
+    }
+
+    /**
+     * Updates the current user's scores
+     *
+     * @param userData Array containing user's scores
+     */
+    public void updateScores(@NonNull ArrayList<String> userData) {
+
+        TextView totalScoreText = getView().findViewById(R.id.totalScoreText);
+        TextView topQRCodeText = getView().findViewById(R.id.topQRText);
+        TextView lowQRCodeText = getView().findViewById(R.id.lowQRText);
+        TextView totalQRCodesText = getView().findViewById(R.id.totalQRText);
+
+        // Gets the total score of the user
+        int total = 0;
+        for (String qr : userData) {
+            total += Integer.parseInt(qr);
+        }
+        // Updates the user's total score in the database
+        totalScoreText.setText(MessageFormat.format("Total score: {0}", total));
+
+        // Gets the largest QR from the user
+        topQRCodeText.setText(MessageFormat.format("Top QR Code: {0}", userData.get(userData.size() - 1)));
+        usersReference.document(username).update("topQRCode", Integer.parseInt(userData.get(userData.size() - 1)));
+
+        // Gets the smallest QR from the user
+        lowQRCodeText.setText(MessageFormat.format("Lowest QR Code: {0}", userData.get(0)));
+
+        // Gets the number of QR codes the user has
+        totalQRCodesText.setText(MessageFormat.format("Number of QR Codes: {0}", userData.size()));
     }
 
     /**

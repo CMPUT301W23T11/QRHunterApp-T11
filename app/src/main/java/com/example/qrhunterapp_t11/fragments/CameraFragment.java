@@ -147,7 +147,7 @@ public class CameraFragment extends Fragment {
      *
      * @param qr          QRCode -
      * @param dbQR        QRCode -
-     * @param maxDistance Double - the maximum distance allowed between the two points IN METERS
+     * @param givenRadius Double - the maximum distance allowed between the two points IN METERS
      * @return true if distance shorter than uniqueness threshold, else false if 2 separate instances
      * @sources <pre>
      * <ul>
@@ -160,12 +160,11 @@ public class CameraFragment extends Fragment {
      * </pre>
      */
 
-    public static boolean isSameLocation(@Nullable QRCode qr, @Nullable QRCode dbQR, double maxDistance) {
+    public static boolean isSameLocation(@Nullable QRCode qr, @Nullable QRCode dbQR, double givenRadius) {
         //TODO INPUT VALIDATION:
         // some coordinates shouldn't make sense, iirc long can't have larger magnitude than +-180?
         // and +-90 for lat?
 
-        final double RADIUS = 6371.0;     // Earth's radius in kilometers
         // input validation
         // hashes are same, no location data for either, treat as same QRCode object
         if ((qr.getLatitude() == null) && (qr.getLongitude() == null) && (dbQR.getLatitude() == null) && (dbQR.getLongitude() == null)) {
@@ -207,8 +206,9 @@ public class CameraFragment extends Fragment {
         double haversine = (Math.pow(Math.sin((phi2 - phi1) / 2), 2) + Math.cos(phi1) * Math.cos(phi2) * (Math.pow(Math.sin((lambda2 - lambda1) / 2), 2)));
 
         // Calculate distance between both points using haversine
+        // 6371.0 is the Earth's radius in kilometers
         // Distance = 2r*arcsin(sqr(haversine(theta)))
-        double distance = (2 * RADIUS) * (Math.asin(Math.sqrt(haversine)));
+        double distance = (2 * 6371.0) * (Math.asin(Math.sqrt(haversine)));
 
         //System.out.printf("%f\n", haversine);
         System.out.printf("%.20f\n", distance);
@@ -217,7 +217,7 @@ public class CameraFragment extends Fragment {
         distance *= 1000;
         System.out.printf("distance in meters: %.20f\n", distance);
 
-        if (distance <= maxDistance) {
+        if (distance <= givenRadius) {
             System.out.printf("Same\n");
             return true;
         } else {
@@ -380,7 +380,7 @@ public class CameraFragment extends Fragment {
                 } else {
                     // Permission is not granted
                     Log.d(locationPrompt, "Execute if permission not granted.");
-                    //stores QRCode into db with just hash as document id and location = null
+                    // Stores QRCode in db with hash as document id and location = null
                     addQRCode();
                     returnToProfile();
                 }
@@ -426,7 +426,7 @@ public class CameraFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Log.d(locationPrompt, "User rejected geolocation prompt.");
-                        //stores QRCode into db with just hash as document id and location = null
+                        // Stores QRCode in db with hash as document id and location = null
                         addQRCode();
                         returnToProfile();
                     }
@@ -634,12 +634,12 @@ public class CameraFragment extends Fragment {
                             builder.setPositiveButton("I'm Sorry", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                } // empty
+                                    // empty
+                                }
                             });
 
                             AlertDialog alert = builder.create();
                             alert.show();
-
 
                         }
                     }
