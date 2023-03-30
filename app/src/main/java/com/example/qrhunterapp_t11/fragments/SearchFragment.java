@@ -85,16 +85,6 @@ public class SearchFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
         prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
-        Spinner leaderboardRadiusSpinner = view.findViewById(R.id.leaderboard_radius_spinner);
-
-        // Set leaderboard filter spinner
-        String[] leaderboardFilterChoices = new String[]{"Most Points", "Most Scans", "Top QR Code", "Top QR Code (Regional)"};
-        Spinner leaderboardFilterSpinner = view.findViewById(R.id.leaderboard_filter_spinner);
-        ArrayAdapter<String> filterAdapter = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_spinner_item, leaderboardFilterChoices);
-        filterAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        leaderboardFilterSpinner.setAdapter(filterAdapter);
-        leaderboardFilterSpinner.setPrompt("Filter Leaderboard");
-
         Button deleteSearch = view.findViewById(R.id.close_id);
         autoCompleteTextView = view.findViewById(R.id.search_id);
         final ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1);
@@ -115,7 +105,6 @@ public class SearchFragment extends Fragment {
                             if (user != null) {
                                 autoCompleteAdapter.add(user.getDisplayName());
                             }
-                            //}
                         }
                     }
                 }
@@ -123,7 +112,7 @@ public class SearchFragment extends Fragment {
         });
 
 
-        // sets up the autocomplete with the provided array Adapter
+        // Sets up the autocomplete with the provided array Adapter
         autoCompleteTextView.setThreshold(1);
         autoCompleteTextView.setAdapter(autoCompleteAdapter);
 
@@ -131,6 +120,7 @@ public class SearchFragment extends Fragment {
         autoCompleteTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+
                 if ((keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (i == EditorInfo.IME_ACTION_DONE)) {
                     autoCompleteTextView.dismissDropDown();
                     String searchText = autoCompleteTextView.getText().toString().toLowerCase();
@@ -177,13 +167,23 @@ public class SearchFragment extends Fragment {
             }
         });
 
-        // Set Firestore RecyclerView query and begin monitoring that query
+        // Setup spinners
+        Spinner leaderboardRadiusSpinner = view.findViewById(R.id.leaderboard_radius_spinner);
+
+        String[] leaderboardFilterChoices = new String[]{"Most Points", "Most Scans", "Top QR Code", "Top QR Code (Regional)"};
+        Spinner leaderboardFilterSpinner = view.findViewById(R.id.leaderboard_filter_spinner);
+        ArrayAdapter<String> filterAdapter = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_spinner_item, leaderboardFilterChoices);
+        filterAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        leaderboardFilterSpinner.setAdapter(filterAdapter);
+        leaderboardFilterSpinner.setPrompt("Filter Leaderboard");
+
         leaderboardFilterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
                 // A spinner option will always be selected
             }
 
+            // Set Firestore RecyclerView query depending on selected filter and begin monitoring that query
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 String leaderboardFilterChoice = leaderboardFilterSpinner.getSelectedItem().toString();
