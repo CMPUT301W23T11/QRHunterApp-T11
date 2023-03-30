@@ -25,16 +25,15 @@ import androidx.viewpager.widget.ViewPager;
 import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.adapters.CommentAdapter;
 import com.example.qrhunterapp_t11.adapters.PhotoAdapter;
+import com.example.qrhunterapp_t11.adapters.QRCodeAdapter;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.Comment;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
-import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * This is the dialog fragment that appears when a user clicks to see more info about a certain QRCode. It shows the user the QR Code's image, name,
@@ -62,8 +61,11 @@ public class QRCodeView extends DialogFragment {
     private EditText commentEditText;
     private SharedPreferences prefs;
     private String qrCodeID;
+    private int commentListCount;
     private TextView commentNumTextView;
     private ViewPager viewPager;
+    private QRCodeAdapter adapter;
+    String currentUser;
 
     /**
      * Empty constructor
@@ -77,10 +79,11 @@ public class QRCodeView extends DialogFragment {
      *
      * @param qrCode - QRCode object that was clicked
      */
-    public QRCodeView(@NonNull QRCode qrCode) {
+    public QRCodeView(@NonNull QRCode qrCode, @Nullable QRCodeAdapter adapter) {
         super();
         this.qrCode = qrCode;
         this.qrCodeID = qrCode.getID();
+        this.adapter = adapter;
     }
 
     /**
@@ -96,10 +99,11 @@ public class QRCodeView extends DialogFragment {
         PhotoAdapter photoAdapter;
 
         prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        currentUser = prefs.getString("currentUserUsername", null);
         View view = LayoutInflater.from(getContext()).inflate(R.layout.qr_view, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
-        commentNumTextView = view.findViewById(R.id.commentsNumTv);
+        commentNumTextView = view.findViewById(R.id.commentsTV);
         commentEditText = view.findViewById(R.id.editTextComment);
 
         ListView commentListView = view.findViewById(R.id.commentListView);
@@ -153,22 +157,15 @@ public class QRCodeView extends DialogFragment {
                             commentListView.setAdapter(commentAdapter);
 
                             // Count number of comments QR Code has
-                            qrCodesReference.document(qrCode.getID()).collection("commentList")
-                                    .count()
-                                    .get(AggregateSource.SERVER)
-                                    .addOnSuccessListener(snapshot -> {
-                                        String commentListCount = String.valueOf(snapshot.getCount());
-                                        commentNumTextView.setText(commentListCount);
-
-                                    });
+                            commentListCount = commentList.size();
+                            String commentNum = "Comments: " + commentListCount;
+                            commentNumTextView.setText(commentNum);
                         }
                     });
                 } else {
                     commentList = new ArrayList<>();
                     commentAdapter = new CommentAdapter(getContext(), commentList);
                     commentListView.setAdapter(commentAdapter);
-                    commentNumTextView.setText("0");
-
                 }
             }
         });
@@ -176,43 +173,39 @@ public class QRCodeView extends DialogFragment {
         // When the send image arrow ImageView is clicked, if a comment has been made it will be added
         // to the QRCode object's saved array of comments and appear in the comment box with the associated user
         // User can only comment on QR Codes if they already have that code in their collection
-        checkUserHasQRCode(prefs.getString("currentUserUsername", null), qrCodeID, new QueryCallback() {
+        checkUserHasQRCode(currentUser, qrCodeID, new QueryCallback() {
             @Override
             public void queryCompleteCheck(boolean userHasQRCode) {
-                if (userHasQRCode) {
-                    commentImageView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
+
+                commentImageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (userHasQRCode) {
                             String commentString = commentEditText.getText().toString();
 
                             if (!commentString.isEmpty()) {
 
                                 String currentUserDisplayName = prefs.getString("currentUserDisplayName", null);
-                                String currentUser = prefs.getString("currentUserUsername", null);
-                                Comment c = new Comment(commentString, currentUserDisplayName, currentUser);
-                                int commentNum;
+                                Comment comment = new Comment(commentString, currentUserDisplayName, currentUser);
 
-                                commentAdapter.addToCommentList(c);
+                                commentAdapter.addToCommentList(comment);
                                 commentAdapter.notifyDataSetChanged();
                                 commentEditText.getText().clear();
 
-                                HashMap<String, String> comment = new HashMap<>();
-                                comment.put("username", currentUser);
-                                comment.put("displayName", currentUserDisplayName);
-                                comment.put("commentString", commentString);
-
                                 qrCodesReference.document(qrCodeID).collection("commentList").add(comment);
-                                commentNum = Integer.parseInt(commentNumTextView.getText().toString());
-                                commentNum++;
-                                commentNumTextView.setText(String.valueOf(commentNum));
 
+                                // Increment comment count
+                                commentListCount++;
+                                String commentNum = "Comments: " + commentListCount;
+                                commentNumTextView.setText(commentNum);
                             }
+                        } else {
+                            Toast toast = Toast.makeText(getContext(), "You cannot comment on QR Codes you have not scanned.", Toast.LENGTH_LONG);
+                            toast.show();
                         }
-                    });
-                }else{
-                    Toast toast=Toast.makeText(getContext(),"You cannot comment on QR Codes you have not scanned.",Toast.LENGTH_LONG);
+                    }
+                });
 
-                }
             }
         });
 
@@ -253,6 +246,9 @@ public class QRCodeView extends DialogFragment {
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        if (adapter != null) {
+                            adapter.notifyDataSetChanged();
+                        }
                         dialogInterface.dismiss();
                     }
                 })

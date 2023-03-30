@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
@@ -126,18 +125,6 @@
                     android:textColor="#000000"
                     android:textSize="20sp"
                     app:layout_constraintStart_toEndOf="@+id/imageColour"
-                    app:layout_constraintTop_toBottomOf="@+id/scansTV" />
-
-                <TextView
-                    android:id="@+id/commentsNumTv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-medium"
-                    android:padding="3dp"
-                    android:text="0"
-                    android:textColor="#000000"
-                    android:textSize="20sp"
-                    app:layout_constraintStart_toEndOf="@+id/commentsTV"
                     app:layout_constraintTop_toBottomOf="@+id/scansTV" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
