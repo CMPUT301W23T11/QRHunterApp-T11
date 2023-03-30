@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -208,6 +209,9 @@ public class QRCodeView extends DialogFragment {
                             }
                         }
                     });
+                }else{
+                    Toast toast=Toast.makeText(getContext(),"You cannot comment on QR Codes you have not scanned.",Toast.LENGTH_LONG);
+
                 }
             }
         });
