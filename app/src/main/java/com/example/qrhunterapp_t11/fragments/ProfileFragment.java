@@ -268,9 +268,9 @@ public class ProfileFragment extends Fragment {
                                             .setQuery(query, QRCode.class)
                                             .build();
                                     userPoints.add(qrCodePoints);
+                                    Collections.sort(userPoints);
+                                    getUserData.getUserData(userPoints);
                                 }
-                                Collections.sort(userPoints);
-                                getUserData.getUserData(userPoints);
                             });
                 });
     }
