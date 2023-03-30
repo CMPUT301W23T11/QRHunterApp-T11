@@ -363,7 +363,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                     public boolean onMarkerClick(@NonNull Marker marker) {
                         QRCode qrCode = (QRCode) marker.getTag();
                         if (qrCode != null) {
-                            new QRCodeView(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
+                            new QRCodeView(qrCode, null).show(getActivity().getSupportFragmentManager(), "Show QR");
                         }
                         return true;
                     }

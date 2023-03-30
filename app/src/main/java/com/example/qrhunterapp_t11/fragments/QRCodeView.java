@@ -25,6 +25,7 @@ import androidx.viewpager.widget.ViewPager;
 import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.adapters.CommentAdapter;
 import com.example.qrhunterapp_t11.adapters.PhotoAdapter;
+import com.example.qrhunterapp_t11.adapters.QRCodeAdapter;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.Comment;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
@@ -63,6 +64,7 @@ public class QRCodeView extends DialogFragment {
     private int commentListCount;
     private TextView commentNumTextView;
     private ViewPager viewPager;
+    private QRCodeAdapter adapter;
 
     /**
      * Empty constructor
@@ -76,10 +78,11 @@ public class QRCodeView extends DialogFragment {
      *
      * @param qrCode - QRCode object that was clicked
      */
-    public QRCodeView(@NonNull QRCode qrCode) {
+    public QRCodeView(@NonNull QRCode qrCode, @Nullable QRCodeAdapter adapter) {
         super();
         this.qrCode = qrCode;
         this.qrCodeID = qrCode.getID();
+        this.adapter = adapter;
     }
 
     /**
@@ -242,6 +245,7 @@ public class QRCodeView extends DialogFragment {
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        adapter.notifyDataSetChanged();
                         dialogInterface.dismiss();
                     }
                 })

@@ -174,7 +174,8 @@ public class ProfileFragment extends Fragment {
 
                                     QRCode qrCode = documentSnapshot.toObject(QRCode.class);
                                     assert qrCode != null;
-                                    new QRCodeView(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
+                                    QRCodeView viewQR = new QRCodeView(qrCode, adapter);
+                                    viewQR.show(getActivity().getSupportFragmentManager(), "Show QR");
                                 }
                             });
 
