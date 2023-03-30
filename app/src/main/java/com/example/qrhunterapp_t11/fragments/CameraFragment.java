@@ -552,12 +552,11 @@ public class CameraFragment extends Fragment {
     }
 
     /**
-     * @param qr                 QR code to find matches of in db
-     * @param queryCompleteCheck Query callback
+     * @param qr           QR code to find matches of in db
+     * @param qrCodeExists Query callback
      * @sources <a href="https://firebase.google.com/docs/firestore/query-data/queries#java_6">Firestore documentation</a>
      */
-
-    public void checkQRCodeExists(@NonNull QRCode qr, final @NonNull QueryCallback queryCompleteCheck) {
+    public void checkQRCodeExists(@NonNull QRCode qr, final @NonNull QueryCallback qrCodeExists) {
         String hashValue = qr.getHash();
 
         qrCodesReference
@@ -578,10 +577,11 @@ public class CameraFragment extends Fragment {
                         }
                         Log.d("QRExists", "location distance too far, not a match");
                     }
-                    queryCompleteCheck.queryCompleteCheck(isSame);       // no matches in db within distance threshold
+
                     if (!isSame) {
                         Log.d("QRExists", "no matches within distance, create a new object");
                     }
+                    qrCodeExists.queryCompleteCheck(isSame);       // no matches in db within distance threshold
 
                 });
     }
@@ -593,11 +593,11 @@ public class CameraFragment extends Fragment {
         qrCodeID = qrCode.getID();
 
         Map<String, Object> qrCodeRef = new HashMap<>();
-        qrCodeRef.put("Reference", qrCodesReference.document(qrCodeID));
 
         // Check if qrCode within location threshold already exists in db in QRCodes collection
         checkQRCodeExists(qrCode, new QueryCallback() {
             public void queryCompleteCheck(boolean qrExists) {
+                qrCodeRef.put("Reference", qrCodesReference.document(qrCodeID));
 
                 // Check if reference to qrCode exists in db in Users collection
                 checkUserHasQR(qrCodeID, currentUserUsername, new QueryCallback() {
@@ -620,7 +620,6 @@ public class CameraFragment extends Fragment {
                                 qrCodesReference.document(qrCodeID).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
                                 //QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayRemove(resizedImageUrl));
                             }
-
                         }
                         // If user does not have this qrCode but it already exists in qrCode collection, increase its total scans
                         if ((qrExists) && (!qrRefExists)) {
