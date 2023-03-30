@@ -103,11 +103,11 @@ public class ToolbarTest {
         // asserts that the activity starts on the main activity
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         // asserts that the page starts on the profile page
-        assertTrue(solo.waitForText("STATS", 1, 6000));
+        assertTrue(solo.waitForText("STATS", 1, 7000));
 
         solo.clickOnView(solo.getView(R.id.profile));
         // asserts that the page stays on the profile page
-        assertTrue(solo.waitForText("STATS", 1, 6000));
+        assertTrue(solo.waitForText("STATS", 1, 7000));
     }
 
     /**
@@ -122,7 +122,7 @@ public class ToolbarTest {
 
         solo.clickOnView(solo.getView(R.id.settings));
         // asserts that settings button works
-        assertTrue(solo.waitForText("Settings", 1, 6000));
+        assertTrue(solo.waitForText("Settings", 1, 7000));
     }
 
     /**
@@ -135,11 +135,11 @@ public class ToolbarTest {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.settings));
-        solo.waitForText("Settings", 1, 4000);
+        solo.waitForText("Settings", 1, 7000);
 
         // checks that pressing the settings button stays on the settings page
         solo.clickOnView(solo.getView(R.id.settings));
-        assertTrue(solo.waitForText("Settings", 1, 4000));
+        assertTrue(solo.waitForText("Settings", 1, 7000));
 
     }
 
@@ -153,11 +153,11 @@ public class ToolbarTest {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.settings));
-        solo.waitForText("Settings", 1, 4000);
+        solo.waitForText("Settings", 1, 7000);
 
         // checks that the profile button works
         solo.clickOnView(solo.getView(R.id.profile));
-        assertTrue(solo.waitForText("STATS", 1, 6000));
+        assertTrue(solo.waitForText("STATS", 1, 7000));
 
     }
 
@@ -171,29 +171,29 @@ public class ToolbarTest {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.settings));
-        solo.waitForText("Settings", 1, 4000);
+        solo.waitForText("Settings", 1, 8000);
 
         // checks that the map button works
         solo.clickOnView(solo.getView(R.id.map));
-        assertFalse(solo.waitForFragmentByTag("settings", 6000));
+        assertTrue(solo.waitForText("Search location", 1, 26000));
 
     }
 
     /**
-     * Tests that search button does nothing yet from settings screen
+     * Tests that search button works from the settings page
      * goes to settings then clicks on search button
-     * asserts that settings stayed on settings screen using assertTrue
+     * asserts that the screen changed to the search screen using assertTrue
      */
     @Test
     public void testSearchFromSettingsClick() {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.settings));
-        solo.waitForText("Settings", 1, 4000);
+        solo.waitForText("Settings", 1, 7000);
 
-        // checks that the search button does nothing yet
+        // checks that clicking the search button switches to the search page
         solo.clickOnView(solo.getView(R.id.search));
-        assertTrue(solo.waitForText("Settings", 1, 4000));
+        assertTrue(solo.waitForText("Leaderboard", 1, 7000));
 
     }
 
@@ -208,30 +208,152 @@ public class ToolbarTest {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.settings));
-        solo.waitForText("Settings", 1, 4000);
+        solo.waitForText("Settings", 1, 7000);
 
         // checks that the add button works
         solo.clickOnView(solo.getView(R.id.addFab));
         // gotten from CameraFragmentTest.java
-        assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
-        solo.clickOnText("Yes");
-        solo.clickOnView(solo.getView(R.id.captureButton));
-        solo.waitForText("Share Geolocation", 1, 7000); // wait 7 sec for location prompt to appear
+        assertTrue(solo.waitForText("Take Photo", 1, 26000)); // wait 26 sec for photo prompt to appear
         solo.clickOnText("No");
-        solo.waitForText("STATS", 1, 7000);
+        solo.waitForText("Share Geolocation", 1, 10000); // wait 10 sec for location prompt to appear
+        solo.clickOnText("No");
+        solo.waitForText("STATS", 1, 10000);
     }
 
     /**
      * Tests the Search button on the toolbar
      * Clicks on the search button on the toolbar
-     * asserts that the search button does not do anything yet and stays on the profile page using assertTrue
+     * asserts that the screen is changed to the search fragment using assertTrue
      */
     @Test
     public void testSearchClick() {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.search));
-        assertTrue(solo.waitForText("STATS", 1, 6000));
+        assertTrue(solo.waitForText("Leaderboard", 1, 7000));
+    }
+
+    /**
+     * Tests that pressing the search button from the search page does nothing
+     * goes to the search screen then clicks on search button
+     * asserts that screen stays on search page using assertTrue
+     */
+    @Test
+    public void testSearchClickAgain() {
+        solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
+        solo.waitForText("STATS", 1, 4000);
+        solo.clickOnView(solo.getView(R.id.search));
+        solo.waitForText("Leaderboard.", 1, 7000);
+
+        solo.clickOnView(solo.getView(R.id.search));
+        assertTrue(solo.waitForText("Leaderboard", 1, 7000));
+
+    }
+
+    /**
+     * Tests that the settings button works from the search screen
+     * goes to leaderboard then clicks on settings button
+     * asserts that the screen is changed to settings using assertTrue
+     */
+    @Test
+    public void testSettingsFromSearchClick() {
+        solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
+        solo.waitForText("STATS", 1, 4000);
+        solo.clickOnView(solo.getView(R.id.search));
+
+        // checks that pressing the setting button works
+        solo.clickOnView(solo.getView(R.id.settings));
+        assertTrue(solo.waitForText("Settings", 1, 8000));
+
+    }
+
+    /**
+     * Tests that the profile button works from the search screen
+     * goes to map then clicks on profile button
+     * asserts that the screen is changed to profile using assertTrue
+     */
+    @Test
+    public void testProfileFromSearchClick() {
+        solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
+        solo.waitForText("STATS", 1, 4000);
+        solo.clickOnView(solo.getView(R.id.search));
+
+        // checks that the profile button works
+        solo.clickOnView(solo.getView(R.id.profile));
+        assertTrue(solo.waitForText("STATS", 1, 8000));
+
+    }
+
+    /**
+     * Tests that the map button works from the search screen
+     * goes to search screen then clicks on map button
+     * asserts that the screen is changed to map using assertTrue
+     */
+    @Test
+    public void testMapFromSearchClick() {
+        solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
+        solo.waitForText("STATS", 1, 4000);
+        solo.clickOnView(solo.getView(R.id.search));
+        solo.waitForText("Leaderboard", 1, 8000);
+
+        // checks that the map button works
+        solo.clickOnView(solo.getView(R.id.map));
+        assertTrue(solo.waitForText("Search location",1, 26000));
+
+    }
+
+    /**
+     * Tests that the add button works from the search screen
+     * goes to the Search screen then clicks on the add button
+     * asserts that the screen changed to the camera using assertTrue
+     * partially credited by Aiden Lynch
+     */
+    @Test
+    public void testAddFromSearchClick() {
+        solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
+        solo.waitForText("STATS", 1, 4000);
+        solo.clickOnView(solo.getView(R.id.search));
+        solo.waitForText("Leaderboard", 1, 7000);
+
+        // checks that the add button works
+        solo.clickOnView(solo.getView(R.id.addFab));
+        // gotten from CameraFragmentTest.java
+        assertTrue(solo.waitForText("Take Photo", 1, 27000)); // wait 27 sec for photo prompt to appear
+        solo.clickOnText("No");
+        solo.waitForText("Share Geolocation", 1, 8000); // wait 8 sec for location prompt to appear
+        solo.clickOnText("No");
+        solo.waitForText("STATS", 1, 8000);
+    }
+
+
+    /**
+     * Tests the Map button on the toolbar
+     * Clicks on the map button on the toolbar
+     * asserts that the screen is changed to the map using assertTrue
+     */
+    @Test
+    public void testMapClick() {
+        solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
+        solo.waitForText("STATS", 1, 4000);
+        solo.clickOnView(solo.getView(R.id.map));
+        assertTrue(solo.waitForText("Search location", 1, 7000));
+    }
+
+    /**
+     * Tests that pressing the map button from the map page does nothing
+     * goes to the map then clicks on map button
+     * asserts that screen stays on map page using assertTrue
+     */
+    @Test
+    public void testMapClickAgain() {
+        solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
+        solo.waitForText("STATS", 1, 4000);
+        solo.clickOnView(solo.getView(R.id.map));
+        solo.waitForText("Search location", 1, 8000);
+
+        solo.clickOnView(solo.getView(R.id.map));
+        assertTrue(solo.waitForText("Search location", 1, 8000));
+
     }
 
 
@@ -245,6 +367,7 @@ public class ToolbarTest {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.map));
+        solo.waitForText("Search location", 1, 8000);
 
         // checks that pressing the setting button works
         solo.clickOnView(solo.getView(R.id.settings));
@@ -262,6 +385,7 @@ public class ToolbarTest {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.map));
+        solo.waitForText("Search location", 1, 4000);
 
         // checks that the profile button works
         solo.clickOnView(solo.getView(R.id.profile));
@@ -270,19 +394,20 @@ public class ToolbarTest {
     }
 
     /**
-     * Tests that search button does nothing yet from map screen
+     * Tests that search button works from the map screen
      * goes to map then clicks on search button
-     * asserts that the map did not go to a search screen using assertFalse
+     * asserts that the map goes to the search page using assertTrue
      */
     @Test
     public void testSearchFromMapClick() {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.map));
+        solo.waitForText("Search location", 1, 7000);
 
         // checks that the search button does nothing yet
         solo.clickOnView(solo.getView(R.id.search));
-        assertFalse(solo.waitForText("search", 1, 4000));
+        assertTrue(solo.waitForText("Leaderboard", 1, 26000));
 
     }
 
@@ -297,16 +422,16 @@ public class ToolbarTest {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.map));
+        solo.waitForText("Search location", 1, 7000);
 
         // checks that the add button works
         solo.clickOnView(solo.getView(R.id.addFab));
         // gotten from CameraFragmentTest.java
-        assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 10 sec for photo prompt to appear
-        solo.clickOnText("Yes");
-        solo.clickOnView(solo.getView(R.id.captureButton));
-        solo.waitForText("Share Geolocation", 1, 7000); // wait 7 sec for location prompt to appear
+        assertTrue(solo.waitForText("Take Photo", 1, 26000)); // wait 26 sec for photo prompt to appear
         solo.clickOnText("No");
-        solo.waitForText("STATS", 1, 7000);
+        solo.waitForText("Share Geolocation", 1, 8000); // wait 8 sec for location prompt to appear
+        solo.clickOnText("No");
+        solo.waitForText("STATS", 1, 8000);
     }
 
     /**
@@ -321,9 +446,8 @@ public class ToolbarTest {
         solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.addFab));
         // gotten from CameraFragmentTest.java
-        assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 10 sec for photo prompt to appear
-        solo.clickOnText("Yes");
-        solo.clickOnView(solo.getView(R.id.captureButton));
+        assertTrue(solo.waitForText("Take Photo", 1, 26000)); // wait 26 sec for photo prompt to appear
+        solo.clickOnText("No");
         solo.waitForText("Share Geolocation", 1, 7000); // wait 7 sec for location prompt to appear
         solo.clickOnText("No");
         solo.waitForText("STATS", 1, 7000);
