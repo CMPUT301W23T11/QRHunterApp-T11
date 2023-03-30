@@ -19,7 +19,7 @@ public class QRCode {
     private int numberOfScans;
     private Double latitude;
     private Double longitude;
-    private ArrayList<Integer> faceList;
+    private ArrayList<String> faceList;
     private ArrayList<String> photoList;
 
     /**
@@ -50,7 +50,7 @@ public class QRCode {
     }
 
     /**
-     * special blank constructor for Firebase
+     * Special blank constructor for Firebase
      *
      * @reference <a href="https://firebase.google.com/docs/firestore/manage-data/add-data#custom_objects">implemented by referencing firebase documentation</a>
      */
@@ -172,38 +172,38 @@ public class QRCode {
      * @reference techiedelight.com <a href="https://www.techiedelight.com/convert-hex-string-to-integer-java/">for converting string to hexadecimal integer</a>
      */
     @NonNull
-    public static ArrayList<Integer> uniqueImage(@NonNull String hash) {
+    public static ArrayList<String> uniqueImage(@NonNull String hash) {
 
         //Lists of possible drawables for each part of the face
-        int[] eyesNumbers = {
-                R.drawable.eyes1,
-                R.drawable.eyes2
+        String[] eyesNumbers = {
+                "eyes1",
+                "eyes2"
         };
-        int[] eyebrowsNumbers = {
-                R.drawable.eyebrows1,
-                R.drawable.eyebrows2
+        String[] eyebrowsNumbers = {
+                "eyebrows1",
+                "eyebrows2"
         };
-        int[] colourNumbers = {
-                R.drawable.colour1,
-                R.drawable.colour2
+        String[] colourNumbers = {
+                "colour1",
+                "colour2"
         };
-        int[] noseNumbers = {
-                R.drawable.nose1,
-                R.drawable.nose2
+        String[] noseNumbers = {
+                "nose1",
+                "nose2"
         };
-        int[] mouthNumbers = {
-                R.drawable.mouth1,
-                R.drawable.mouth2
+        String[] mouthNumbers = {
+                "mouth1",
+                "mouth2"
         };
-        int[] faceNumbers = {
-                R.drawable.face1,
-                R.drawable.face2
+        String[] faceNumbers = {
+                "face1",
+                "face2"
         };
 
         System.out.println(R.drawable.colour1);
         System.out.println(R.drawable.colour2);
 
-        ArrayList<Integer> faceList = new ArrayList<>();
+        ArrayList<String> faceList = new ArrayList<>();
         // Shorten hash and convert it to binary, remove the first 1 from the binary string
         int hashSmall = Integer.parseInt(hash.substring(0, 5), 16);
         String hashBinary = Integer.toBinaryString(hashSmall).substring(1);
@@ -361,13 +361,13 @@ public class QRCode {
         this.longitude = longitude;
     }
 
-        /**
+    /**
      * Getter for QRCode Object's faceList attribute
      *
      * @return faceList - An ArrayList containing information to create face visual display
      */
     @NonNull
-    public ArrayList<Integer> getFaceList() {
+    public ArrayList<String> getFaceList() {
         return faceList;
     }
 

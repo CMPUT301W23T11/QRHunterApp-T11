@@ -18,7 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:backgroundTint="@color/toolbar"
+        android:backgroundTint="@color/headers"
         app:fabCradleMargin="8dp"
         app:fabCradleRoundedCornerRadius="15dp"
 
@@ -30,8 +30,8 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:background="@drawable/transparent_background"
-            app:itemIconTint="@drawable/selector"
-            app:itemTextColor="@drawable/selector"
+            app:itemIconTint="@color/white"
+            app:itemTextColor="@color/white"
             app:menu="@menu/bottom_toolbar_menu" />
     </com.google.android.material.bottomappbar.BottomAppBar>
 
@@ -42,6 +42,7 @@
         android:backgroundTint="@color/green_fab"
         android:contentDescription="@string/adds_a_qr_code"
         android:src="@drawable/add_icon"
+        app:tint="@color/white"
         app:layout_anchor="@id/bottomAppBar" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

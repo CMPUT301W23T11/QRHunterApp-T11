@@ -6,11 +6,9 @@ import com.google.firebase.firestore.DocumentSnapshot;
 
 /**
  * Interface to handle long clicking on items in RecyclerViews
- * <p>
- * Sources:
- * - Sarah's OnItemClickListener interface
  *
  * @author Afra
+ * @sources Sarah's OnItemClickListener interface
  * @see OnItemClickListener
  */
 public interface OnItemLongClickListener {

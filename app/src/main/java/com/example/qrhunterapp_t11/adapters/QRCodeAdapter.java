@@ -21,10 +21,14 @@ import io.reactivex.rxjava3.annotations.NonNull;
  * Adapter class for RecyclerView that holds user's collection of QR Codes
  *
  * @author Afra, Sarah
- * @reference <a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation</a>
- * @reference <a href="https://www.youtube.com/watch?v=3WR4QAiVuCw">by Coding in Flow for adding OnClick functionality to the recyclerView</a>
- * @reference <a href="https://www.youtube.com/watch?v=JLW7z_AaUHA">by Akshay Jhajhra for more help with the OnClick</a>
- * @reference <a href="https://www.youtube.com/watch?v=k7GR3h5OsXk">by Technical Skillz for FirebaseRecyclerOptions help</a>
+ * @sources <pre>
+ * <ul>
+ * <li><a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation</a></li>
+ * <li><a href="https://www.youtube.com/watch?v=3WR4QAiVuCw">by Coding in Flow for adding OnClick functionality to the recyclerView</a></li>
+ * <li><a href="https://www.youtube.com/watch?v=JLW7z_AaUHA">by Akshay Jhajhra for more help with the OnClick</a></li>
+ * <li><a href="https://www.youtube.com/watch?v=k7GR3h5OsXk">by Technical Skillz for FirebaseRecyclerOptions help</a></li>
+ * </ul>
+ * </pre>
  */
 public class QRCodeAdapter extends FirestoreRecyclerAdapter<QRCode, QRCodeAdapter.RecyclerViewHolder> {
     private OnItemClickListener listener;

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,23 +17,29 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.qrhunterapp_t11.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Handles settings screen. Users can rename themselves and change their email.
  *
  * @author Afra
- * @reference Firestore documentation
+ * @sources Firestore documentation
+ * @sources <pre>
+ *  * <ul>
+ *  * <li><a href="https://www.javatpoint.com/java-email-validation">Validating email input using regex</a></li>
+ *  * </ul>
+ *  * </pre>
  */
 public class SettingsFragment extends Fragment {
 
@@ -42,6 +49,10 @@ public class SettingsFragment extends Fragment {
     private EditText emailEditText;
     private String usernameString;
     private String emailString;
+    private static final String PREFS_CURRENT_USER_EMAIL = "currentUserEmail";
+    private static final String PREFS_CURRENT_USER_DISPLAY_NAME = "currentUserDisplayName";
+    private static final String DATABASE_DISPLAY_NAME_FIELD = "displayName";
+    private SharedPreferences prefs;
 
     public SettingsFragment(@NonNull FirebaseFirestore db) {
         this.usersReference = db.collection("Users");
@@ -54,61 +65,117 @@ public class SettingsFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
-        SharedPreferences prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         usernameEditText = view.findViewById(R.id.username_edit_edittext);
         emailEditText = view.findViewById(R.id.email_edit_edittext);
-        Button confirmButton = view.findViewById(R.id.settings_confirm_button);
+        Button confirmUsernameButton = view.findViewById(R.id.change_username_button);
+        Button confirmEmailButton = view.findViewById(R.id.change_email_button);
 
-        usernameString = prefs.getString("currentUserDisplayName", null);
-        emailString = prefs.getString("currentUserEmail", "No email");
+        usernameString = prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null);
+        emailString = prefs.getString(PREFS_CURRENT_USER_EMAIL, null);
         usernameEditText.setText(usernameString);
         emailEditText.setText(emailString);
 
-        confirmButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        // changes the user's username
+        confirmUsernameButton.setOnClickListener(view1 -> {
 
-                usernameString = usernameEditText.getText().toString();
-                emailString = emailEditText.getText().toString();
+            usernameString = usernameEditText.getText().toString().toLowerCase();
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                // Make sure new username is eligible for change
-                usernameCheck(usernameString, usernameEditText, new SettingsCallback() {
-                    public void valid(boolean valid) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            // Make sure new username is eligible for change
+            usernameCheck(usernameString, usernameEditText, new QueryCallback() {
+                public void queryCompleteCheck(boolean usernameExists) {
 
-                        if (valid) {
-                            builder
-                                    .setTitle("Confirm username and email change")
-                                    .setNegativeButton("Cancel", null)
-                                    .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialogInterface, int i) {
-                                            String user = prefs.getString("currentUserUsername", null);
+                    if (!usernameExists) {
+                        builder
+                                .setTitle("Confirm username change")
+                                .setNegativeButton("Cancel", null)
+                                .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        String user = prefs.getString("currentUserUsername", null);
 
-                                            usersReference.document(user).update("displayName", usernameString);
-                                            usersReference.document(user).update("email", emailString);
+                                        usersReference.document(user).update(DATABASE_DISPLAY_NAME_FIELD, usernameString);
 
-                                            prefs.edit().putString("currentUserDisplayName", usernameString).commit();
-                                            prefs.edit().putString("currentUserEmail", emailString).commit();
+                                        prefs.edit().putString(PREFS_CURRENT_USER_DISPLAY_NAME, usernameString).commit();
 
-                                            // Update username in all user's previous comments
-                                            updateUserComments(user, usernameString, new SettingsCallback() {
-                                                public void valid(boolean valid) {
-                                                    assert (valid);
-                                                }
-                                            });
-                                        }
-                                    })
-                                    .create();
-                            builder.show();
-                        }
+                                        // Update username in all user's previous comments
+                                        updateUserComments(user, usernameString, new QueryCallback() {
+                                            public void queryCompleteCheck(boolean queryComplete) {
+                                                assert (queryComplete);
+                                            }
+                                        });
+                                    }
+                                })
+                                .create();
+                        builder.show();
                     }
-                });
+                }
+            });
+        });
+
+        // changes the user's email
+        confirmEmailButton.setOnClickListener(view12 -> {
+            emailString = emailEditText.getText().toString().toLowerCase();
+
+            AlertDialog.Builder emailBuilder = new AlertDialog.Builder(getContext());
+
+            // checks to make sure the user inputs a valid email
+            if (validEmail(emailString)) {
+                emailBuilder
+                        .setTitle("Confirm email change")
+                        .setNegativeButton("Cancel", null)
+                        .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                String user = prefs.getString("currentUserUsername", null);
+
+                                if (!Objects.equals(emailString, "")) {
+                                    usersReference.document(user).update("email", emailString);
+                                }
+                                else {
+                                    usersReference.document(user).update("email", null);
+                                }
+
+                                prefs.edit().putString(PREFS_CURRENT_USER_EMAIL, emailString).commit();
+
+                            }
+                        })
+                        .create();
+               emailBuilder.show();
             }
+
         });
 
         return view;
+    }
+
+    /**
+     *  Checks to see if inputted email is in a valid format
+     * @param emailString Entered email
+     */
+    public boolean validEmail(@NonNull String emailString) {
+        System.out.println(emailString);
+        if (emailString.equals("")) {
+            return true;
+        }
+        else {
+            // string to see the correct format of an email, allowed characters, and restricted character format
+            String regex = "^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*@(?:[a-zA-Z\\d-]+\\.)+[a-zA-Z]{2,6}$";
+            Pattern pattern = Pattern.compile(regex);
+
+            // sees if provided email matches the regex email format string
+            Matcher matcher = pattern.matcher(emailString);
+            if (matcher.matches()){
+                return true;
+            }
+            else {
+                emailEditText.setError("Invalid Email");
+                return false;
+            }
+        }
+
     }
 
     /**
@@ -116,36 +183,32 @@ public class SettingsFragment extends Fragment {
      *
      * @param usernameString   Entered username
      * @param usernameEditText EditText for entered username
-     * @param valid            Callback for query
+     * @param usernameExists   Callback for query
      */
-    public void usernameCheck(@NonNull String usernameString, @NonNull EditText usernameEditText, final @NonNull SettingsCallback valid) {
+    public void usernameCheck(@NonNull String usernameString, @NonNull EditText usernameEditText, final @NonNull QueryCallback usernameExists) {
 
         // Check if username matches Firestore document ID guidelines
         if (usernameString.length() == 0) {
             usernameEditText.setError("Field cannot be blank");
         } else if (usernameString.contains("/")) {
             usernameEditText.setError("Invalid character: '/'");
-        } else if (usernameString.equals(".") || usernameString.equals("..")) {
-            usernameEditText.setError("Invalid username");
-        } else if (usernameString.equals("__.*__")) {
+        } else if (usernameString.equals(".") || usernameString.equals("..") || usernameString.equals("__.*__")) {
             usernameEditText.setError("Invalid username");
         }
 
         // Check if username exists already
         else {
-            usersReference.whereEqualTo("displayName", usernameString).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    if (task.isSuccessful()) {
-                        if (task.getResult().isEmpty()) {
-                            valid.valid(true);
+            usersReference
+                    .whereEqualTo(DATABASE_DISPLAY_NAME_FIELD, usernameString)
+                    .get()
+                    .addOnSuccessListener(queryResult -> {
+                        if (queryResult.isEmpty()) {
+                            usernameExists.queryCompleteCheck(false);
                         } else {
                             usernameEditText.setError("Username is not unique");
-                            valid.valid(false);
+                            usernameExists.queryCompleteCheck(true);
                         }
-                    }
-                }
-            });
+                    });
         }
     }
 
@@ -155,52 +218,48 @@ public class SettingsFragment extends Fragment {
      *
      * @param username           User's username
      * @param newDisplayUsername User's new display name
-     * @param valid              Callback for query
+     * @param queryCompleteCheck Callback for query
      */
-    public void updateUserComments(@NonNull String username, @NonNull String newDisplayUsername, final @NonNull SettingsCallback valid) {
+    public void updateUserComments(@NonNull String username, @NonNull String newDisplayUsername, final @NonNull QueryCallback queryCompleteCheck) {
 
         ArrayList<DocumentReference> userCommentedListRef = new ArrayList<>();
 
         // Retrieve DocumentReferences in the user's QR code collection and store them in an array
         usersReference.document(username).collection("User QR Codes")
                 .get()
-                .addOnSuccessListener(documentReferenceSnapshots -> {
-                    for (QueryDocumentSnapshot snapshot : documentReferenceSnapshots) {
+                .addOnSuccessListener(documentReferences -> {
+                    for (QueryDocumentSnapshot reference : documentReferences) {
 
-                        DocumentReference documentReference = (DocumentReference) snapshot.get("Reference");
+                        DocumentReference documentReference = (DocumentReference) reference.get("Reference");
                         userCommentedListRef.add(documentReference);
                     }
                     if (!userCommentedListRef.isEmpty()) {
+
                         // Retrieve matching QR Code data from the QRCodes collection using DocumentReferences
                         qrCodeReference.whereIn(FieldPath.documentId(), userCommentedListRef)
                                 .get()
-                                .addOnSuccessListener(referencedQRDocumentSnapshots -> {
-                                    for (QueryDocumentSnapshot snapshot : referencedQRDocumentSnapshots) {
-                                        CollectionReference commentList = snapshot.getReference().collection("commentList");
+                                .addOnSuccessListener(referencedQRDocuments -> {
+                                    for (QueryDocumentSnapshot referencedQR : referencedQRDocuments) {
+
+                                        // Get collection reference to specific commentList to check
+                                        CollectionReference commentList = referencedQR.getReference().collection("commentList");
+
                                         // Find exactly which comments need to be updated and update them
-                                        commentList.whereEqualTo("username", username)
-                                                .whereNotEqualTo("displayName", newDisplayUsername)
+                                        commentList
+                                                .whereEqualTo("username", username)
+                                                .whereNotEqualTo(DATABASE_DISPLAY_NAME_FIELD, newDisplayUsername) // Filter out documents that don't need updating
                                                 .get()
-                                                .addOnSuccessListener(commentedQRDocumentSnapshots -> {
+                                                .addOnSuccessListener(commentedQRDocuments -> {
                                                     ArrayList<DocumentSnapshot> commentedQR;
-                                                    commentedQR = (ArrayList) commentedQRDocumentSnapshots.getDocuments();
+                                                    commentedQR = (ArrayList) commentedQRDocuments.getDocuments();
                                                     for (DocumentSnapshot commented : commentedQR) {
-                                                        commented.getReference().update("displayName", newDisplayUsername);
+                                                        commented.getReference().update(DATABASE_DISPLAY_NAME_FIELD, newDisplayUsername);
                                                     }
-                                                    valid.valid(true);
+                                                    queryCompleteCheck.queryCompleteCheck(true);
                                                 });
                                     }
                                 });
                     }
                 });
-    }
-
-    /**
-     * Callback for querying the database
-     *
-     * @author Afra
-     */
-    public interface SettingsCallback {
-        void valid(boolean valid);
     }
 }

@@ -201,7 +201,7 @@ public class SearchFragment extends Fragment {
                         leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
 
                         prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
-                        leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, leaderboardSpinnerChoice, prefs);
+                        leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, leaderboardSpinnerChoice);
 
                         //super.onStart(); man idk
                         leaderboardAdapter.startListening();

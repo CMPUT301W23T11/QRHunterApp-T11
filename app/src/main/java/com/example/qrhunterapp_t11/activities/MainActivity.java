@@ -26,7 +26,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
  * Main app activity. Default startup screen is the player profile.
  * Users can click on the toolbar at the bottom to switch to other parts of the app.
  *
- * @author Afra Rahmanfard
+ * @author Afra
  * @author Kristina
  * @sources: <pre>
  * <ul>
@@ -79,12 +79,12 @@ public class MainActivity extends AppCompatActivity {
                     User user = new User(username, username, 0, 0, 0, "No email");
 
                     usersReference.document(username).set(user);
-                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null), prefs.getString(PREFS_CURRENT_USER, null))).commit();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString(PREFS_CURRENT_USER, null), prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null))).commit();
 
                 }
             });
         } else {
-            getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null), prefs.getString(PREFS_CURRENT_USER, null))).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString(PREFS_CURRENT_USER, null), prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null))).commit();
 
         }
 
@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         bottomToolbar.setOnItemSelectedListener(item -> {
             switch (item.getTitle().toString()) {
                 case "Profile": // Changes the main screen to the profile
-                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null), prefs.getString(PREFS_CURRENT_USER, null))).commit();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString(PREFS_CURRENT_USER, null), prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null))).commit();
 
                     return true;
 
@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Callback for querying database
      *
-     * @author Afra Rahmanfard
+     * @author Afra
      */
     public interface MainActivityCallback {
         void setNumUsers(int numUsers);

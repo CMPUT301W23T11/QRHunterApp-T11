@@ -51,7 +51,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.IOException;
 import java.util.List;
@@ -164,7 +163,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         Geocoder geocoder = new Geocoder(getContext());
         try {
             List<Address> addresses = geocoder.getFromLocationName(location, 1);
-            if (addresses.size() > 0) {
+            if (!addresses.isEmpty()) {
                 Address address = addresses.get(0);
                 LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f));
@@ -335,35 +334,31 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                 BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(bitmap);
 
                 // Add markers for each QRCode
-                qrCodeRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Double latitude = document.getDouble("latitude");
-                                Double longitude = document.getDouble("longitude");
+                qrCodeRef
+                        .get()
+                        .addOnSuccessListener(qrCodes -> {
+
+                            for (QueryDocumentSnapshot qrCode : qrCodes) {
+                                Double latitude = qrCode.getDouble("latitude");
+                                Double longitude = qrCode.getDouble("longitude");
                                 if (latitude != null && longitude != null) {
                                     LatLng location = new LatLng(latitude, longitude);
                                     Marker marker = mMap.addMarker(new MarkerOptions()
                                             .position(location)
-                                            .title(document.getId())
+                                            .title(qrCode.getId())
                                             .icon(icon));  // Use the custom icon
-                                    marker.setTag(document.toObject(QRCode.class)); // Set QRCode object as the marker's tag
+                                    marker.setTag(qrCode.toObject(QRCode.class)); // Set QRCode object as the marker's tag
                                 }
                             }
-                        } else {
-                            Log.d(tag, "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
+                        });
 
                 // OnMarkerClickListener to show the QRCodeView dialog fragment when a marker is clicked
                 mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                     @Override
-                    public boolean onMarkerClick(Marker marker) {
+                    public boolean onMarkerClick(@NonNull Marker marker) {
                         QRCode qrCode = (QRCode) marker.getTag();
                         if (qrCode != null) {
-                            new QRCodeView(qrCode).show(getActivity().getSupportFragmentManager(), "Show QR");
+                            new QRCodeView(qrCode, null).show(getActivity().getSupportFragmentManager(), "Show QR");
                         }
                         return true;
                     }

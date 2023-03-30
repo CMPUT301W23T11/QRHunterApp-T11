@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,23 +25,23 @@ import androidx.viewpager.widget.ViewPager;
 import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.adapters.CommentAdapter;
 import com.example.qrhunterapp_t11.adapters.PhotoAdapter;
+import com.example.qrhunterapp_t11.adapters.QRCodeAdapter;
+import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.Comment;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
-import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * This is the dialog fragment that appears when a user clicks to see more info about a certain QRCode. It shows the user the QR Code's image, name,
  * # of points, photo, and implements comments.
  *
- * @author Afra Rahmanfard
+ * @author Afra
  * @author Sarah Thomson
- * @sources: <pre>
+ * @sources <pre>
  * <ul>
  * <li><a href="https://stackoverflow.com/a/17503823">For scrollable comment box</a></li>
  * <li><a href="https://www.youtube.com/watch?v=LMdxZ8UC00k">by Technical Skillz for the Comment box/comment layout in the qr_view layout, and the comment_box drawable</a></li>
@@ -60,9 +61,11 @@ public class QRCodeView extends DialogFragment {
     private EditText commentEditText;
     private SharedPreferences prefs;
     private String qrCodeID;
+    private int commentListCount;
     private TextView commentNumTextView;
     private ViewPager viewPager;
-    private PhotoAdapter photoAdapter;
+    private QRCodeAdapter adapter;
+    String currentUser;
 
     /**
      * Empty constructor
@@ -76,28 +79,31 @@ public class QRCodeView extends DialogFragment {
      *
      * @param qrCode - QRCode object that was clicked
      */
-    public QRCodeView(@NonNull QRCode qrCode) {
+    public QRCodeView(@NonNull QRCode qrCode, @Nullable QRCodeAdapter adapter) {
         super();
         this.qrCode = qrCode;
         this.qrCodeID = qrCode.getID();
+        this.adapter = adapter;
     }
 
     /**
      * Called when dialog is created
      *
      * @param savedInstanceState - The last saved instance state of the Fragment, or null if this is a freshly created Fragment.
-     * @return - builder
+     * @return builder
      */
     @SuppressLint("ClickableViewAccessibility")
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        PhotoAdapter photoAdapter;
 
         prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        currentUser = prefs.getString("currentUserUsername", null);
         View view = LayoutInflater.from(getContext()).inflate(R.layout.qr_view, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
-        commentNumTextView = view.findViewById(R.id.commentsNumTv);
+        commentNumTextView = view.findViewById(R.id.commentsTV);
         commentEditText = view.findViewById(R.id.editTextComment);
 
         ListView commentListView = view.findViewById(R.id.commentListView);
@@ -116,13 +122,13 @@ public class QRCodeView extends DialogFragment {
         ImageView mouthImageView = view.findViewById(R.id.imageMouth);
         ImageView eyebrowsImageView = view.findViewById(R.id.imageEyebrows);
 
-        // Creates the appearance of the QRCode object based on the drawable ids stored in its faceList array
-        colourImageView.setImageResource((qrCode.getFaceList()).get(2));
-        eyesImageView.setImageResource((qrCode.getFaceList()).get(0));
-        faceImageView.setImageResource((qrCode.getFaceList()).get(1));
-        noseImageView.setImageResource((qrCode.getFaceList()).get(3));
-        mouthImageView.setImageResource((qrCode.getFaceList()).get(4));
-        eyebrowsImageView.setImageResource((qrCode.getFaceList()).get(5));
+        // Creates the appearance of the QRCode object based on the drawable names stored in its faceList array
+        eyesImageView.setImageResource(getResources().getIdentifier(qrCode.getFaceList().get(0), "drawable", getContext().getPackageName()));
+        faceImageView.setImageResource(getResources().getIdentifier(qrCode.getFaceList().get(1), "drawable", getContext().getPackageName()));
+        colourImageView.setImageResource(getResources().getIdentifier(qrCode.getFaceList().get(2), "drawable", getContext().getPackageName()));
+        noseImageView.setImageResource(getResources().getIdentifier(qrCode.getFaceList().get(3), "drawable", getContext().getPackageName()));
+        mouthImageView.setImageResource(getResources().getIdentifier(qrCode.getFaceList().get(4), "drawable", getContext().getPackageName()));
+        eyebrowsImageView.setImageResource(getResources().getIdentifier(qrCode.getFaceList().get(5), "drawable", getContext().getPackageName()));
 
         String points = "Points: " + qrCode.getPoints();
         pointsTextView.setText(points);
@@ -132,15 +138,15 @@ public class QRCodeView extends DialogFragment {
         photoAdapter = new PhotoAdapter(getContext(), qrCode.getPhotoList());
         viewPager.setAdapter(photoAdapter);
 
-        // If the QRCode has an associated photo, use Picasso to load it into the photoImageView (Rotated for some reason)
+        // If the QRCode has no associated photo, hide the photo box
         if (photoAdapter.getCount() == 0) {
             photoBox.setVisibility(View.GONE);
         }
         denominatorTextView.setText(String.valueOf(photoAdapter.getCount()));
         numeratorTextView.setText(String.valueOf(viewPager.getCurrentItem() + 1));
 
-        noCommentsCheck(qrCodeID, new QRCodeHasCommentsCallback() {
-            public void setHasComments(boolean hasComments) {
+        hasCommentsCheck(qrCodeID, new QueryCallback() {
+            public void queryCompleteCheck(boolean hasComments) {
                 if (hasComments) {
                     getComments(qrCodeID, new QRCodeGetCommentsCallback() {
                         public void setComments(@NonNull ArrayList<Comment> comments) {
@@ -151,22 +157,15 @@ public class QRCodeView extends DialogFragment {
                             commentListView.setAdapter(commentAdapter);
 
                             // Count number of comments QR Code has
-                            qrCodesReference.document(qrCode.getID()).collection("commentList")
-                                    .count()
-                                    .get(AggregateSource.SERVER)
-                                    .addOnSuccessListener(snapshot -> {
-                                        String commentListCount = String.valueOf(snapshot.getCount());
-                                        commentNumTextView.setText(commentListCount);
-
-                                    });
+                            commentListCount = commentList.size();
+                            String commentNum = "Comments: " + commentListCount;
+                            commentNumTextView.setText(commentNum);
                         }
                     });
                 } else {
                     commentList = new ArrayList<>();
                     commentAdapter = new CommentAdapter(getContext(), commentList);
                     commentListView.setAdapter(commentAdapter);
-                    commentNumTextView.setText("0");
-
                 }
             }
         });
@@ -174,40 +173,39 @@ public class QRCodeView extends DialogFragment {
         // When the send image arrow ImageView is clicked, if a comment has been made it will be added
         // to the QRCode object's saved array of comments and appear in the comment box with the associated user
         // User can only comment on QR Codes if they already have that code in their collection
-        checkUserHasQRCode(prefs.getString("currentUserUsername", null), qrCodeID, new UserHasQRCodeCallback() {
+        checkUserHasQRCode(currentUser, qrCodeID, new QueryCallback() {
             @Override
-            public void setHasCode(boolean hasCode) {
-                if (hasCode) {
-                    commentImageView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
+            public void queryCompleteCheck(boolean userHasQRCode) {
+
+                commentImageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (userHasQRCode) {
                             String commentString = commentEditText.getText().toString();
 
                             if (!commentString.isEmpty()) {
 
                                 String currentUserDisplayName = prefs.getString("currentUserDisplayName", null);
-                                String currentUser = prefs.getString("currentUserUsername", null);
-                                Comment c = new Comment(commentString, currentUserDisplayName, currentUser);
-                                int commentNum;
+                                Comment comment = new Comment(commentString, currentUserDisplayName, currentUser);
 
-                                commentAdapter.addToCommentList(c);
+                                commentAdapter.addToCommentList(comment);
                                 commentAdapter.notifyDataSetChanged();
                                 commentEditText.getText().clear();
 
-                                HashMap<String, String> comment = new HashMap<>();
-                                comment.put("username", currentUser);
-                                comment.put("displayName", currentUserDisplayName);
-                                comment.put("commentString", commentString);
-
                                 qrCodesReference.document(qrCodeID).collection("commentList").add(comment);
-                                commentNum = Integer.parseInt(commentNumTextView.getText().toString());
-                                commentNum++;
-                                commentNumTextView.setText(String.valueOf(commentNum));
 
+                                // Increment comment count
+                                commentListCount++;
+                                String commentNum = "Comments: " + commentListCount;
+                                commentNumTextView.setText(commentNum);
                             }
+                        } else {
+                            Toast toast = Toast.makeText(getContext(), "You cannot comment on QR Codes you have not scanned.", Toast.LENGTH_LONG);
+                            toast.show();
                         }
-                    });
-                }
+                    }
+                });
+
             }
         });
 
@@ -229,8 +227,6 @@ public class QRCodeView extends DialogFragment {
         });
 
         commentListView.setOnTouchListener(new ListView.OnTouchListener() {
-            @SuppressLint("ClickableViewAccessibility")
-
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -250,6 +246,9 @@ public class QRCodeView extends DialogFragment {
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        if (adapter != null) {
+                            adapter.notifyDataSetChanged();
+                        }
                         dialogInterface.dismiss();
                     }
                 })
@@ -259,15 +258,15 @@ public class QRCodeView extends DialogFragment {
     /**
      * Query database to check if QR code has any comments or not
      *
-     * @param qrCodeID       QR to check for comments
-     * @param setHasComments Callback function
+     * @param qrCodeID    QR to check for comments
+     * @param hasComments Callback function
      */
-    public void noCommentsCheck(@NonNull String qrCodeID, final @NonNull QRCodeHasCommentsCallback setHasComments) {
+    public void hasCommentsCheck(@NonNull String qrCodeID, final @NonNull QueryCallback hasComments) {
 
         qrCodesReference.document(qrCodeID).collection("commentList")
                 .get()
                 .addOnSuccessListener(qrCodeCommentList ->
-                        setHasComments.setHasComments(!qrCodeCommentList.isEmpty())
+                        hasComments.queryCompleteCheck(!qrCodeCommentList.isEmpty())
                 );
     }
 
@@ -298,42 +297,24 @@ public class QRCodeView extends DialogFragment {
     /**
      * Check if the given user has the given QR Code
      *
-     * @param username   Username to check
-     * @param qrCodeID   QR Code to check
-     * @param setHasCode Callback for query
+     * @param username      Username to check
+     * @param qrCodeID      QR Code to check
+     * @param userHasQRCode Callback for query
      */
-    public void checkUserHasQRCode(@NonNull String username, @NonNull String qrCodeID, final @NonNull UserHasQRCodeCallback setHasCode) {
+    public void checkUserHasQRCode(@NonNull String username, @NonNull String qrCodeID, final @NonNull QueryCallback userHasQRCode) {
         usersReference.document(username).collection("User QR Codes").document(qrCodeID)
                 .get()
                 .addOnSuccessListener(userQRCode ->
-                        setHasCode.setHasCode(userQRCode.exists())
+                        userHasQRCode.queryCompleteCheck(userQRCode.exists())
                 );
-    }
-
-    /**
-     * Callback for querying the database to see if QR code has comments
-     *
-     * @author Afra Rahmanfard
-     */
-    public interface QRCodeHasCommentsCallback {
-        void setHasComments(boolean hasComments);
     }
 
     /**
      * Callback for querying the database to retrieve comments
      *
-     * @author Afra Rahmanfard
+     * @author Afra
      */
     public interface QRCodeGetCommentsCallback {
         void setComments(@NonNull ArrayList<Comment> comments);
-    }
-
-    /**
-     * Callback for querying the database to see if user has given QR Code
-     *
-     * @author Afra Rahmanfard
-     */
-    public interface UserHasQRCodeCallback {
-        void setHasCode(boolean hasCode);
     }
 }

@@ -1,21 +1,27 @@
 package com.example.qrhunterapp_t11.activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.airbnb.lottie.LottieAnimationView;
-import com.example.qrhunterapp_t11.R;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.airbnb.lottie.LottieAnimationView;
+import com.example.qrhunterapp_t11.R;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 
 /**
  * Handles logic for showing a splashscreen (the built-in android splashscreen library sucks).
  *
- * @referece Coding With Tea - https://www.youtube.com/watch?v=VcrzLcokvvc- how to implement the logic and layout of the splashscreen. Used without major modification.
- * @reference lottieicon - https://lottiefiles.com/78072-map-pin-location - created the map loading animation.
+ * @sources <pre>
+ * <ul>
+ * <li><a href="https://www.youtube.com/watch?v=VcrzLcokvvc">How to implement the logic and layout of the splashscreen</a></li>
+ * <li><a href="https://lottiefiles.com/78072-map-pin-location">Created the map loading animation</a></li>
+ * </ul>
+ * </pre>
  */
 public class SplashActivity extends AppCompatActivity {
 
@@ -23,7 +29,7 @@ public class SplashActivity extends AppCompatActivity {
     LottieAnimationView mapAnimation;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 

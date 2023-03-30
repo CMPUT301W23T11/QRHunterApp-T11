@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginBottom="2dp"
+    android:background="@color/background"
     android:orientation="vertical"
     tools:context=".fragments.SearchFragment">
 
@@ -16,9 +17,9 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
             android:padding="10dp"
             android:text="@string/find_other_players"
-            android:fontFamily="sans-serif-medium"
             android:textAlignment="center"
             android:textColor="@color/white"
             android:textSize="18sp"
@@ -45,13 +46,12 @@
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     android:background="@null"
-                    android:hint="@string/search_hint"
+                    android:dropDownHeight="150dp"
                     android:fontFamily="sans-serif-medium"
+                    android:hint="@string/search_hint"
                     android:inputType="text"
                     android:textSize="22sp"
-                    android:dropDownHeight="150dp"
-                    android:theme="@style/DropDownTheme"
-                    />
+                    android:theme="@style/DropDownTheme" />
 
                 <Button
                     android:id="@+id/close_id"
@@ -59,6 +59,7 @@
                     android:layout_height="26dp"
                     android:layout_marginTop="2dp"
                     android:layout_marginEnd="5dp"
+                    android:visibility="invisible"
                     android:background="@drawable/close_icon" />
             </LinearLayout>
 
@@ -77,13 +78,20 @@
             android:id="@+id/leaderboard_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
             android:padding="5dp"
             android:text="@string/leaderboard"
-            android:fontFamily="sans-serif-medium"
             android:textAlignment="center"
             android:textColor="@color/headers"
             android:textSize="18sp"
             android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/leaderboard_radius_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dialog"
+            android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -95,17 +103,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:padding="5dp"
-                android:text="Your Ranking:"
                 android:fontFamily="sans-serif-medium"
+                android:padding="5dp"
+                android:text="@string/your_ranking"
                 android:textSize="18sp" />
 
             <Spinner
                 android:id="@+id/leaderboard_filter_spinner"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:spinnerMode="dropdown"
-                android:gravity="end" />
+                android:gravity="end"
+                android:spinnerMode="dialog" />
         </LinearLayout>
 
     </LinearLayout>
