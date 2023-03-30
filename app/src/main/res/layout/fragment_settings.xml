@@ -38,6 +38,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
+        android:maxLength="16"
         android:autofillHints="username"
         android:fontFamily="sans-serif-medium"
         android:hint="@string/edittext_username"
@@ -75,7 +76,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="32dp"
         android:backgroundTint="@color/headers"
-        android:text="@string/edittext_confirm"
+        android:text="@string/edittext_submit"
         android:textColor="@color/white" />
 
 </LinearLayout>

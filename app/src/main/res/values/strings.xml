@@ -18,7 +18,7 @@
     <string name="collection_header">COLLECTION</string>
     <string name="edittext_email">Email</string>
     <string name="edittext_username">Username</string>
-    <string name="edittext_confirm">Confirm</string>
+    <string name="edittext_submit">Submit</string>
     <string name="edittext_change_username">Change username:</string>
     <string name="edittext_change_email">Change email:</string>
     <string name="edittext_capture">Capture</string>
