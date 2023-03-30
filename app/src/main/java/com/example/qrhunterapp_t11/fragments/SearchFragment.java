@@ -70,6 +70,7 @@ public class SearchFragment extends Fragment {
     private FirestoreRecyclerOptions<User> leaderboardOptions;
     private SharedPreferences prefs;
     private AutoCompleteTextView autoCompleteTextView;
+    TextView yourRanking;
 
     public SearchFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
@@ -185,6 +186,7 @@ public class SearchFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 String leaderboardFilterChoice = leaderboardFilterSpinner.getSelectedItem().toString();
+                yourRanking = view.findViewById(R.id.your_ranking_textview);
                 filterQuery(leaderboardFilterChoice, new QueryCallback() {
                     public void queryCompleteCheck(boolean queryComplete) {
                         assert (queryComplete);
@@ -196,9 +198,6 @@ public class SearchFragment extends Fragment {
                         //super.onStart(); man idk
                         leaderboardAdapter.startListening();
                         leaderboardRecyclerView.setAdapter(leaderboardAdapter);
-
-                        TextView yourRanking = view.findViewById(R.id.your_ranking_textview);
-                        yourRanking.setText(prefs.getString("currentUserRanking", null));
 
                         leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -299,10 +298,20 @@ public class SearchFragment extends Fragment {
                 break;
 
         }
+        prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+
         Query query = usersReference.orderBy(queryField, Query.Direction.DESCENDING);
         query
                 .get()
                 .addOnSuccessListener(documentReferenceSnapshots -> {
+                    for (int i = 0; i < documentReferenceSnapshots.size(); i++) {
+                        DocumentSnapshot user = documentReferenceSnapshots.getDocuments().get(i);
+                        if (user.get("username").equals(prefs.getString("currentUserUsername", null))) {
+                            String yourRankString = "Your Rank: " + (i + 1);
+                            yourRanking.setText(yourRankString);
+                            break;
+                        }
+                    }
                     leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
                             .setQuery(query, User.class)
                             .build();

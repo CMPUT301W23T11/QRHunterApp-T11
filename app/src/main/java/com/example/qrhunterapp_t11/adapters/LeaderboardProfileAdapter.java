@@ -58,11 +58,6 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
             case TOP_QR_CODE_REGIONAL:
                 break;
         }
-
-        if (model.getDisplayName().equals(prefs.getString("currentUserDisplayName", null))) {
-            String rankingText = "Your Ranking: " + (position + 1);
-            prefs.edit().putString("currentUserRanking", rankingText).commit();
-        }
     }
 
     @androidx.annotation.NonNull
