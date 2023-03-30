@@ -627,13 +627,14 @@ public class CameraFragment extends Fragment {
                         }
 
                         //If user already has this qRCode, alert user that they cannot get the points for the same code again
-                        if(qrRefExists){
+                        if (qrRefExists) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                             builder.setTitle("You scanned the same QR twice!");
                             builder.setMessage("You cheated not only the game, but yourself. You didn't grow, you didn't improve, you took a shortcut and gained nothing. You experienced a hollow victory. Nothing was risked and nothing was gained. No points have been added.");
                             builder.setPositiveButton("I'm Sorry", new DialogInterface.OnClickListener() {
                                 @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {} // empty
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                } // empty
                             });
 
                             AlertDialog alert = builder.create();

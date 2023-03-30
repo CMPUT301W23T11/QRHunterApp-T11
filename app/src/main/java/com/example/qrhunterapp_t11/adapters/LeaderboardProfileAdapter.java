@@ -23,7 +23,6 @@ import io.reactivex.rxjava3.annotations.NonNull;
  */
 public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, LeaderboardProfileAdapter.RecyclerViewHolder> {
     private OnItemClickListener listener;
-    private final SharedPreferences prefs;
     private final String viewMode;
     private static final String MOST_POINTS = "Most Points";
     private static final String MOST_SCANS = "Most Scans";
@@ -33,7 +32,6 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
     public LeaderboardProfileAdapter(@NonNull FirestoreRecyclerOptions<User> options, @NonNull String viewMode, @NonNull SharedPreferences prefs) {
         super(options);
         this.viewMode = viewMode;
-        this.prefs = prefs;
     }
 
     @Override

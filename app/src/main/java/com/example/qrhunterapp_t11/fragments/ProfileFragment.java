@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,6 +62,7 @@ public class ProfileFragment extends Fragment {
     private FirestoreRecyclerOptions<QRCode> options;
     private final String displayName;
     private final String username;
+    private final Handler handler = new Handler();
     private SharedPreferences prefs;
 
     /**
@@ -94,6 +96,14 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
         prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+
+        //
+//        handler.postDelayed(new Runnable() {
+//            public void run() {
+//                adapter.notifyDataSetChanged();
+//                handler.postDelayed(this, 1000);
+//            }
+//        }, 1000);
 
         Button backButton = view.findViewById(R.id.profile_back_button);
 
