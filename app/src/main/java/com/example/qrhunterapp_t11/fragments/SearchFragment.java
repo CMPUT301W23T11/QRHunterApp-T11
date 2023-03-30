@@ -5,8 +5,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -116,56 +118,64 @@ public class SearchFragment extends Fragment {
         autoCompleteTextView.setThreshold(1);
         autoCompleteTextView.setAdapter(autoCompleteAdapter);
 
-        // Finds the user after clicking enter
-        autoCompleteTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        autoCompleteTextView.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-
-                if ((keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (i == EditorInfo.IME_ACTION_DONE)) {
-                    autoCompleteTextView.dismissDropDown();
-                    String searchText = autoCompleteTextView.getText().toString().toLowerCase();
-
-                    Query getUser = usersReference.whereEqualTo("displayName", searchText);
-                    getUser.get()
-                            .addOnCompleteListener(task -> {
-                                if (task.isSuccessful()) {
-
-                                    // checks if a user is found
-                                    if (task.getResult().size() > 0) {
-                                        DocumentSnapshot doc = task.getResult().getDocuments().get(0);
-
-                                        // opens the users profile
-                                        User user = doc.toObject(User.class);
-                                        assert user != null;
-
-                                        // Checks to make sure user cant search their own name
-                                        if (!user.getDisplayName().equals(prefs.getString("currentUserDisplayName", null))) {
-                                            autoCompleteTextView.setText("");
-                                            FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-                                            trans.replace(R.id.main_screen, new ProfileFragment(db, user.getUsername(), user.getDisplayName()));
-                                            trans.commit();
-                                        }
-
-                                    } else { // If the user is not found
-                                        Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
-                                        Log.d(TAG, "Document NOT found");
-                                    }
-                                } else {
-                                    Log.d(TAG, "task not successful: ", task.getException());
-                                }
-                            });
-                }
-                return false;
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
             }
+
+            // makes the delete button invisible if there is no input
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                deleteSearch.setVisibility(charSequence.length() > 0 ? View.VISIBLE : View.INVISIBLE);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
+        // Finds the user after clicking enter
+        autoCompleteTextView.setOnEditorActionListener((textView, i, keyEvent) -> {
+            if ((keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (i == EditorInfo.IME_ACTION_DONE)) {
+                autoCompleteTextView.dismissDropDown();
+                String searchText = autoCompleteTextView.getText().toString().toLowerCase();
+
+                Query getUser = usersReference.whereEqualTo("displayName", searchText);
+                getUser.get()
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+
+                                // checks if a user is found
+                                if (task.getResult().size() > 0) {
+                                    DocumentSnapshot doc = task.getResult().getDocuments().get(0);
+
+                                    // opens the users profile
+                                    User user = doc.toObject(User.class);
+                                    assert user != null;
+
+                                    // Checks to make sure user cant search their own name
+                                    if (!user.getDisplayName().equals(prefs.getString("currentUserDisplayName", null))) {
+                                        autoCompleteTextView.setText("");
+                                        FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+                                        trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
+                                        trans.commit();
+                                    }
+
+                                } else {  // if the user is not found
+                                    Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
+                                    Log.d(TAG, "Document NOT found");
+                                }
+                            } else {
+                                Log.d(TAG, "task not successful: ", task.getException());
+                            }
+                        });
+            }
+            return false;
         });
 
         // Clears the text from autoCompleteTextView
-        deleteSearch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                autoCompleteTextView.setText("", false);
-            }
-        });
+        deleteSearch.setOnClickListener(view1 -> autoCompleteTextView.setText("", false));
 
         // Setup spinners
         Spinner leaderboardRadiusSpinner = view.findViewById(R.id.leaderboard_radius_spinner);
