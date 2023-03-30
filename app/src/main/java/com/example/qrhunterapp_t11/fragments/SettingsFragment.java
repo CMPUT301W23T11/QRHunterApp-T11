@@ -26,6 +26,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,54 +69,83 @@ public class SettingsFragment extends Fragment {
 
         usernameEditText = view.findViewById(R.id.username_edit_edittext);
         emailEditText = view.findViewById(R.id.email_edit_edittext);
-        Button confirmButton = view.findViewById(R.id.settings_confirm_button);
+        Button confirmUsernameButton = view.findViewById(R.id.change_username_button);
+        Button confirmEmailButton = view.findViewById(R.id.change_email_button);
 
         usernameString = prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null);
         emailString = prefs.getString(PREFS_CURRENT_USER_EMAIL, null);
         usernameEditText.setText(usernameString);
         emailEditText.setText(emailString);
 
-        confirmButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        // changes the user's username
+        confirmUsernameButton.setOnClickListener(view1 -> {
 
-                usernameString = usernameEditText.getText().toString().toLowerCase();
-                emailString = emailEditText.getText().toString().toLowerCase();
+            usernameString = usernameEditText.getText().toString().toLowerCase();
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                // Make sure new username is eligible for change
-                usernameCheck(usernameString, usernameEditText, new QueryCallback() {
-                    public void queryCompleteCheck(boolean usernameExists) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            // Make sure new username is eligible for change
+            usernameCheck(usernameString, usernameEditText, new QueryCallback() {
+                public void queryCompleteCheck(boolean usernameExists) {
 
-                        if (!usernameExists && validEmail(emailString)) {
-                            builder
-                                    .setTitle("Confirm username and email change")
-                                    .setNegativeButton("Cancel", null)
-                                    .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialogInterface, int i) {
-                                            String user = prefs.getString("currentUserUsername", null);
+                    if (!usernameExists) {
+                        builder
+                                .setTitle("Confirm username change")
+                                .setNegativeButton("Cancel", null)
+                                .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        String user = prefs.getString("currentUserUsername", null);
 
-                                            usersReference.document(user).update(DATABASE_DISPLAY_NAME_FIELD, usernameString);
-                                            usersReference.document(user).update("email", emailString);
+                                        usersReference.document(user).update(DATABASE_DISPLAY_NAME_FIELD, usernameString);
 
-                                            prefs.edit().putString(PREFS_CURRENT_USER_DISPLAY_NAME, usernameString).commit();
-                                            prefs.edit().putString(PREFS_CURRENT_USER_EMAIL, emailString).commit();
+                                        prefs.edit().putString(PREFS_CURRENT_USER_DISPLAY_NAME, usernameString).commit();
 
-                                            // Update username in all user's previous comments
-                                            updateUserComments(user, usernameString, new QueryCallback() {
-                                                public void queryCompleteCheck(boolean queryComplete) {
-                                                    assert (queryComplete);
-                                                }
-                                            });
-                                        }
-                                    })
-                                    .create();
-                            builder.show();
-                        }
+                                        // Update username in all user's previous comments
+                                        updateUserComments(user, usernameString, new QueryCallback() {
+                                            public void queryCompleteCheck(boolean queryComplete) {
+                                                assert (queryComplete);
+                                            }
+                                        });
+                                    }
+                                })
+                                .create();
+                        builder.show();
                     }
-                });
+                }
+            });
+        });
+
+        // changes the user's email
+        confirmEmailButton.setOnClickListener(view12 -> {
+            emailString = emailEditText.getText().toString().toLowerCase();
+
+            AlertDialog.Builder emailBuilder = new AlertDialog.Builder(getContext());
+
+            // checks to make sure the user inputs a valid email
+            if (validEmail(emailString)) {
+                emailBuilder
+                        .setTitle("Confirm email change")
+                        .setNegativeButton("Cancel", null)
+                        .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                String user = prefs.getString("currentUserUsername", null);
+
+                                if (!Objects.equals(emailString, "")) {
+                                    usersReference.document(user).update("email", emailString);
+                                }
+                                else {
+                                    usersReference.document(user).update("email", null);
+                                }
+
+                                prefs.edit().putString(PREFS_CURRENT_USER_EMAIL, emailString).commit();
+
+                            }
+                        })
+                        .create();
+               emailBuilder.show();
             }
+
         });
 
         return view;
@@ -127,7 +157,7 @@ public class SettingsFragment extends Fragment {
      */
     public boolean validEmail(@NonNull String emailString) {
         System.out.println(emailString);
-        if (emailString.equals("No email")) {
+        if (emailString.equals("")) {
             return true;
         }
         else {
