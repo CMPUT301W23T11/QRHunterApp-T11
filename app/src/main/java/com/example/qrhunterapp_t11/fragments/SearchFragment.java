@@ -82,6 +82,7 @@ public class SearchFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
+        Spinner leaderboardRadiusSpinner = view.findViewById(R.id.leaderboard_radius_spinner);
 
         // Set leaderboard filter spinner
         String[] leaderboardFilterChoices = new String[]{"Most Points", "Most Scans", "Top QR Code", "Top QR Code (Regional)"};
@@ -201,11 +202,10 @@ public class SearchFragment extends Fragment {
 
                         leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-                        // If user selects regional QR filter,
+                        // If user selects regional QR filter, initialize radius spinner
                         if (leaderboardFilterChoice.equals("Top QR Code (Regional)")) {
                             // Set leaderboard radius spinner
                             String[] leaderboardRadiusChoices = new String[]{"5 km", "10 km", "25 km", "Custom radius"};
-                            Spinner leaderboardRadiusSpinner = view.findViewById(R.id.leaderboard_radius_spinner);
                             ArrayAdapter<String> radiusAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, leaderboardRadiusChoices);
                             radiusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                             leaderboardRadiusSpinner.setAdapter(radiusAdapter);
@@ -222,6 +222,7 @@ public class SearchFragment extends Fragment {
                                 public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                                     String leaderboardRadiusChoice = leaderboardRadiusSpinner.getSelectedItem().toString();
 
+                                    // If custom radius is selected, prompt for choice
                                     if (leaderboardRadiusChoice.equals(leaderboardRadiusChoices[3])) {
                                         // Set input EditText
                                         final EditText customRadius = new EditText(getContext());
@@ -246,9 +247,14 @@ public class SearchFragment extends Fragment {
                                                 })
                                                 .create();
                                         builder.show();
+                                    } else {
+                                        leaderboardRadiusChoices[3] = "Custom radius";
                                     }
                                 }
                             });
+                        } else {
+                            leaderboardRadiusSpinner.setVisibility(View.GONE);
+
                         }
 
                         // Handles clicking on a user to view their profile
