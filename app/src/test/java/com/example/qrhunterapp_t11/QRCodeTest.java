@@ -81,7 +81,7 @@ public class QRCodeTest {
 
     @Test
     public void testImage() {
-        ArrayList<Integer> faceList;
+        ArrayList<String> faceList;
         ArrayList<Integer> expectedList = new ArrayList<>();
 
         QRCode qrCode = mockQRCode("Test this string");
