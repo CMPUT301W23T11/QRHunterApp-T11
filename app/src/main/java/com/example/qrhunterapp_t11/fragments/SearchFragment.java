@@ -70,6 +70,7 @@ public class SearchFragment extends Fragment {
     private FirestoreRecyclerOptions<User> leaderboardOptions;
     private SharedPreferences prefs;
     private AutoCompleteTextView autoCompleteTextView;
+    private TextView yourRank;
 
     public SearchFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
@@ -82,15 +83,7 @@ public class SearchFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
-        Spinner leaderboardRadiusSpinner = view.findViewById(R.id.leaderboard_radius_spinner);
-
-        // Set leaderboard filter spinner
-        String[] leaderboardFilterChoices = new String[]{"Most Points", "Most Scans", "Top QR Code", "Top QR Code (Regional)"};
-        Spinner leaderboardFilterSpinner = view.findViewById(R.id.leaderboard_filter_spinner);
-        ArrayAdapter<String> filterAdapter = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_spinner_item, leaderboardFilterChoices);
-        filterAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        leaderboardFilterSpinner.setAdapter(filterAdapter);
-        leaderboardFilterSpinner.setPrompt("Filter Leaderboard");
+        prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         Button deleteSearch = view.findViewById(R.id.close_id);
         autoCompleteTextView = view.findViewById(R.id.search_id);
@@ -112,7 +105,6 @@ public class SearchFragment extends Fragment {
                             if (user != null) {
                                 autoCompleteAdapter.add(user.getDisplayName());
                             }
-                            //}
                         }
                     }
                 }
@@ -120,7 +112,7 @@ public class SearchFragment extends Fragment {
         });
 
 
-        // sets up the autocomplete with the provided array Adapter
+        // Sets up the autocomplete with the provided array Adapter
         autoCompleteTextView.setThreshold(1);
         autoCompleteTextView.setAdapter(autoCompleteAdapter);
 
@@ -128,6 +120,7 @@ public class SearchFragment extends Fragment {
         autoCompleteTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+
                 if ((keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (i == EditorInfo.IME_ACTION_DONE)) {
                     autoCompleteTextView.dismissDropDown();
                     String searchText = autoCompleteTextView.getText().toString().toLowerCase();
@@ -149,11 +142,11 @@ public class SearchFragment extends Fragment {
                                         if (!user.getDisplayName().equals(prefs.getString("currentUserDisplayName", null))) {
                                             autoCompleteTextView.setText("");
                                             FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-                                            trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
+                                            trans.replace(R.id.main_screen, new ProfileFragment(db, user.getUsername(), user.getDisplayName()));
                                             trans.commit();
                                         }
 
-                                    } else {  // if the user is not found
+                                    } else { // If the user is not found
                                         Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
                                         Log.d(TAG, "Document NOT found");
                                     }
@@ -174,30 +167,37 @@ public class SearchFragment extends Fragment {
             }
         });
 
-        // Set Firestore RecyclerView query and begin monitoring that query
+        // Setup spinners
+        Spinner leaderboardRadiusSpinner = view.findViewById(R.id.leaderboard_radius_spinner);
+
+        String[] leaderboardFilterChoices = new String[]{"Most Points", "Most Scans", "Top QR Code", "Top QR Code (Regional)"};
+        Spinner leaderboardFilterSpinner = view.findViewById(R.id.leaderboard_filter_spinner);
+        ArrayAdapter<String> filterAdapter = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_spinner_item, leaderboardFilterChoices);
+        filterAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        leaderboardFilterSpinner.setAdapter(filterAdapter);
+        leaderboardFilterSpinner.setPrompt("Filter Leaderboard");
+
         leaderboardFilterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
                 // A spinner option will always be selected
             }
 
+            // Set Firestore RecyclerView query depending on selected filter and begin monitoring that query
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 String leaderboardFilterChoice = leaderboardFilterSpinner.getSelectedItem().toString();
+                yourRank = view.findViewById(R.id.your_ranking_textview);
                 filterQuery(leaderboardFilterChoice, new QueryCallback() {
                     public void queryCompleteCheck(boolean queryComplete) {
                         assert (queryComplete);
                         leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
 
-                        prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
-                        leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, leaderboardFilterChoice, prefs);
+                        leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, leaderboardFilterChoice);
 
                         //super.onStart(); man idk
                         leaderboardAdapter.startListening();
                         leaderboardRecyclerView.setAdapter(leaderboardAdapter);
-
-                        TextView yourRanking = view.findViewById(R.id.your_ranking_textview);
-                        yourRanking.setText(prefs.getString("currentUserRanking", null));
 
                         leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -263,7 +263,7 @@ public class SearchFragment extends Fragment {
 
                                 User user = documentSnapshot.toObject(User.class);
                                 FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-                                trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
+                                trans.replace(R.id.main_screen, new ProfileFragment(db, user.getUsername(), user.getDisplayName()));
                                 trans.commit();
                             }
                         });
@@ -298,10 +298,20 @@ public class SearchFragment extends Fragment {
                 break;
 
         }
+
         Query query = usersReference.orderBy(queryField, Query.Direction.DESCENDING);
         query
                 .get()
                 .addOnSuccessListener(documentReferenceSnapshots -> {
+                    // Set user's rank
+                    for (int i = 0; i < documentReferenceSnapshots.size(); i++) {
+                        DocumentSnapshot user = documentReferenceSnapshots.getDocuments().get(i);
+                        if (user.get("username").equals(prefs.getString("currentUserUsername", null))) {
+                            String yourRankString = "Your Rank: " + (i + 1);
+                            yourRank.setText(yourRankString);
+                            break;
+                        }
+                    }
                     leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
                             .setQuery(query, User.class)
                             .build();
