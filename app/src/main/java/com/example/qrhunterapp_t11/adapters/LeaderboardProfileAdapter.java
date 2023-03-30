@@ -1,6 +1,5 @@
 package com.example.qrhunterapp_t11.adapters;
 
-import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +28,7 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
     private static final String TOP_QR_CODE = "Top QR Code";
     private static final String TOP_QR_CODE_REGIONAL = "Top QR Code (Regional)";
 
-    public LeaderboardProfileAdapter(@NonNull FirestoreRecyclerOptions<User> options, @NonNull String viewMode, @NonNull SharedPreferences prefs) {
+    public LeaderboardProfileAdapter(@NonNull FirestoreRecyclerOptions<User> options, @NonNull String viewMode) {
         super(options);
         this.viewMode = viewMode;
     }

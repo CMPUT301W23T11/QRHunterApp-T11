@@ -83,6 +83,8 @@ public class SearchFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
+        prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+
         Spinner leaderboardRadiusSpinner = view.findViewById(R.id.leaderboard_radius_spinner);
 
         // Set leaderboard filter spinner
@@ -192,8 +194,7 @@ public class SearchFragment extends Fragment {
                         assert (queryComplete);
                         leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
 
-                        prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
-                        leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, leaderboardFilterChoice, prefs);
+                        leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, leaderboardFilterChoice);
 
                         //super.onStart(); man idk
                         leaderboardAdapter.startListening();
@@ -298,12 +299,12 @@ public class SearchFragment extends Fragment {
                 break;
 
         }
-        prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         Query query = usersReference.orderBy(queryField, Query.Direction.DESCENDING);
         query
                 .get()
                 .addOnSuccessListener(documentReferenceSnapshots -> {
+                    // Set user's rank
                     for (int i = 0; i < documentReferenceSnapshots.size(); i++) {
                         DocumentSnapshot user = documentReferenceSnapshots.getDocuments().get(i);
                         if (user.get("username").equals(prefs.getString("currentUserUsername", null))) {

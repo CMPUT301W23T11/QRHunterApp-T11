@@ -65,6 +65,7 @@ public class QRCodeView extends DialogFragment {
     private TextView commentNumTextView;
     private ViewPager viewPager;
     private QRCodeAdapter adapter;
+    String currentUser;
 
     /**
      * Empty constructor
@@ -98,6 +99,7 @@ public class QRCodeView extends DialogFragment {
         PhotoAdapter photoAdapter;
 
         prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        currentUser = prefs.getString("currentUserUsername", null);
         View view = LayoutInflater.from(getContext()).inflate(R.layout.qr_view, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
@@ -171,7 +173,7 @@ public class QRCodeView extends DialogFragment {
         // When the send image arrow ImageView is clicked, if a comment has been made it will be added
         // to the QRCode object's saved array of comments and appear in the comment box with the associated user
         // User can only comment on QR Codes if they already have that code in their collection
-        checkUserHasQRCode(prefs.getString("currentUserUsername", null), qrCodeID, new QueryCallback() {
+        checkUserHasQRCode(currentUser, qrCodeID, new QueryCallback() {
             @Override
             public void queryCompleteCheck(boolean userHasQRCode) {
 
@@ -184,7 +186,6 @@ public class QRCodeView extends DialogFragment {
                             if (!commentString.isEmpty()) {
 
                                 String currentUserDisplayName = prefs.getString("currentUserDisplayName", null);
-                                String currentUser = prefs.getString("currentUserUsername", null);
                                 Comment comment = new Comment(commentString, currentUserDisplayName, currentUser);
 
                                 commentAdapter.addToCommentList(comment);
