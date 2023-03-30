@@ -446,7 +446,7 @@ public class CameraFragment extends Fragment {
         handler.postDelayed(new Runnable() {
             public void run() { // Wait 500ms before returning to profile; if app returns to quickly the addition will not be registered in Firestore yet (the RecyclerView will update too early)
                 FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-                trans.replace(R.id.main_screen, new ProfileFragment(db, currentUserDisplayName, currentUserUsername));
+                trans.replace(R.id.main_screen, new ProfileFragment(db, currentUserUsername, currentUserDisplayName));
                 trans.commit();
             }
         }, 500);

@@ -70,7 +70,7 @@ public class SearchFragment extends Fragment {
     private FirestoreRecyclerOptions<User> leaderboardOptions;
     private SharedPreferences prefs;
     private AutoCompleteTextView autoCompleteTextView;
-    TextView yourRanking;
+    private TextView yourRank;
 
     public SearchFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
@@ -153,11 +153,11 @@ public class SearchFragment extends Fragment {
                                         if (!user.getDisplayName().equals(prefs.getString("currentUserDisplayName", null))) {
                                             autoCompleteTextView.setText("");
                                             FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-                                            trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
+                                            trans.replace(R.id.main_screen, new ProfileFragment(db, user.getUsername(), user.getDisplayName()));
                                             trans.commit();
                                         }
 
-                                    } else { // if the user is not found
+                                    } else { // If the user is not found
                                         Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
                                         Log.d(TAG, "Document NOT found");
                                     }
@@ -188,7 +188,7 @@ public class SearchFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 String leaderboardFilterChoice = leaderboardFilterSpinner.getSelectedItem().toString();
-                yourRanking = view.findViewById(R.id.your_ranking_textview);
+                yourRank = view.findViewById(R.id.your_ranking_textview);
                 filterQuery(leaderboardFilterChoice, new QueryCallback() {
                     public void queryCompleteCheck(boolean queryComplete) {
                         assert (queryComplete);
@@ -264,7 +264,7 @@ public class SearchFragment extends Fragment {
 
                                 User user = documentSnapshot.toObject(User.class);
                                 FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-                                trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
+                                trans.replace(R.id.main_screen, new ProfileFragment(db, user.getUsername(), user.getDisplayName()));
                                 trans.commit();
                             }
                         });
@@ -309,7 +309,7 @@ public class SearchFragment extends Fragment {
                         DocumentSnapshot user = documentReferenceSnapshots.getDocuments().get(i);
                         if (user.get("username").equals(prefs.getString("currentUserUsername", null))) {
                             String yourRankString = "Your Rank: " + (i + 1);
-                            yourRanking.setText(yourRankString);
+                            yourRank.setText(yourRankString);
                             break;
                         }
                     }
