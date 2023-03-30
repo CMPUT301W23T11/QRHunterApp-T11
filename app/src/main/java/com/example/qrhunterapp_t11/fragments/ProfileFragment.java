@@ -134,7 +134,7 @@ public class ProfileFragment extends Fragment {
                             qrCodeRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
                             qrCodeRecyclerView.setHasFixedSize(false);
 
-                            updateScores(userData);
+                            updateScores(view, userData);
 
                             // Handles clicking on an item to view the QR Code
                             adapter.setOnItemClickListener(new OnItemClickListener() {
@@ -283,12 +283,12 @@ public class ProfileFragment extends Fragment {
      *
      * @param userData Array containing user's scores
      */
-    public void updateScores(@NonNull ArrayList<String> userData) {
+    public void updateScores(@NonNull View view, @NonNull ArrayList<String> userData) {
 
-        TextView totalScoreText = getView().findViewById(R.id.totalScoreText);
-        TextView topQRCodeText = getView().findViewById(R.id.topQRText);
-        TextView lowQRCodeText = getView().findViewById(R.id.lowQRText);
-        TextView totalQRCodesText = getView().findViewById(R.id.totalQRText);
+        TextView totalScoreText = view.findViewById(R.id.totalScoreText);
+        TextView topQRCodeText = view.findViewById(R.id.topQRText);
+        TextView lowQRCodeText = view.findViewById(R.id.lowQRText);
+        TextView totalQRCodesText = view.findViewById(R.id.totalQRText);
 
         // Gets the total score of the user
         int total = 0;
