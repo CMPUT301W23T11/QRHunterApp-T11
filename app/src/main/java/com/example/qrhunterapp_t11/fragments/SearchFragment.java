@@ -1,8 +1,12 @@
 package com.example.qrhunterapp_t11.fragments;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -13,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,6 +55,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * <ul>
  * <li><a href="https://stackoverflow.com/a/5241720">For setting spinner</a></li>
  * <li><a href="https://stackoverflow.com/questions/41670850/prevent-user-to-go-next-line-by-pressing-softkey-enter-in-autocompletetextview">How to handle a ENTER click action</a></li>
+ * <li><a href="https://stackoverflow.com/a/4145983">For setting EditText filter</a></li>
  * </ul>
  * </pre>
  */
@@ -77,12 +83,13 @@ public class SearchFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
 
-        // Set leaderboard options spinner
+        // Set leaderboard filter spinner
         String[] leaderboardFilterChoices = new String[]{"Most Points", "Most Scans", "Top QR Code", "Top QR Code (Regional)"};
-        Spinner leaderboardFilter = view.findViewById(R.id.leaderboard_filter_spinner);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_spinner_item, leaderboardFilterChoices);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        leaderboardFilter.setAdapter(adapter);
+        Spinner leaderboardFilterSpinner = view.findViewById(R.id.leaderboard_filter_spinner);
+        ArrayAdapter<String> filterAdapter = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_spinner_item, leaderboardFilterChoices);
+        filterAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        leaderboardFilterSpinner.setAdapter(filterAdapter);
+        leaderboardFilterSpinner.setPrompt("Filter Leaderboard");
 
         Button deleteSearch = view.findViewById(R.id.close_id);
         autoCompleteTextView = view.findViewById(R.id.search_id);
@@ -92,7 +99,7 @@ public class SearchFragment extends Fragment {
         // Todo: edit set displayName to lowercase when adding to database to get case insensitivity
         usersReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onEvent(@androidx.annotation.Nullable QuerySnapshot value, @androidx.annotation.Nullable FirebaseFirestoreException error) {
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 if (error != null) {
                     Log.w(TAG, "Listen failed: ", error);
                     return;
@@ -168,7 +175,7 @@ public class SearchFragment extends Fragment {
         });
 
         // Set Firestore RecyclerView query and begin monitoring that query
-        leaderboardFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        leaderboardFilterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
                 // A spinner option will always be selected
@@ -176,14 +183,14 @@ public class SearchFragment extends Fragment {
 
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                String leaderboardSpinnerChoice = leaderboardFilter.getSelectedItem().toString();
-                filterQuery(leaderboardSpinnerChoice, new QueryCallback() {
+                String leaderboardFilterChoice = leaderboardFilterSpinner.getSelectedItem().toString();
+                filterQuery(leaderboardFilterChoice, new QueryCallback() {
                     public void queryCompleteCheck(boolean queryComplete) {
                         assert (queryComplete);
                         leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recyclerview);
 
                         prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
-                        leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, leaderboardSpinnerChoice, prefs);
+                        leaderboardAdapter = new LeaderboardProfileAdapter(leaderboardOptions, leaderboardFilterChoice, prefs);
 
                         //super.onStart(); man idk
                         leaderboardAdapter.startListening();
@@ -193,6 +200,56 @@ public class SearchFragment extends Fragment {
                         yourRanking.setText(prefs.getString("currentUserRanking", null));
 
                         leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+                        // If user selects regional QR filter,
+                        if (leaderboardFilterChoice.equals("Top QR Code (Regional)")) {
+                            // Set leaderboard radius spinner
+                            String[] leaderboardRadiusChoices = new String[]{"5 km", "10 km", "25 km", "Custom radius"};
+                            Spinner leaderboardRadiusSpinner = view.findViewById(R.id.leaderboard_radius_spinner);
+                            ArrayAdapter<String> radiusAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, leaderboardRadiusChoices);
+                            radiusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            leaderboardRadiusSpinner.setAdapter(radiusAdapter);
+                            leaderboardRadiusSpinner.setVisibility(View.VISIBLE);
+                            leaderboardRadiusSpinner.setPrompt("Set a radius");
+
+                            leaderboardRadiusSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                                @Override
+                                public void onNothingSelected(AdapterView<?> adapterView) {
+                                    // A spinner option will always be selected
+                                }
+
+                                @Override
+                                public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                                    String leaderboardRadiusChoice = leaderboardRadiusSpinner.getSelectedItem().toString();
+
+                                    if (leaderboardRadiusChoice.equals(leaderboardRadiusChoices[3])) {
+                                        // Set input EditText
+                                        final EditText customRadius = new EditText(getContext());
+                                        InputFilter[] filterArray = new InputFilter[1];
+                                        filterArray[0] = new InputFilter.LengthFilter(3);
+                                        customRadius.setFilters(filterArray);
+                                        customRadius.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
+
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                                        builder
+                                                .setTitle("Custom radius")
+                                                .setView(customRadius)
+                                                .setMessage("Enter a custom radius in km")
+                                                .setNegativeButton("Cancel", null)
+                                                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                                        String customRadiusAmount = customRadius.getText().toString();
+                                                        leaderboardRadiusChoices[3] = "Custom radius (" + customRadiusAmount + " km)";
+                                                        radiusAdapter.notifyDataSetChanged();
+                                                    }
+                                                })
+                                                .create();
+                                        builder.show();
+                                    }
+                                }
+                            });
+                        }
 
                         // Handles clicking on a user to view their profile
                         leaderboardAdapter.setOnItemClickListener(new OnItemClickListener() {
