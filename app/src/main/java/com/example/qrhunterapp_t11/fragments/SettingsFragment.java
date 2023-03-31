@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,12 +26,20 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Handles settings screen. Users can rename themselves and change their email.
  *
  * @author Afra
  * @sources Firestore documentation
+ * @sources <pre>
+ *  * <ul>
+ *  * <li><a href="https://www.javatpoint.com/java-email-validation">Validating email input using regex</a></li>
+ *  * </ul>
+ *  * </pre>
  */
 public class SettingsFragment extends Fragment {
 
@@ -60,57 +69,113 @@ public class SettingsFragment extends Fragment {
 
         usernameEditText = view.findViewById(R.id.username_edit_edittext);
         emailEditText = view.findViewById(R.id.email_edit_edittext);
-        Button confirmButton = view.findViewById(R.id.settings_confirm_button);
+        Button confirmUsernameButton = view.findViewById(R.id.change_username_button);
+        Button confirmEmailButton = view.findViewById(R.id.change_email_button);
 
         usernameString = prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null);
-        emailString = prefs.getString(PREFS_CURRENT_USER_EMAIL, "No email");
+        emailString = prefs.getString(PREFS_CURRENT_USER_EMAIL, null);
         usernameEditText.setText(usernameString);
         emailEditText.setText(emailString);
 
-        confirmButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        // changes the user's username
+        confirmUsernameButton.setOnClickListener(view1 -> {
 
-                usernameString = usernameEditText.getText().toString();
-                emailString = emailEditText.getText().toString();
+            usernameString = usernameEditText.getText().toString().toLowerCase();
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                // Make sure new username is eligible for change
-                usernameCheck(usernameString, usernameEditText, new QueryCallback() {
-                    public void queryCompleteCheck(boolean usernameExists) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            // Make sure new username is eligible for change
+            usernameCheck(usernameString, usernameEditText, new QueryCallback() {
+                public void queryCompleteCheck(boolean usernameExists) {
 
-                        if (!usernameExists) {
-                            builder
-                                    .setTitle("Confirm username and email change")
-                                    .setNegativeButton("Cancel", null)
-                                    .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialogInterface, int i) {
-                                            String user = prefs.getString("currentUserUsername", null);
+                    if (!usernameExists) {
+                        builder
+                                .setTitle("Confirm username change")
+                                .setNegativeButton("Cancel", null)
+                                .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        String user = prefs.getString("currentUserUsername", null);
 
-                                            usersReference.document(user).update(DATABASE_DISPLAY_NAME_FIELD, usernameString);
-                                            usersReference.document(user).update("email", emailString);
+                                        usersReference.document(user).update(DATABASE_DISPLAY_NAME_FIELD, usernameString);
 
-                                            prefs.edit().putString(PREFS_CURRENT_USER_DISPLAY_NAME, usernameString).commit();
-                                            prefs.edit().putString(PREFS_CURRENT_USER_EMAIL, emailString).commit();
+                                        prefs.edit().putString(PREFS_CURRENT_USER_DISPLAY_NAME, usernameString).commit();
 
-                                            // Update username in all user's previous comments
-                                            updateUserComments(user, usernameString, new QueryCallback() {
-                                                public void queryCompleteCheck(boolean queryComplete) {
-                                                    assert (queryComplete);
-                                                }
-                                            });
-                                        }
-                                    })
-                                    .create();
-                            builder.show();
-                        }
+                                        // Update username in all user's previous comments
+                                        updateUserComments(user, usernameString, new QueryCallback() {
+                                            public void queryCompleteCheck(boolean queryComplete) {
+                                                assert (queryComplete);
+                                            }
+                                        });
+                                    }
+                                })
+                                .create();
+                        builder.show();
                     }
-                });
+                }
+            });
+        });
+
+        // changes the user's email
+        confirmEmailButton.setOnClickListener(view12 -> {
+            emailString = emailEditText.getText().toString().toLowerCase();
+
+            AlertDialog.Builder emailBuilder = new AlertDialog.Builder(getContext());
+
+            // checks to make sure the user inputs a valid email
+            if (validEmail(emailString)) {
+                emailBuilder
+                        .setTitle("Confirm email change")
+                        .setNegativeButton("Cancel", null)
+                        .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                String user = prefs.getString("currentUserUsername", null);
+
+                                if (!Objects.equals(emailString, "")) {
+                                    usersReference.document(user).update("email", emailString);
+                                }
+                                else {
+                                    usersReference.document(user).update("email", null);
+                                }
+
+                                prefs.edit().putString(PREFS_CURRENT_USER_EMAIL, emailString).commit();
+
+                            }
+                        })
+                        .create();
+               emailBuilder.show();
             }
+
         });
 
         return view;
+    }
+
+    /**
+     *  Checks to see if inputted email is in a valid format
+     * @param emailString Entered email
+     */
+    public boolean validEmail(@NonNull String emailString) {
+        System.out.println(emailString);
+        if (emailString.equals("")) {
+            return true;
+        }
+        else {
+            // string to see the correct format of an email, allowed characters, and restricted character format
+            String regex = "^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*@(?:[a-zA-Z\\d-]+\\.)+[a-zA-Z]{2,6}$";
+            Pattern pattern = Pattern.compile(regex);
+
+            // sees if provided email matches the regex email format string
+            Matcher matcher = pattern.matcher(emailString);
+            if (matcher.matches()){
+                return true;
+            }
+            else {
+                emailEditText.setError("Invalid Email");
+                return false;
+            }
+        }
+
     }
 
     /**

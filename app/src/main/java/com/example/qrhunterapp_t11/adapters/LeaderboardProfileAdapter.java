@@ -1,6 +1,5 @@
 package com.example.qrhunterapp_t11.adapters;
 
-import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,17 +22,15 @@ import io.reactivex.rxjava3.annotations.NonNull;
  */
 public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, LeaderboardProfileAdapter.RecyclerViewHolder> {
     private OnItemClickListener listener;
-    private final SharedPreferences prefs;
     private final String viewMode;
     private static final String MOST_POINTS = "Most Points";
     private static final String MOST_SCANS = "Most Scans";
     private static final String TOP_QR_CODE = "Top QR Code";
     private static final String TOP_QR_CODE_REGIONAL = "Top QR Code (Regional)";
 
-    public LeaderboardProfileAdapter(@NonNull FirestoreRecyclerOptions<User> options, @NonNull String viewMode, @NonNull SharedPreferences prefs) {
+    public LeaderboardProfileAdapter(@NonNull FirestoreRecyclerOptions<User> options, @NonNull String viewMode) {
         super(options);
         this.viewMode = viewMode;
-        this.prefs = prefs;
     }
 
     @Override
@@ -57,11 +54,6 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
                 break;
             case TOP_QR_CODE_REGIONAL:
                 break;
-        }
-
-        if (model.getDisplayName().equals(prefs.getString("currentUserDisplayName", null))) {
-            String rankingText = "Your Ranking: " + (position + 1);
-            prefs.edit().putString("currentUserRanking", rankingText).commit();
         }
     }
 

@@ -50,7 +50,7 @@ public class QRCode {
     }
 
     /**
-     * special blank constructor for Firebase
+     * Special blank constructor for Firebase
      *
      * @reference <a href="https://firebase.google.com/docs/firestore/manage-data/add-data#custom_objects">implemented by referencing firebase documentation</a>
      */
@@ -361,7 +361,7 @@ public class QRCode {
         this.longitude = longitude;
     }
 
-        /**
+    /**
      * Getter for QRCode Object's faceList attribute
      *
      * @return faceList - An ArrayList containing information to create face visual display

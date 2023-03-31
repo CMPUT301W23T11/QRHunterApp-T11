@@ -59,6 +59,7 @@
                     android:layout_height="26dp"
                     android:layout_marginTop="2dp"
                     android:layout_marginEnd="5dp"
+                    android:visibility="invisible"
                     android:background="@drawable/close_icon" />
             </LinearLayout>
 
@@ -85,6 +86,13 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
+        <Spinner
+            android:id="@+id/leaderboard_radius_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dialog"
+            android:visibility="gone" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -105,7 +113,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:gravity="end"
-                android:spinnerMode="dropdown" />
+                android:spinnerMode="dialog" />
         </LinearLayout>
 
     </LinearLayout>
