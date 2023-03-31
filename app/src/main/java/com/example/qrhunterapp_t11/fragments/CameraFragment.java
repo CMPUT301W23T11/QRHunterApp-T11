@@ -74,7 +74,7 @@ public class CameraFragment extends Fragment {
     private ActivityResultLauncher<Intent> photoLauncher;
     private QRCode qrCode;
     private String imageUrl = null;
-    private String resizedImageUrl = null;
+    private String resizedImageUrl;
     private SharedPreferences prefs;
     private String currentUserDisplayName;
     private String currentUserUsername;
@@ -468,6 +468,8 @@ public class CameraFragment extends Fragment {
         prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
         currentUserDisplayName = prefs.getString("currentUserDisplayName", null);
         currentUserUsername = prefs.getString("currentUserUsername", null);
+        resizedImageUrl = null; // for some reason resizedImageUrl appears to persist between scans; if you add a QR with a photo, and then immediately add a QR
+                                // without a photo, the second QR will re-use the the photo from the first QR code. Clearing resizedImageUrl here appears to fix this.
 
         photoLauncher = registerForActivityResult( // should be okay to initialize before scanner
                 new ActivityResultContracts.StartActivityForResult(),
@@ -479,7 +481,7 @@ public class CameraFragment extends Fragment {
                         Bundle extras = intent.getExtras();
                         imageUrl = extras.getString("url");
 
-                        resizedImageUrl = getResizeImageUrl(imageUrl); //TODO get true url of image
+                        resizedImageUrl = getResizeImageUrl(imageUrl);
 
                         promptForLocation(); // prompt for location once the TakePhotoActivity has finished
                     }
