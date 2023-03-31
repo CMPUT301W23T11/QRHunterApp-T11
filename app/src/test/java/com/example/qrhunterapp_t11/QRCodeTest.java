@@ -82,54 +82,52 @@ public class QRCodeTest {
     @Test
     public void testImage() {
         ArrayList<String> faceList;
-        ArrayList<Integer> expectedList = new ArrayList<>();
+        ArrayList<String> expectedList = new ArrayList<>();
 
         QRCode qrCode = mockQRCode("Test this string");
-        expectedList.add(2131165346);
-        expectedList.add(2131165344);
-        expectedList.add(2131165317);
-        expectedList.add(2131165428);
-        expectedList.add(2131165387);
-        expectedList.add(2131165347);
+        expectedList.add("eyes2");
+        expectedList.add("eyebrows2");
+        expectedList.add("colour2");
+        expectedList.add("nose2");
+        expectedList.add("mouth1");
+        expectedList.add("face1");
 
         Assertions.assertEquals(expectedList, qrCode.getFaceList());
 
-        ArrayList<Integer> expectedList2 = new ArrayList<>();
-        expectedList2.add(2131165346);
-        expectedList2.add(2131165344);
-        expectedList2.add(2131165316);
-        expectedList2.add(2131165427);
-        expectedList2.add(2131165387);
-        expectedList2.add(2131165348);
+        ArrayList<String> expectedList2 = new ArrayList<>();
+        expectedList2.add("eyes2");
+        expectedList2.add("eyebrows2");
+        expectedList2.add("colour1");
+        expectedList2.add("nose1");
+        expectedList2.add("mouth1");
+        expectedList2.add("face2");
 
         QRCode qrCode2 = mockQRCode("");
-        System.out.println(qrCode.getHash());
         Assertions.assertEquals(expectedList2, qrCode2.getFaceList());
 
         //simple test to make sure the hash to binary works correctly
-        ArrayList<Integer> expectedList3 = new ArrayList<>();
-        expectedList3.add(2131165345);
-        expectedList3.add(2131165343);
-        expectedList3.add(2131165316);
-        expectedList3.add(2131165427);
-        expectedList3.add(2131165387);
-        expectedList3.add(2131165347);
+        ArrayList<String> expectedList3 = new ArrayList<>();
+        expectedList3.add("eyes1");
+        expectedList3.add("eyebrows1");
+        expectedList3.add("colour1");
+        expectedList3.add("nose1");
+        expectedList3.add("mouth1");
+        expectedList3.add("face1");
 
         faceList = QRCode.uniqueImage("080000");
         Assertions.assertEquals(expectedList3, faceList);
 
         //simple test to make sure the hash to binary works correctly
-        ArrayList<Integer> expectedList4 = new ArrayList<>();
-        expectedList4.add(2131165346);
-        expectedList4.add(2131165344);
-        expectedList4.add(2131165317);
-        expectedList4.add(2131165428);
-        expectedList4.add(2131165388);
-        expectedList4.add(2131165348);
+        ArrayList<String> expectedList4 = new ArrayList<>();
+        expectedList4.add("eyes2");
+        expectedList4.add("eyebrows2");
+        expectedList4.add("colour2");
+        expectedList4.add("nose2");
+        expectedList4.add("mouth2");
+        expectedList4.add("face2");
 
         faceList = QRCode.uniqueImage("07ffff");
         Assertions.assertEquals(expectedList4, faceList);
-
     }
 
     /**
