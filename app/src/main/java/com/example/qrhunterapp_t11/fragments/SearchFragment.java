@@ -1,9 +1,12 @@
 package com.example.qrhunterapp_t11.fragments;
 
 import android.app.AlertDialog;
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -25,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -36,15 +40,33 @@ import com.example.qrhunterapp_t11.interfaces.OnItemClickListener;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.User;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -73,6 +95,9 @@ public class SearchFragment extends Fragment {
     private SharedPreferences prefs;
     private AutoCompleteTextView autoCompleteTextView;
     private TextView yourRank;
+    private static final int permissionsRequestLocation = 100;
+    private double lat;
+    private double lon;
 
     public SearchFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
@@ -285,6 +310,125 @@ public class SearchFragment extends Fragment {
         return view;
     }
 
+    public interface LocationCallback {
+        void onLocationResult(double latitude, double longitude);
+    }
+
+    private void getCurrentLocation(LocationCallback callback) {
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+        if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
+                    if (location != null) {
+                        double latitude = location.getLatitude();
+                        double longitude = location.getLongitude();
+                        callback.onLocationResult(latitude, longitude);
+                    } else {
+                        // Location data is not available
+                        Log.d(TAG, "ERROR Location data is not available.");
+                        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, permissionsRequestLocation);
+                    }
+                }
+            });
+        }
+    }
+
+    private boolean hasLocationPermission() {
+        return ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case permissionsRequestLocation:
+                boolean isFineLocationGranted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                boolean isCoarseLocationGranted = grantResults.length > 1 && grantResults[1] == PackageManager.PERMISSION_GRANTED;
+
+                if (isFineLocationGranted) {
+                    Log.d(TAG, "Execute if permission granted f.");
+                    getCurrentLocation(new LocationCallback() {
+                        @Override
+                        public void onLocationResult(double latitude, double longitude) {
+                            lat = latitude;
+                            lon = longitude;
+                            Log.d(TAG, "Latitude1 " + lat + ", Longitude1 " + lon);
+                            findQRCodeNearby(lat, lon,50);
+                        }
+                    });
+                } else if (isCoarseLocationGranted) {
+                    Log.d(TAG, "Execute if permission granted c.");
+                    getCurrentLocation(new LocationCallback() {
+                        @Override
+                        public void onLocationResult(double latitude, double longitude) {
+                            lat = latitude;
+                            lon = longitude;
+                            Log.d(TAG, "Latitude2 " + lat + ", Longitude2 " + lon);
+                            findQRCodeNearby(lat, lon,50);
+                        }
+                    });
+                } else {
+                    // Permission is not granted
+                    Log.d(TAG, "Execute if permission not granted.");
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
+    private void findQRCodeNearby(double latitude, double longitude, double radius) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        CollectionReference qrCodesRef = db.collection("QRCodes");
+
+        // Define the bounds of the query
+        double lowerLat = latitude - (radius / 111.0);
+        double lowerLon = longitude - (radius / (111.0 * Math.cos(latitude)));
+        double upperLat = latitude + (radius / 111.0);
+        double upperLon = longitude + (radius / (111.0 * Math.cos(latitude)));
+
+        // Query the Firestore database for QR codes within the bounds of latitude
+        Query latQuery = qrCodesRef.whereGreaterThanOrEqualTo("latitude", lowerLat)
+                .whereLessThanOrEqualTo("latitude", upperLat);
+
+        // Query the Firestore database for QR codes within the bounds of longitude
+        Query lonQuery = qrCodesRef.whereGreaterThanOrEqualTo("longitude", lowerLon)
+                .whereLessThanOrEqualTo("longitude", upperLon);
+
+        // Combine the results of the two queries
+        Task<List<QuerySnapshot>> combinedResults = Tasks.whenAllSuccess(latQuery.get(), lonQuery.get());
+
+        // Process the combined results
+        combinedResults.addOnCompleteListener(new OnCompleteListener<List<QuerySnapshot>>() {
+            @Override
+            public void onComplete(@NonNull Task<List<QuerySnapshot>> task) {
+                if (task.isSuccessful()) {
+                    List<QuerySnapshot> querySnapshots = task.getResult();
+                    Set<DocumentSnapshot> documents = new HashSet<>();
+
+                    for (QuerySnapshot snapshot : querySnapshots) {
+                        documents.addAll(snapshot.getDocuments());
+                    }
+
+                    for (DocumentSnapshot document : documents) {
+                        double documentLat = document.getDouble("latitude");
+                        double documentLon = document.getDouble("longitude");
+
+                        // Check if the QR code is within the radius
+                        if (Math.pow(documentLat - latitude, 2) + Math.pow(documentLon - longitude, 2) <= Math.pow(radius / 111.0, 2)) {
+                            String documentId = document.getId();
+                            Log.d(TAG, "Document ID: " + documentId);
+                        }
+                    }
+                } else {
+                    Log.d(TAG, "Error getting documents: ", task.getException());
+                }
+            }
+        });
+    }
+
     /**
      * Set query for Firestore RecyclerView depending on what spinner option is selected
      *
@@ -305,6 +449,21 @@ public class SearchFragment extends Fragment {
                 break;
             case "Top QR Code (Regional)":
                 queryField = "topQRCode";
+                if (hasLocationPermission()) {
+                    getCurrentLocation(new LocationCallback() {
+                        @Override
+                        public void onLocationResult(double latitude, double longitude) {
+                            lat = latitude;
+                            lon = longitude;
+                            Log.d(TAG, "Latitude3 " + lat + ", Longitude3 " + lon);
+                            findQRCodeNearby(lat, lon,50);
+                        }
+                    });
+                } else {
+                    Log.d(TAG, "ASKING FOR PERMISSION.");
+                    requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, permissionsRequestLocation);
+                }
+
                 break;
 
         }

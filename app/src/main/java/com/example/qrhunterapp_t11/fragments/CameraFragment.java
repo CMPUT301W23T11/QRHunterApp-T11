@@ -70,9 +70,6 @@ import nl.dionsegijn.konfetti.xml.KonfettiView;
  */
 public class CameraFragment extends Fragment {
     private static final int permissionsRequestLocation = 100;
-    private final boolean mIsPreciseLocationEnabled = false;
-    public static final int permissionsRequestAccessFineLocation = 9003;
-    public static final int permissionsRequestAccessCoarseLocation = 9004;
     private ActivityResultLauncher<ScanOptions> barLauncher;
     private ActivityResultLauncher<Intent> photoLauncher;
     private QRCode qrCode;
