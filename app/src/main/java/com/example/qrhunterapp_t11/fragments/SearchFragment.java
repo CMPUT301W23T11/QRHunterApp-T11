@@ -396,7 +396,6 @@ public class SearchFragment extends Fragment {
             for (QuerySnapshot snapshot : querySnapshotsList) {
                 documents.addAll(snapshot.getDocuments());
             }
-            System.out.println("ooooooooooooooooooooooooo" + documents);
 
             for (DocumentSnapshot document : documents) {
                 double documentLat = document.getDouble("latitude");
@@ -406,6 +405,7 @@ public class SearchFragment extends Fragment {
                 if (Math.pow(documentLat - latitude, 2) + Math.pow(documentLon - longitude, 2) <= Math.pow(radius / 111.0, 2)) {
                     String documentId = document.getId();
                     Log.d(TAG, "Document ID: " + documentId);
+
                 }
             }
         });

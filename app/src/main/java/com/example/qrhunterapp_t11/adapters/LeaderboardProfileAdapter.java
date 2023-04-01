@@ -42,17 +42,16 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
         switch (viewMode) {
             case MOST_POINTS:
                 String totalPoints = "Points: " + model.getTotalPoints();
-                holder.totalPoints.setText(totalPoints);
+                holder.typeOfRanking.setText(totalPoints);
                 break;
             case MOST_SCANS:
                 String totalScans = "Scans: " + model.getTotalScans();
-                holder.totalScans.setText(totalScans);
+                holder.typeOfRanking.setText(totalScans);
                 break;
             case TOP_QR_CODE:
-                String topQRCode = "Top QR Code: " + model.getTopQRCode();
-                holder.topQRCode.setText(topQRCode);
-                break;
             case TOP_QR_CODE_REGIONAL:
+                String topQRCode = "Top QR Code: " + model.getTopQRCode();
+                holder.typeOfRanking.setText(topQRCode);
                 break;
         }
     }
@@ -60,21 +59,7 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
     @androidx.annotation.NonNull
     @Override
     public RecyclerViewHolder onCreateViewHolder(@androidx.annotation.NonNull ViewGroup group, int i) {
-        View view = null;
-        switch (viewMode) {
-            case MOST_POINTS:
-                view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_top_points, group, false);
-                break;
-            case MOST_SCANS:
-                view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_top_scans, group, false);
-                break;
-            case TOP_QR_CODE:
-                view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_top_code, group, false);
-                break;
-            case TOP_QR_CODE_REGIONAL:
-                view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_top_code, group, false);
-                break;
-        }
+        View view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_leaderboard, group, false);
 
         return new RecyclerViewHolder(view);
     }
@@ -95,29 +80,14 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
 
         private final TextView username;
         private final TextView ranking;
-        private TextView totalPoints;
-        private TextView totalScans;
-        private TextView topQRCode;
+        private final TextView typeOfRanking;
 
         public RecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
 
             username = itemView.findViewById(R.id.profile_name_textview);
             ranking = itemView.findViewById(R.id.ranking_textview);
-
-            switch (viewMode) {
-                case MOST_POINTS:
-                    totalPoints = itemView.findViewById(R.id.profile_points_search);
-                    break;
-                case MOST_SCANS:
-                    totalScans = itemView.findViewById(R.id.profile_scans_search);
-                    break;
-                case TOP_QR_CODE:
-                    topQRCode = itemView.findViewById(R.id.profile_top_qr_code_search);
-                    break;
-                case TOP_QR_CODE_REGIONAL:
-                    break;
-            }
+            typeOfRanking = itemView.findViewById(R.id.leaderboard_filter_type);
 
             // This click listener responds to clicks done on an item in the recyclerview
             itemView.setOnClickListener(new View.OnClickListener() {
