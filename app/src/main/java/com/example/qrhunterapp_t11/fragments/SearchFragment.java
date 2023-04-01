@@ -211,6 +211,20 @@ public class SearchFragment extends Fragment {
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 String leaderboardFilterChoice = leaderboardFilterSpinner.getSelectedItem().toString();
                 yourRank = view.findViewById(R.id.your_ranking_textview);
+                TextView filterHeader = view.findViewById(R.id.filter_header);
+                switch(leaderboardFilterChoice) {
+                    case "Most Points":
+                        filterHeader.setText("Points");
+                        break;
+                    case "Most Scans":
+                        filterHeader.setText("Scans");
+                        break;
+                    case "Top QR Code":
+                    case "Top QR Code (Regional)":
+                        filterHeader.setText("Top Code");
+                        break;
+                }
+
                 filterQuery(leaderboardFilterChoice, new QueryCallback() {
                     public void queryCompleteCheck(boolean queryComplete) {
                         assert (queryComplete);

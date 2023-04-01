@@ -1,5 +1,6 @@
 package com.example.qrhunterapp_t11.adapters;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,18 +40,54 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
         holder.username.setText(model.getDisplayName());
         holder.ranking.setText(String.valueOf(position + 1));
 
+        // SET APPEARANCE OF VIEWHOLDER BASED ON POSITION
+        switch(position + 1) { // set colors of top three rankings //TODO IMPLEMENT REGIONAL QR CODE
+            case 1:
+                holder.ranking.setText("\uD83C\uDFC6");
+                holder.ranking.setTextSize(25);
+                holder.ranking.setTextColor(Color.rgb(0,0,0)); // need to set color to black or otherwise emoji will be faded
+                holder.username.setTextColor(Color.rgb(255,196,0));
+                holder.typeOfRanking.setTextColor(Color.rgb(255,196,0));
+                break;
+
+            case 2:
+                holder.ranking.setText("\uD83E\uDD48");
+                holder.ranking.setTextSize(25);
+                holder.ranking.setTextColor(Color.rgb(0,0,0));
+                holder.username.setTextColor(Color.rgb(166,166,166));
+                holder.typeOfRanking.setTextColor(Color.rgb(166,166,166));
+                break;
+
+            case 3:
+                holder.ranking.setText("\uD83E\uDD49");
+                holder.ranking.setTextSize(25);
+                holder.ranking.setTextColor(Color.rgb(0,0,0));
+                holder.username.setTextColor(Color.rgb(206,112,18));
+                holder.typeOfRanking.setTextColor(Color.rgb(206,112,18));
+                break;
+
+            default: // MUST OVERWRITE DEFAULT CASES, otherwise when you scroll down, the recyclerview will re-apply the above changes to the new
+                holder.ranking.setTextSize(17);
+                holder.ranking.setTextColor(Color.rgb(128,128,128));
+                holder.username.setTextColor(Color.rgb(128,128,128));
+                holder.typeOfRanking.setTextColor(Color.rgb(128,128,128));
+                break;
+        }
+
+
+        // SET VALUE OF COUNT BASED ON SORTED CATEGORY
         switch (viewMode) {
             case MOST_POINTS:
-                String totalPoints = "Points: " + model.getTotalPoints();
+                String totalPoints = "" + model.getTotalPoints();
                 holder.typeOfRanking.setText(totalPoints);
                 break;
             case MOST_SCANS:
-                String totalScans = "Scans: " + model.getTotalScans();
+                String totalScans = "" + model.getTotalScans();
                 holder.typeOfRanking.setText(totalScans);
                 break;
             case TOP_QR_CODE:
             case TOP_QR_CODE_REGIONAL:
-                String topQRCode = "Top QR Code: " + model.getTopQRCode();
+                String topQRCode = "" + model.getTopQRCode();
                 holder.typeOfRanking.setText(topQRCode);
                 break;
         }
