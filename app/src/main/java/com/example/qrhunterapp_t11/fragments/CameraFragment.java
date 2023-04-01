@@ -592,11 +592,13 @@ public class CameraFragment extends Fragment {
         qrCodeID = qrCode.getID();
 
         Map<String, Object> qrCodeRef = new HashMap<>();
+        HashMap<String, Object> userReference = new HashMap<>();
 
         // Check if qrCode within location threshold already exists in db in QRCodes collection
         checkQRCodeExists(qrCode, new QueryCallback() {
             public void queryCompleteCheck(boolean qrExists) {
                 qrCodeRef.put("Reference", qrCodesReference.document(qrCodeID));
+                userReference.put("Reference", usersReference.document(currentUserUsername));
 
                 // Check if reference to qrCode exists in db in Users collection
                 checkUserHasQR(qrCodeID, currentUserUsername, new QueryCallback() {
@@ -607,6 +609,8 @@ public class CameraFragment extends Fragment {
                             qrCodesReference.document(qrCodeID).set(qrCode);
                             if (resizedImageUrl != null) {
                                 qrCodesReference.document(qrCodeID).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
+
+                                qrCodesReference.document(qrCodeID).collection("In Collections").document(currentUserUsername).set(userReference);
                                 //QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayRemove(resizedImageUrl));
                             }
                         }
