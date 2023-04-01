@@ -38,13 +38,17 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
     protected void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position, @NonNull User model) {
         // Bind the QRCode object to the RecyclerViewHolder
         holder.username.setText(model.getDisplayName());
-        holder.ranking.setText(String.valueOf(position + 1));
+        if ((position + 1) >= 4 && (position + 1) <= 9) {
+            holder.ranking.setText("0" + String.valueOf(position + 1));
+        } else {
+            holder.ranking.setText(String.valueOf(position + 1));
+        }
 
         // SET APPEARANCE OF VIEWHOLDER BASED ON POSITION
         switch (position + 1) { // Set colors of top three rankings
             case 1:
                 holder.ranking.setText("\uD83C\uDFC6");
-                holder.ranking.setTextSize(25);
+                holder.ranking.setTextSize(21);
                 holder.ranking.setTextColor(Color.rgb(0, 0, 0)); // need to set color to black or otherwise emoji will be faded
                 holder.username.setTextColor(Color.rgb(255, 196, 0));
                 holder.typeOfRanking.setTextColor(Color.rgb(255, 196, 0));
@@ -52,7 +56,7 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
 
             case 2:
                 holder.ranking.setText("\uD83E\uDD48");
-                holder.ranking.setTextSize(25);
+                holder.ranking.setTextSize(21);
                 holder.ranking.setTextColor(Color.rgb(0, 0, 0));
                 holder.username.setTextColor(Color.rgb(166, 166, 166));
                 holder.typeOfRanking.setTextColor(Color.rgb(166, 166, 166));
@@ -60,7 +64,7 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
 
             case 3:
                 holder.ranking.setText("\uD83E\uDD49");
-                holder.ranking.setTextSize(25);
+                holder.ranking.setTextSize(21);
                 holder.ranking.setTextColor(Color.rgb(0, 0, 0));
                 holder.username.setTextColor(Color.rgb(206, 112, 18));
                 holder.typeOfRanking.setTextColor(Color.rgb(206, 112, 18));
