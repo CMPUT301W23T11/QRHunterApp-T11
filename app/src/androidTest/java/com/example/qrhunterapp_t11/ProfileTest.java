@@ -310,7 +310,6 @@ public class ProfileTest {
         // Long click to delete
         solo.clickLongOnText(qrCode.getName());
         Assert.assertTrue(solo.waitForText("Delete", 1, 1000));
-        //solo.clickOnText("Delete");
         solo.clickOnView(solo.getView(android.R.id.button1));
         solo.sleep(2000);
         Assert.assertFalse(solo.waitForText(String.valueOf(qrCode.getPoints()), 1, 100));
