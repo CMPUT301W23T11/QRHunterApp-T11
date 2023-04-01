@@ -86,6 +86,7 @@ public class SearchFragment extends Fragment {
     private RecyclerView leaderboardRecyclerView;
     private FirestoreRecyclerOptions<User> leaderboardOptions;
     private SharedPreferences prefs;
+    private TextView leaderboardTextView;
     private AutoCompleteTextView autoCompleteTextView;
     private TextView yourRank;
 
@@ -103,6 +104,7 @@ public class SearchFragment extends Fragment {
         prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         Button deleteSearch = view.findViewById(R.id.close_id);
+        leaderboardTextView = view.findViewById(R.id.leaderboard_textview);
         autoCompleteTextView = view.findViewById(R.id.search_id);
         final ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1);
 
@@ -286,6 +288,8 @@ public class SearchFragment extends Fragment {
 
                 Place place = Autocomplete.getPlaceFromIntent(data);
                 String placeName = place.getName();
+                String leaderboardText = "Leaderboard (" + placeName + ")";
+                leaderboardTextView.setText(leaderboardText);
 
                 Geocoder geocoder = new Geocoder(getActivity().getApplicationContext(), Locale.getDefault());
                 List<Address> addresses;
