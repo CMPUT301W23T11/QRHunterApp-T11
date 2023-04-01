@@ -528,13 +528,16 @@ public class CameraFragment extends Fragment {
 
         // If a user is updating the location reference of a QR Code they already scanned before
         System.out.println(savedQR);
+        System.out.println(qrCode);
         if(savedQR != null){
+            System.out.println(qrCode);
             // if new version is scanned without location do nothing
             if(qrCode.getLatitude() == null){
+                System.out.println(qrCode);
                 savedQR = null;
                 returnToProfile();
-            }
-            // If the user's new location is the same as the old QR Code's location
+            }else
+                // If the user's new location is the same as the old QR Code's location
             System.out.println(savedQR);
             System.out.println(qrCode);
             if ((savedQR.getLatitude() != null) && (qrCode.getLatitude() != null)){
