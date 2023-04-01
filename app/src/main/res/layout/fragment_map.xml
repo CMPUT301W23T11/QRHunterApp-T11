@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragments.MapFragment">
 
     <androidx.fragment.app.FragmentContainerView
@@ -13,17 +13,22 @@
         android:layout_height="match_parent"
         tools:layout="@layout/fragment_map" />
 
-    <androidx.appcompat.widget.SearchView
-        android:id="@+id/search_view"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:queryHint="Search location"
-        app:searchIcon="@drawable/ic_google_maps"
-        android:fontFamily="sans-serif-medium"
-        app:iconifiedByDefault="false"
-        android:layout_margin="15dp"
-        android:elevation="10dp"
-        android:background="@drawable/search_border"
-        android:layout_gravity="center_horizontal" />
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/search_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="15dp"
+            android:background="@drawable/search_border"
+            android:elevation="10dp"
+            app:iconifiedByDefault="false"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:searchIcon="@drawable/ic_google_maps" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>
