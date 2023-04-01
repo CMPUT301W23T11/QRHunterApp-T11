@@ -106,7 +106,7 @@ public class SettingsFragmentTest {
         solo.clickOnView(solo.getView(R.id.username_edit_edittext));
         solo.clearEditText(0);
         solo.enterText(0, testUserDuplicate);
-        solo.clickOnView(solo.getView(R.id.settings_confirm_button));
+        //solo.clickOnView(solo.getView(R.id.settings_confirm_button));
 
         EditText usernameEditText = solo.getEditText(0);
         assertEquals("Username is not unique", usernameEditText.getError());
@@ -125,7 +125,7 @@ public class SettingsFragmentTest {
         solo.clearEditText(0);
 
         solo.enterText(0, "testUserUnique");
-        solo.clickOnView(solo.getView(R.id.settings_confirm_button));
+       // solo.clickOnView(solo.getView(R.id.settings_confirm_button));
         solo.clickOnText("Confirm");
 
         checkUniqueDisplayName("testUserUnique", new QueryCallback() {

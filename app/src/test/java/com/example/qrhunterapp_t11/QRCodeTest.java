@@ -138,7 +138,6 @@ public class QRCodeTest {
         expectedList2.add("face2");
 
         QRCode qrCode2 = mockQRCode("");
-        System.out.println(qrCode.getHash());
         Assertions.assertEquals(expectedList2, qrCode2.getFaceList());
 
         //simple test to make sure the hash to binary works correctly
@@ -164,7 +163,6 @@ public class QRCodeTest {
 
         faceList = QRCode.uniqueImage("07ffff");
         Assertions.assertEquals(expectedList4, faceList);
-
     }
 
     @Test

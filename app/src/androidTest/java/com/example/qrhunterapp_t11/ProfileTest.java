@@ -20,6 +20,7 @@ import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.example.qrhunterapp_t11.objectclasses.User;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.robotium.solo.Solo;
 
@@ -29,6 +30,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -87,16 +90,33 @@ public class ProfileTest {
         Activity activity = rule.getActivity();
 
         User user = new User(testUsername, testUsername, 0, 0, 0, "No email");
+        CollectionReference qrReference = db.collection("QRCodes");
         usersReference.document(testUsername).set(user);
 
         // add new QR code
         final int randomNum = new Random().nextInt(10000);
         qrCode = mockQRCode(String.valueOf(randomNum));
         name = qrCode.getName();
-        CollectionReference qrReference = usersReference.document(testUsername).collection("QR Codes");
+
         qrReference.document(qrCode.getID()).set(qrCode);
 
-        // check if new QrCode was added
+        //qrUserReference.document(qrCode.getID()).set(qrCode);
+        Map<String, Object> qrCodeRef = new HashMap<>();
+        qrCodeRef.put("Reference", qrReference.document(qrCode.getID()));
+
+        usersReference.document(testUsername).collection("User QR Codes").document(qrCode.getID()).set(qrCodeRef);
+        usersReference.document(testUsername).update("totalScans", FieldValue.increment(1));
+        usersReference.document(testUsername).update("totalPoints", FieldValue.increment(qrCode.getPoints()));
+        System.out.println("\n\n\n\n\n\n" + qrCode.getID());
+
+        // check if new QrCode was added as User reference
+        checkDocExists(qrCode.getID(), usersReference.document(testUsername).collection("User QR Codes"), new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
+                assertTrue(docExists);
+            }
+        });
+
+        // check if new QrCode was added to QR Codes collection
         checkDocExists(qrCode.getID(), qrReference, new QueryCallback() {
             public void queryCompleteCheck(boolean docExists) {
                 assertTrue(docExists);
@@ -145,10 +165,9 @@ public class ProfileTest {
         assertTrue(solo.waitForText("1", 1, 10000));
         // Points should appear 1. in recycler view 2. in highest score QR 3. in lowest score QR 4. in total points
         assertTrue(solo.waitForText(String.valueOf(qrCode.getPoints()), 4, 10000));
-        solo.clickInRecyclerView(0);
+        solo.clickOnText(qrCode.getName());
         // wait for "Add Comment" to know the qrView dialog has opened
-        solo.drag(250, 250, 400, 0, 10);
-        assertTrue(solo.waitForText("Add Comment", 1, 10000));
+        assertTrue(solo.waitForText("Add comment", 1, 10000));
         // should display the qRCode name as a header
         assertTrue(solo.waitForText(name, 1, 10000));
         // points should be displayed in dialog
@@ -163,6 +182,7 @@ public class ProfileTest {
     @Test
     public void checkCommentAdd() {
         // Asserts that the current activity is the MainActivity. Otherwise, show Wrong Activity
+        System.out.println("EJSGFBKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
 
         // Check that current user exists
@@ -176,16 +196,15 @@ public class ProfileTest {
         solo.clickOnView(solo.getView(R.id.settings));
         Assert.assertTrue(solo.waitForText("Settings", 1, 1000));
         solo.clickOnView(solo.getView(R.id.profile));
-
         solo.sleep(20);
+
         // Name of qrCode should appear
         assertTrue(solo.waitForText(name, 1, 2000));
         // There should only be 1 qrCode in collection
         assertTrue(solo.waitForText("1", 1, 10000));
-        solo.clickInRecyclerView(0);
+        solo.clickOnText(qrCode.getName());
         // wait for "Add Comment" to know the qrView dialog has opened
-        solo.drag(250, 250, 400, 0, 10);
-        assertTrue(solo.waitForText("Add Comment", 1, 10000));
+        assertTrue(solo.waitForText("Add comment", 1, 10000));
         solo.enterText(0, "great catch king 😂");
         solo.clickOnView(solo.getView(R.id.imageViewSend));
         solo.enterText(0, "great catch king 😂");
@@ -204,10 +223,24 @@ public class ProfileTest {
     public void checkPointAddition() {
         // Asserts that the current activity is the MainActivity. Otherwise, show Wrong Activity
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        CollectionReference qrReference = usersReference.document(testUsername).collection("QR Codes");
+        CollectionReference qrReference = db.collection("QRCodes");
 
         // Check that current user exists
         checkDocExists(testUsername, usersReference, new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
+                assertTrue(docExists);
+            }
+        });
+
+        // check if new QrCode was added as User reference
+        checkDocExists(qrCode.getID(), usersReference.document(testUsername).collection("User QR Codes"), new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
+                assertTrue(docExists);
+            }
+        });
+
+        // check if new QrCode was added to QR Codes collection
+        checkDocExists(qrCode.getID(), qrReference, new QueryCallback() {
             public void queryCompleteCheck(boolean docExists) {
                 assertTrue(docExists);
             }
@@ -217,8 +250,8 @@ public class ProfileTest {
         solo.clickOnView(solo.getView(R.id.settings));
         Assert.assertTrue(solo.waitForText("Settings", 1, 1000));
         solo.clickOnView(solo.getView(R.id.profile));
-
         solo.sleep(20);
+
         // Name of qrCode should appear
         assertTrue(solo.waitForText(name, 1, 2000));
         // There should only be 1 qrCode in collection
@@ -226,9 +259,20 @@ public class ProfileTest {
         // Points should appear 1. in recycler view 2. in highest score QR 3. in lowest score QR 4. in total points
         assertTrue(solo.waitForText(String.valueOf(qrCode.getPoints()), 4, 10000));
 
-        // create another QR object
+        // Create another QR object
         QRCode qrCode1 = mockQRCode("Test");
         qrReference.document(qrCode1.getID()).set(qrCode1);
+        Map<String, Object> qrCodeRef1 = new HashMap<>();
+        qrCodeRef1.put("Reference", qrReference.document(qrCode1.getID()));
+        usersReference.document(testUsername).collection("User QR Codes").document(qrCode1.getID()).set(qrCodeRef1);
+        usersReference.document(testUsername).update("totalScans", FieldValue.increment(1));
+        usersReference.document(testUsername).update("totalPoints", FieldValue.increment(qrCode1.getPoints()));
+
+        // Refresh the profile
+        solo.clickOnView(solo.getView(R.id.settings));
+        Assert.assertTrue(solo.waitForText("Settings", 1, 1000));
+        solo.clickOnView(solo.getView(R.id.profile));
+        solo.sleep(20);
 
         // Check if the total has been updated
         assertTrue(solo.waitForText(String.valueOf(qrCode1.getPoints() + qrCode.getPoints()), 1, 10000));
@@ -244,13 +288,12 @@ public class ProfileTest {
 
     /**
      * Verifies that a qrCode can be deleted from the profile correctly by a Long click when the positive button on the dialog confirmation box is
-     * TODO make this test not fail
      */
-    //@Test
+    @Test
     public void deleteLongClickPositive() {
         // Asserts that the current activity is the MainActivity. Otherwise, show Wrong Activity
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
-        CollectionReference qrReference = usersReference.document(testUsername).collection("QR Codes");
+        CollectionReference qrReference = usersReference.document(testUsername).collection("User QR Codes");
 
         // Check that current user exists
         checkDocExists(testUsername, usersReference, new QueryCallback() {
@@ -265,12 +308,16 @@ public class ProfileTest {
         solo.clickOnView(solo.getView(R.id.profile));
 
         // Long click to delete
-        solo.clickLongInRecycleView(0);
+        solo.clickLongOnText(qrCode.getName());
         Assert.assertTrue(solo.waitForText("Delete", 1, 1000));
-        solo.clickOnText("Delete");
+        solo.clickOnView(solo.getView(android.R.id.button1));
+        solo.sleep(2000);
+        Assert.assertFalse(solo.waitForText(String.valueOf(qrCode.getPoints()), 1, 100));
+        Assert.assertFalse(solo.waitForText(qrCode.getName(), 1, 100));
+        Assert.assertTrue(solo.waitForText("0", 4, 100));
 
-        // Check document has been deleted from the database
-        checkDocExists(qrCode.getID(), qrReference, new QueryCallback() {
+        //Check document has been deleted from the database
+        checkDocExists(qrCode.getID(), usersReference.document(testUsername).collection("User QR Codes"), new QueryCallback() {
             public void queryCompleteCheck(boolean docExists) {
                 assertFalse(docExists);
             }
@@ -279,7 +326,6 @@ public class ProfileTest {
 
     /**
      * Verifies that a qrCode will not be deleted from the profile correctly by a Long click when the negative button on the dialog confirmation box is clicked
-     * TODO make this test not fail when checking database
      */
     @Test
     public void deleteLongClickNegative() {
@@ -300,13 +346,21 @@ public class ProfileTest {
         solo.clickOnView(solo.getView(R.id.profile));
 
         // Long click to delete
-        solo.clickLongInRecycleView(0);
+        solo.clickLongOnText(qrCode.getName());
         Assert.assertTrue(solo.waitForText("Delete", 1, 1000));
         solo.clickOnText("Cancel");
         solo.sleep(20);
         Assert.assertTrue(solo.waitForText(String.valueOf(qrCode.getPoints()), 4, 100));
         Assert.assertTrue(solo.waitForText(qrCode.getName(), 1, 100));
         Assert.assertTrue(solo.waitForText("1", 1, 100));
+
+        // Check document has been deleted from the database
+        checkDocExists(qrCode.getID(), usersReference.document(testUsername).collection("User QR Codes"), new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
+                assertTrue(docExists);
+            }
+        });
+
 
     }
 
