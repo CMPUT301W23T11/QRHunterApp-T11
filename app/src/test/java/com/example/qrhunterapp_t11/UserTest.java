@@ -29,6 +29,18 @@ public class UserTest {
         user.setDisplayName("EpicGamer");
         Assertions.assertEquals("EpicGamer", user.getDisplayName());
 
+        // case set empty string
+        user.setDisplayName("");
+        Assertions.assertEquals("", user.getDisplayName());
+
+        // case set emojis
+        user.setDisplayName("😭😭😭😭😭😭😭😭😭😭😭");
+        Assertions.assertEquals("😭😭😭😭😭😭😭😭😭😭😭", user.getDisplayName());
+
+        // case long string w/ symbols
+        user.setDisplayName("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0");
+        Assertions.assertEquals("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0", user.getDisplayName());
+
     }
 
     @Test
@@ -41,6 +53,18 @@ public class UserTest {
         // set then get
         user.setUsername("user9001");
         Assertions.assertEquals("user9001", user.getUsername());
+
+        // case set empty string
+        user.setUsername("");
+        Assertions.assertEquals("", user.getUsername());
+
+        // case set emojis
+        user.setUsername("😭😭😭😭😭😭😭😭😭😭😭");
+        Assertions.assertEquals("😭😭😭😭😭😭😭😭😭😭😭", user.getUsername());
+
+        // case long string w/ symbols
+        user.setUsername("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0");
+        Assertions.assertEquals("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0", user.getUsername());
 
     }
 
@@ -102,6 +126,10 @@ public class UserTest {
         User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com" );
         Assertions.assertEquals("EpicGamer@gmail.com", user.getEmail());
 
+        // case empty
+        user.setEmail("");
+        Assertions.assertEquals("", user.getEmail());
+
         // case no email
         user.setEmail("No email");
         Assertions.assertEquals("No email", user.getEmail());
@@ -109,6 +137,16 @@ public class UserTest {
         // case new string email = "nospam@gmail.com"
         user.setEmail("nospam@gmail.com");
         Assertions.assertEquals("nospam@gmail.com", user.getEmail());
+
+        // case set emojis
+        user.setEmail("😭😭😭😭😭😭😭😭😭😭😭");
+        Assertions.assertEquals("😭😭😭😭😭😭😭😭😭😭😭", user.getEmail());
+
+        // case long string w/ symbols
+        user.setEmail("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0");
+        Assertions.assertEquals("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0", user.getEmail());
+
+
 
     }
 }
