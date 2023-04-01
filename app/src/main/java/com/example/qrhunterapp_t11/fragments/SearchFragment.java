@@ -1,7 +1,7 @@
 package com.example.qrhunterapp_t11.fragments;
 
-import android.app.AlertDialog;
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -42,28 +42,19 @@ import com.example.qrhunterapp_t11.objectclasses.User;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -380,7 +371,6 @@ public class SearchFragment extends Fragment {
     }
 
     private void findQRCodeNearby(double latitude, double longitude, double radius) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         CollectionReference qrCodesRef = db.collection("QRCodes");
 
         // Define the bounds of the query
@@ -401,29 +391,23 @@ public class SearchFragment extends Fragment {
         Task<List<QuerySnapshot>> combinedResults = Tasks.whenAllSuccess(latQuery.get(), lonQuery.get());
 
         // Process the combined results
-        combinedResults.addOnCompleteListener(new OnCompleteListener<List<QuerySnapshot>>() {
-            @Override
-            public void onComplete(@NonNull Task<List<QuerySnapshot>> task) {
-                if (task.isSuccessful()) {
-                    List<QuerySnapshot> querySnapshots = task.getResult();
-                    Set<DocumentSnapshot> documents = new HashSet<>();
+        combinedResults.addOnSuccessListener(querySnapshotsList -> {
 
-                    for (QuerySnapshot snapshot : querySnapshots) {
-                        documents.addAll(snapshot.getDocuments());
-                    }
+            Set<DocumentSnapshot> documents = new HashSet<>();
 
-                    for (DocumentSnapshot document : documents) {
-                        double documentLat = document.getDouble("latitude");
-                        double documentLon = document.getDouble("longitude");
+            for (QuerySnapshot snapshot : querySnapshotsList) {
+                documents.addAll(snapshot.getDocuments());
+            }
+            System.out.println("ooooooooooooooooooooooooo" + documents);
 
-                        // Check if the QR code is within the radius
-                        if (Math.pow(documentLat - latitude, 2) + Math.pow(documentLon - longitude, 2) <= Math.pow(radius / 111.0, 2)) {
-                            String documentId = document.getId();
-                            Log.d(TAG, "Document ID: " + documentId);
-                        }
-                    }
-                } else {
-                    Log.d(TAG, "Error getting documents: ", task.getException());
+            for (DocumentSnapshot document : documents) {
+                double documentLat = document.getDouble("latitude");
+                double documentLon = document.getDouble("longitude");
+
+                // Check if the QR code is within the radius
+                if (Math.pow(documentLat - latitude, 2) + Math.pow(documentLon - longitude, 2) <= Math.pow(radius / 111.0, 2)) {
+                    String documentId = document.getId();
+                    Log.d(TAG, "Document ID: " + documentId);
                 }
             }
         });
