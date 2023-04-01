@@ -32,18 +32,23 @@ import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.activities.CaptureAct;
 import com.example.qrhunterapp_t11.activities.TakePhotoActivity;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
+import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithObject;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -84,6 +89,9 @@ public class CameraFragment extends Fragment {
     private final CollectionReference usersReference;
     private static final String locationPrompt = "LocationPrompt";
     private String qrCodeID;
+    private FirebaseQueryAssistant firebaseQueryAssistant = new FirebaseQueryAssistant();
+    private boolean showPoints = false;
+
 
     public CameraFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
@@ -495,34 +503,73 @@ public class CameraFragment extends Fragment {
 
                 // Object instantiated
                 qrCode = new QRCode(resultString);
+                System.out.println("HERE1");
 
-                // Create custom dialog to display QR score
-                LayoutInflater inflater = this.getLayoutInflater();
-                View dialogView = inflater.inflate(R.layout.qr_scored_dialog, null);
-                TextView scoredTV = dialogView.findViewById(R.id.scoredTV);
-                builder.setView(dialogView);
-                builder.setCancelable(false);
-                String scored = qrCode.getPoints() + " Points";
-                scoredTV.setText(scored);
+                //Check if the user already has a QR Code object with this hash value in their collection
+                checkUserHasHash(qrCode, currentUserUsername, new QueryCallbackWithObject() {
+                    @Override
+                    public void queryCompleteCheckObject(boolean hashExists, QRCode qr) {
+                        // If user already has this qRCode, alert user that they cannot get the points for the same code again
+                        System.out.println("HERE4");
+                        if (hashExists){
+                            System.out.println("HERE3");
+                            showPoints = false;
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                            builder.setTitle("You scanned the same QR twice!");
+                            builder.setMessage("No points have been added to your account.\n\n Update the location of this QR?\n");
+                            builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    firebaseQueryAssistant.deleteQR(currentUserUsername, qr.getID(), usersReference, new QueryCallback() {
+                                        @Override
+                                        public void queryCompleteCheck(boolean queryComplete) {
+                                            assert queryComplete;
+                                        }
+                                    });
+                                }
+                            });
 
-                final AlertDialog alertDialog = builder.create();
-                alertDialog.show(); // create and display the dialog
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    Objects.requireNonNull(alertDialog.getWindow()).setDimAmount(0);
-                }
+                            builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    returnToProfile();
+                                }
+                            });
 
-                createKonfetti(); // party rock is in the house tonight
-                // *its party rockers in the hous tonihgt
+                            AlertDialog alert = builder.create();
+                            alert.show();
+                        }else{
+                            System.out.println("HERE2");
+                            // If the user does not already have the scanned qRCode in their collection, show points and the ask to take a photo...
+                            // Create custom dialog to display QR score
+                            LayoutInflater inflater = getActivity().getLayoutInflater();
+                            View dialogView = inflater.inflate(R.layout.qr_scored_dialog, null);
+                            TextView scoredTV = dialogView.findViewById(R.id.scoredTV);
+                            builder.setView(dialogView);
+                            builder.setCancelable(false);
+                            String scored = qrCode.getPoints() + " Points";
+                            scoredTV.setText(scored);
 
-                final Timer timer = new Timer();
-                timer.schedule(new TimerTask() {
-                    public void run() {
-                        alertDialog.dismiss();
-                        timer.cancel();
-                        promptForPhoto(); // prompt the user for a photo of the QR object or location once the score dialog disappears
+                            final AlertDialog alertDialog = builder.create();
+                            alertDialog.show(); // create and display the dialog
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                                Objects.requireNonNull(alertDialog.getWindow()).setDimAmount(0);
+                            }
+                            createKonfetti(); // party rock is in the house tonight
+                            // *its party rockers in the hous tonihgt
+                            // party rock is
 
+                            final Timer timer = new Timer();
+                            timer.schedule(new TimerTask() {
+                                public void run() {
+                                    alertDialog.dismiss();
+                                    timer.cancel();
+                                    promptForPhoto(); // prompt the user for a photo of the QR object or location once the score dialog disappears
+                                }
+                            }, 5000); // set a timer to automatically close the dialog after 5 seconds
+                        }
                     }
-                }, 5000); // set a timer to automatically close the dialog after 5 seconds
+                });
             }
         });
     }
@@ -549,6 +596,51 @@ public class CameraFragment extends Fragment {
                     }
                 });
     }
+
+    /**
+     * Helper function to check if a user has a QR Code in their collection with the same hash as qr param
+     *
+     * @param qrInput QR Code that is having its hash value checked
+     * @param username  User whose collection is being checked
+     */
+
+    public void checkUserHasHash(@NonNull QRCode qrInput, @NonNull String username, final @NonNull QueryCallbackWithObject docExists) {
+        ArrayList<DocumentReference> listOfUsersReferencedCodes = new ArrayList<DocumentReference>();
+        System.out.println("HERE1query");
+
+
+        // Retrieve DocumentReferences in the user's QR code collection and store them in an array
+        usersReference.document(username).collection("User QR Codes")
+                .get()
+                .addOnSuccessListener(documentReferences -> {
+                    for (QueryDocumentSnapshot reference : documentReferences) {
+
+                        DocumentReference documentReference = (DocumentReference) reference.get("Reference");
+                        listOfUsersReferencedCodes.add(documentReference);
+                    }
+                    if (!listOfUsersReferencedCodes.isEmpty()) {
+                        // Retrieve matching QR Code data from the QRCodes collection using DocumentReferences
+                        qrCodesReference.whereIn(FieldPath.documentId(), listOfUsersReferencedCodes)
+                                .get()
+                                .addOnSuccessListener(referencedQRDocuments -> {
+                                    boolean hashExists = false;
+                                    QRCode qrOutput = null;
+
+                                    for (QueryDocumentSnapshot referencedQR : referencedQRDocuments) {
+                                        if (referencedQR.get("hash").equals( qrInput.getHash())){
+                                            qrOutput = referencedQR.toObject(QRCode.class);
+                                            hashExists = true;
+                                    }
+                                }
+                                    docExists.queryCompleteCheckObject(hashExists, qrOutput);
+                                });
+                    }else{
+                        docExists.queryCompleteCheckObject(false, null);
+                    }
+                });
+    }
+
+
 
     /**
      * @param qr           QR code to find matches of in db
@@ -624,23 +716,6 @@ public class CameraFragment extends Fragment {
                         if ((qrExists) && (!qrRefExists)) {
                             qrCodesReference.document(qrCodeID).update("numberOfScans", FieldValue.increment(1));
                         }
-
-                        //If user already has this qRCode, alert user that they cannot get the points for the same code again
-                        if (qrRefExists) {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                            builder.setTitle("You scanned the same QR twice!");
-                            builder.setMessage("You cheated not only the game, but yourself. You didn't grow, you didn't improve, you took a shortcut and gained nothing. You experienced a hollow victory. Nothing was risked and nothing was gained. No points have been added.");
-                            builder.setPositiveButton("I'm Sorry", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    // empty
-                                }
-                            });
-
-                            AlertDialog alert = builder.create();
-                            alert.show();
-
-                        }
                     }
                 });
             }
@@ -691,3 +766,4 @@ public class CameraFragment extends Fragment {
         return urlFirstHalf + "_504x416" + urlSecondHalf; //TODO probably shouldn't use a string literal; make a constant or something
     }
 }
+
