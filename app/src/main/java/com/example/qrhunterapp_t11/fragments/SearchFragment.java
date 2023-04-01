@@ -55,7 +55,9 @@ import com.google.firebase.firestore.QuerySnapshot;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -214,7 +216,7 @@ public class SearchFragment extends Fragment {
                 String leaderboardFilterChoice = leaderboardFilterSpinner.getSelectedItem().toString();
                 yourRank = view.findViewById(R.id.your_ranking_textview);
                 TextView filterHeader = view.findViewById(R.id.filter_header);
-                switch(leaderboardFilterChoice) {
+                switch (leaderboardFilterChoice) {
                     case "Most Points":
                         filterHeader.setText("Points");
                         break;
@@ -367,8 +369,6 @@ public class SearchFragment extends Fragment {
                 queryField = "totalScans";
                 break;
             case "Top QR Code":
-                queryField = "topQRCode";
-                break;
             case "Top QR Code (Regional)":
                 queryField = "topQRCode";
                 break;
@@ -391,6 +391,53 @@ public class SearchFragment extends Fragment {
                             .setQuery(query, User.class)
                             .build();
                     queryCompleteCheck.queryCompleteCheck(true);
+                });
+    }
+
+    /**
+     * Set query for regional leaderboard setting
+     *
+     * @param filterType         String representing how the leaderboard is filtered
+     * @param queryCompleteCheck Callback for query
+     */
+    public void filterQueryRegional(@NonNull String filterType, final @NonNull QueryCallback queryCompleteCheck) {
+        String queryField = "";
+        switch (filterType) {
+            case "Most Points":
+                queryField = "totalPoints";
+                break;
+            case "Most Scans":
+                queryField = "totalScans";
+                break;
+            case "Top QR Code":
+            case "Top QR Code (Regional)":
+                queryField = "topQRCode";
+                break;
+        }
+
+        HashMap<String, ArrayList<String>> usersQRReferences = new HashMap<>();
+
+        usersReference
+                .get()
+                .addOnSuccessListener(documentReferenceSnapshots -> {
+                    for (int i = 0; i < documentReferenceSnapshots.size(); i++) {
+                        String user = documentReferenceSnapshots.getDocuments().get(i).toString();
+                        usersReference.document(user).collection("User QR Codes")
+                                .get()
+                                .addOnSuccessListener(userQRCodes -> {
+                                    ArrayList<String> usersQRCodes = new ArrayList<>();
+                                    for (int j = 0; j < userQRCodes.size(); j++) {
+                                        String qrCodeReference = userQRCodes.getDocuments().get(j).get("Reference").toString();
+                                        usersQRCodes.add(qrCodeReference);
+                                    }
+                                    usersQRReferences.put(user, usersQRCodes);
+                                });
+
+                    }
+//                    leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
+//                            .setQuery(query, User.class)
+//                            .build();
+//                    queryCompleteCheck.queryCompleteCheck(true);
                 });
     }
 }
