@@ -224,13 +224,17 @@ public class CameraFragment extends Fragment {
      * Adds QRCode to db and returns to profile
      */
     private void getCurrentLocation() {
+        System.out.println("HERE GETTING LCOATIONNNNNNNNN555555555555555555555522222222222222222222222222222222222222222555555555555555555555555555NNNNNNNNNNNNNNN");
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
         if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             fusedLocationClient
                     .getLastLocation()
                     .addOnSuccessListener(location -> {
+                        System.out.println("HERE GETTING L2222222222222222222222222222555555555555555555555555555NNNNNNNNNNNNNNN");
+
                         if (location != null) {
+                            System.out.println("HERE GEddddddddddddddddddddddL2222222222222222222222222222555555555555555555555555555NNNNNNNNNNNNNNN");
                             // Location data is available
                             double latitude = location.getLatitude();
                             double longitude = location.getLongitude();
@@ -241,6 +245,7 @@ public class CameraFragment extends Fragment {
                             qrCode.setLatitude(latitude);
                             qrCode.setLongitude(longitude);
                             qrCode.setID(latitude, longitude);
+                            System.out.println("HERE GETTING LCOATIONNNNNNNNN555555555555555555555555555555555555555555555555555NNNNNNNNNNNNNNN");
                         } else {
                             // Location data is not available
                             Log.d(locationPrompt, "ERROR Location data is not available.");
@@ -525,29 +530,35 @@ public class CameraFragment extends Fragment {
      */
     private void addQRCode() {
         float[] results = new float[1];
+        boolean delete = true;
 
         // If a user is updating the location reference of a QR Code they already scanned before
         System.out.println(savedQR);
         System.out.println(qrCode);
-        if(savedQR != null){
+        if(savedQR != null) {
             System.out.println(qrCode);
             // if new version is scanned without location do nothing
-            if(qrCode.getLatitude() == null){
+            if (qrCode.getLatitude() == null) {
                 System.out.println(qrCode);
                 savedQR = null;
-                returnToProfile();
-            }else
+                delete = false;
+                System.out.println(delete + "!11111111111111111111111111111");
+            }else if((savedQR.getLatitude() != null) && (qrCode.getLatitude() != null)) {
                 // If the user's new location is the same as the old QR Code's location
-            System.out.println(savedQR);
-            System.out.println(qrCode);
-            if ((savedQR.getLatitude() != null) && (qrCode.getLatitude() != null)){
-
-                android.location.Location.distanceBetween(qrCode.getLatitude(),qrCode.getLongitude(), savedQR.getLatitude(), savedQR.getLongitude(), results);
-                if (results[0] < MAX_RADIUS){
+                System.out.println(savedQR);
+                System.out.println(qrCode);
+                android.location.Location.distanceBetween(qrCode.getLatitude(), qrCode.getLongitude(), savedQR.getLatitude(), savedQR.getLongitude(), results);
+                if (results[0] < MAX_RADIUS) {
                     savedQR = null;
-                    returnToProfile();
+                    delete = false;
+                    System.out.println(delete + "!22222222222222222222222222211111111111111111111111111111");
                 }
             }
+        }
+
+        // if the user is overwriting their old location delete the reference from their account
+        if((savedQR != null) && (delete == true)){
+            System.out.println(delete + "!22222222222222222222222222211111113333333333331111111111111111111111");
             // delete the old qrCode reference from the user's collection
             firebaseQueryAssistant.deleteQR(currentUserUsername, savedQR.getID(), usersReference, new QueryCallback() {
                 @Override
@@ -558,7 +569,9 @@ public class CameraFragment extends Fragment {
             });
         }
 
-        firebaseQueryAssistant.addQR(currentUserUsername, qrCode, resizedImageUrl, MAX_RADIUS, usersReference, qrCodesReference);
+        if(delete == true){
+             firebaseQueryAssistant.addQR(currentUserUsername, qrCode, resizedImageUrl, MAX_RADIUS, usersReference, qrCodesReference);
+        }
     }
 
     /**
