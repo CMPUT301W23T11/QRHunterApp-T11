@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,10 +35,10 @@ import java.util.regex.Pattern;
  * @author Afra
  * @sources Firestore documentation
  * @sources <pre>
- *  * <ul>
- *  * <li><a href="https://www.javatpoint.com/java-email-validation">Validating email input using regex</a></li>
- *  * </ul>
- *  * </pre>
+ * * <ul>
+ * * <li><a href="https://www.javatpoint.com/java-email-validation">Validating email input using regex</a></li>
+ * * </ul>
+ * * </pre>
  */
 public class SettingsFragment extends Fragment {
 
@@ -77,10 +76,10 @@ public class SettingsFragment extends Fragment {
         usernameEditText.setText(usernameString);
         emailEditText.setText(emailString);
 
-        // changes the user's username
+        // Changes the user's username
         confirmUsernameButton.setOnClickListener(view1 -> {
 
-            usernameString = usernameEditText.getText().toString().toLowerCase();
+            usernameString = usernameEditText.getText().toString();
 
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
             // Make sure new username is eligible for change
@@ -115,13 +114,13 @@ public class SettingsFragment extends Fragment {
             });
         });
 
-        // changes the user's email
+        // Changes the user's email
         confirmEmailButton.setOnClickListener(view12 -> {
-            emailString = emailEditText.getText().toString().toLowerCase();
+            emailString = emailEditText.getText().toString();
 
             AlertDialog.Builder emailBuilder = new AlertDialog.Builder(getContext());
 
-            // checks to make sure the user inputs a valid email
+            // Checks to make sure the user inputs a valid email
             if (validEmail(emailString)) {
                 emailBuilder
                         .setTitle("Confirm email change")
@@ -133,8 +132,7 @@ public class SettingsFragment extends Fragment {
 
                                 if (!Objects.equals(emailString, "")) {
                                     usersReference.document(user).update("email", emailString);
-                                }
-                                else {
+                                } else {
                                     usersReference.document(user).update("email", null);
                                 }
 
@@ -143,7 +141,7 @@ public class SettingsFragment extends Fragment {
                             }
                         })
                         .create();
-               emailBuilder.show();
+                emailBuilder.show();
             }
 
         });
@@ -152,25 +150,24 @@ public class SettingsFragment extends Fragment {
     }
 
     /**
-     *  Checks to see if inputted email is in a valid format
+     * Checks to see if inputted email is in a valid format
+     *
      * @param emailString Entered email
      */
     public boolean validEmail(@NonNull String emailString) {
         System.out.println(emailString);
         if (emailString.equals("")) {
             return true;
-        }
-        else {
-            // string to see the correct format of an email, allowed characters, and restricted character format
+        } else {
+            // String to see the correct format of an email, allowed characters, and restricted character format
             String regex = "^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*@(?:[a-zA-Z\\d-]+\\.)+[a-zA-Z]{2,6}$";
             Pattern pattern = Pattern.compile(regex);
 
-            // sees if provided email matches the regex email format string
+            // Checks if provided email matches the regex email format string
             Matcher matcher = pattern.matcher(emailString);
-            if (matcher.matches()){
+            if (matcher.matches()) {
                 return true;
-            }
-            else {
+            } else {
                 emailEditText.setError("Invalid Email");
                 return false;
             }

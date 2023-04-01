@@ -47,7 +47,9 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.LocationBias;
 import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
@@ -71,12 +73,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
     public static final int permissionsRequestEnableGPS = 9002;
     public static final int permissionsRequestAccessFineLocation = 9003;
     public static final int permissionsRequestAccessCoarseLocation = 9004;
-    private static final String tag = "MapFragment";
+    public static final int AUTOCOMPLETE_REQUEST_CODE = 1;
     private GoogleMap mMap;
     private boolean mLocationPermissionGranted = false;
     private FloatingActionButton searchButton;
     private final CollectionReference qrCodeRef;
-    private static final int AUTOCOMPLETE_REQUEST_CODE = 1;
+    private static final String TAG = "MapFragment";
+    private RectangularBounds rectangularBounds;
 
     public MapFragment(@NonNull FirebaseFirestore db) {
         this.qrCodeRef = db.collection("QRCodes");
@@ -127,7 +130,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
      * Checks if GPS is enabled and requests permission to use the device's location if necessary.
      */
     private void checkMapWorking() {
-        Log.d(tag, "checkMapWorking");
+        Log.d(TAG, "checkMapWorking");
         LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (!isGPSEnabled) {
@@ -157,10 +160,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             getLocationPermission();
-            Log.d(tag, "isLocationEnabled: No");
+            Log.d(TAG, "isLocationEnabled: No");
             return false;
         } else {
-            Log.d(tag, "isLocationEnabled: Yes");
+            Log.d(TAG, "isLocationEnabled: Yes");
             return true;
         }
     }
@@ -171,7 +174,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
      * onRequestPermissionsResult.
      */
     private void getLocationPermission() {
-        Log.d(tag, "getLocationPermission");
+        Log.d(TAG, "getLocationPermission");
         if (ContextCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mLocationPermissionGranted = true;
@@ -194,28 +197,28 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         switch (requestCode) {
             case permissionsRequestEnableGPS:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(tag, "onRequestPermissionsResult: GPS permission granted");
+                    Log.d(TAG, "onRequestPermissionsResult: GPS permission granted");
                     displayMap();
                 } else {
-                    Log.d(tag, "onRequestPermissionsResult: GPS permission denied");
+                    Log.d(TAG, "onRequestPermissionsResult: GPS permission denied");
                 }
                 break;
             case permissionsRequestAccessCoarseLocation:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mLocationPermissionGranted = true;
-                    Log.d(tag, "onRequestPermissionsResult: Coarse Location permission granted");
+                    Log.d(TAG, "onRequestPermissionsResult: Coarse Location permission granted");
                     displayMap();
                 } else {
-                    Log.d(tag, "onRequestPermissionsResult: Coarse Location permission denied");
+                    Log.d(TAG, "onRequestPermissionsResult: Coarse Location permission denied");
                 }
                 break;
             case permissionsRequestAccessFineLocation:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(tag, "onRequestPermissionsResult: Fine Location permission granted");
+                    Log.d(TAG, "onRequestPermissionsResult: Fine Location permission granted");
                     mLocationPermissionGranted = true;
                     displayMap();
                 } else {
-                    Log.d(tag, "onRequestPermissionsResult: Fine Location permission denied");
+                    Log.d(TAG, "onRequestPermissionsResult: Fine Location permission denied");
                 }
                 break;
         }
@@ -230,7 +233,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
      */
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        Log.d(tag, "onActivityResult");
+        Log.d(TAG, "onActivityResult");
         if (requestCode == permissionsRequestEnableGPS) {
             if (mLocationPermissionGranted) {
                 displayMap();
@@ -240,13 +243,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         }
         if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
+                assert data != null;
                 Place place = Autocomplete.getPlaceFromIntent(data);
-                Log.i("TAG", "Place: " + place.getName() + ", " + place.getLatLng());
+                Log.i(TAG, "Place: " + place.getName() + ", " + place.getLatLng());
                 CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 16f);
                 mMap.animateCamera(cameraUpdate);
             } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
                 Status status = Autocomplete.getStatusFromIntent(data);
-                Log.i("TAG", status.getStatusMessage());
+                Log.i(TAG, status.getStatusMessage());
             }
 
             return;
@@ -261,10 +265,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
      */
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-        Log.d(tag, "onMapReady");
+        Log.d(TAG, "onMapReady");
         mMap = googleMap;
         if (mLocationPermissionGranted) {
-            Log.d(tag, "myLocationPermissionGranted");
+            Log.d(TAG, "myLocationPermissionGranted");
             try {
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
@@ -278,7 +282,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                                 if (location != null) {
                                     // Create LatLng object with the current location
                                     LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
-
+                                    rectangularBounds = RectangularBounds.newInstance(currentLocation, currentLocation);
                                     // Create CameraUpdate object and move the camera to the current location
                                     CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(currentLocation, 15);
                                     mMap.animateCamera(cameraUpdate);
@@ -331,14 +335,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                     public void onClick(View view) {
 
                         List<Place.Field> fields = Arrays.asList(Place.Field.NAME, Place.Field.LAT_LNG);
+
+                        LocationBias locationBias = rectangularBounds;
                         Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+                                .setHint("Search...")
+                                .setLocationBias(locationBias)
                                 .build(getActivity().getApplicationContext());
                         startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
                     }
                 });
 
             } catch (SecurityException e) {
-                Log.e(tag, "SecurityException: " + e.getMessage());
+                Log.e(TAG, "SecurityException: " + e.getMessage());
             }
         }
     }
@@ -347,7 +355,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
      * Displays the map on the screen.
      */
     private void displayMap() {
-        Log.d(tag, "displayMap");
+        Log.d(TAG, "displayMap");
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
@@ -361,10 +369,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
     private boolean isServicesOK() {
         int available = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(getActivity());
         if (available == ConnectionResult.SUCCESS) {
-            Log.d(tag, "isServicesOK: Google Play Services is working");
+            Log.d(TAG, "isServicesOK: Google Play Services is working");
             return true;
         } else if (GoogleApiAvailability.getInstance().isUserResolvableError(available)) {
-            Log.d(tag, "isServicesOK: an error occurred but we can fix it");
+            Log.d(TAG, "isServicesOK: an error occurred but we can fix it");
             Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(getActivity(), available, errorDialogRequest);
             assert dialog != null;
             dialog.show();
@@ -384,10 +392,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
     public void onMapsSdkInitialized(@NonNull MapsInitializer.Renderer renderer) {
         switch (renderer) {
             case LATEST:
-                //Log.d(tag, "Latest Renderer");
+                //Log.d(TAG, "Latest Renderer");
                 break;
             case LEGACY:
-                //Log.d(tag, "Legacy Renderer");
+                //Log.d(TAG, "Legacy Renderer");
                 break;
         }
     }

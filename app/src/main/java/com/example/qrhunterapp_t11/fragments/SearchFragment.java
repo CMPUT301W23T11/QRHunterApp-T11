@@ -1,16 +1,15 @@
 package com.example.qrhunterapp_t11.fragments;
 
-import android.Manifest;
-import android.app.AlertDialog;
+import static android.app.Activity.RESULT_OK;
+import static com.example.qrhunterapp_t11.fragments.MapFragment.AUTOCOMPLETE_REQUEST_CODE;
+
 import android.content.Context;
-import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.location.Location;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.InputFilter;
-import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -22,13 +21,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -40,11 +37,13 @@ import com.example.qrhunterapp_t11.interfaces.OnItemClickListener;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.User;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -55,8 +54,11 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 
@@ -86,9 +88,6 @@ public class SearchFragment extends Fragment {
     private SharedPreferences prefs;
     private AutoCompleteTextView autoCompleteTextView;
     private TextView yourRank;
-    private static final int permissionsRequestLocation = 100;
-    private double lat;
-    private double lon;
 
     public SearchFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
@@ -129,7 +128,6 @@ public class SearchFragment extends Fragment {
             }
         });
 
-
         // Sets up the autocomplete with the provided array Adapter
         autoCompleteTextView.setThreshold(1);
         autoCompleteTextView.setAdapter(autoCompleteAdapter);
@@ -137,9 +135,10 @@ public class SearchFragment extends Fragment {
         autoCompleteTextView.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Not needed
             }
 
-            // makes the delete button invisible if there is no input
+            // Makes the delete button invisible if there is no input
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 deleteSearch.setVisibility(charSequence.length() > 0 ? View.VISIBLE : View.INVISIBLE);
@@ -147,7 +146,7 @@ public class SearchFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
-
+                // Not needed
             }
         });
 
@@ -155,7 +154,7 @@ public class SearchFragment extends Fragment {
         autoCompleteTextView.setOnEditorActionListener((textView, i, keyEvent) -> {
             if ((keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (i == EditorInfo.IME_ACTION_DONE)) {
                 autoCompleteTextView.dismissDropDown();
-                String searchText = autoCompleteTextView.getText().toString().toLowerCase();
+                String searchText = autoCompleteTextView.getText().toString();
 
                 Query getUser = usersReference.whereEqualTo("displayName", searchText);
                 getUser.get()
@@ -178,7 +177,7 @@ public class SearchFragment extends Fragment {
                                         trans.commit();
                                     }
 
-                                } else {  // if the user is not found
+                                } else {  // If the user is not found
                                     Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();
                                     Log.d(TAG, "Document NOT found");
                                 }
@@ -194,8 +193,6 @@ public class SearchFragment extends Fragment {
         deleteSearch.setOnClickListener(view1 -> autoCompleteTextView.setText("", false));
 
         // Setup spinners
-        Spinner leaderboardRadiusSpinner = view.findViewById(R.id.leaderboard_radius_spinner);
-
         String[] leaderboardFilterChoices = new String[]{"Most Points", "Most Scans", "Top QR Code", "Top QR Code (Regional)"};
         Spinner leaderboardFilterSpinner = view.findViewById(R.id.leaderboard_filter_spinner);
         ArrayAdapter<String> filterAdapter = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_spinner_item, leaderboardFilterChoices);
@@ -227,59 +224,17 @@ public class SearchFragment extends Fragment {
 
                         leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-                        // If user selects regional QR filter, initialize radius spinner
+                        // If user selects regional QR filter, prompt them to search for a region
                         if (leaderboardFilterChoice.equals("Top QR Code (Regional)")) {
-                            // Set leaderboard radius spinner
-                            String[] leaderboardRadiusChoices = new String[]{"5 km", "10 km", "25 km", "Custom radius"};
-                            ArrayAdapter<String> radiusAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, leaderboardRadiusChoices);
-                            radiusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                            leaderboardRadiusSpinner.setAdapter(radiusAdapter);
-                            leaderboardRadiusSpinner.setVisibility(View.VISIBLE);
-                            leaderboardRadiusSpinner.setPrompt("Set a radius");
 
-                            leaderboardRadiusSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                                @Override
-                                public void onNothingSelected(AdapterView<?> adapterView) {
-                                    // A spinner option will always be selected
-                                }
+                            Places.initialize(getActivity().getApplicationContext(), getResources().getString(R.string.google_map_api_key));
+                            List<Place.Field> fields = Arrays.asList(Place.Field.NAME, Place.Field.LAT_LNG);
 
-                                @Override
-                                public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                                    String leaderboardRadiusChoice = leaderboardRadiusSpinner.getSelectedItem().toString();
-
-                                    // If custom radius is selected, prompt for choice
-                                    if (leaderboardRadiusChoice.equals(leaderboardRadiusChoices[3])) {
-                                        // Set input EditText
-                                        final EditText customRadius = new EditText(getContext());
-                                        InputFilter[] filterArray = new InputFilter[1];
-                                        filterArray[0] = new InputFilter.LengthFilter(3);
-                                        customRadius.setFilters(filterArray);
-                                        customRadius.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
-
-                                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                                        builder
-                                                .setTitle("Custom radius")
-                                                .setView(customRadius)
-                                                .setMessage("Enter a custom radius in km")
-                                                .setNegativeButton("Cancel", null)
-                                                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                                                    @Override
-                                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                                        String customRadiusAmount = customRadius.getText().toString();
-                                                        leaderboardRadiusChoices[3] = "Custom radius (" + customRadiusAmount + " km)";
-                                                        radiusAdapter.notifyDataSetChanged();
-                                                    }
-                                                })
-                                                .create();
-                                        builder.show();
-                                    } else {
-                                        leaderboardRadiusChoices[3] = "Custom radius";
-                                    }
-                                }
-                            });
-                        } else {
-                            leaderboardRadiusSpinner.setVisibility(View.GONE);
-
+                            Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+                                    .setHint("Search for a region")
+                                    .setTypeFilter(TypeFilter.REGIONS)
+                                    .build(getActivity().getApplicationContext());
+                            startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
                         }
 
                         // Handles clicking on a user to view their profile
@@ -301,73 +256,40 @@ public class SearchFragment extends Fragment {
         return view;
     }
 
-    public interface LocationCallback {
-        void onLocationResult(double latitude, double longitude);
-    }
-
-    private void getCurrentLocation(LocationCallback callback) {
-        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
-        if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
-                @Override
-                public void onSuccess(Location location) {
-                    if (location != null) {
-                        double latitude = location.getLatitude();
-                        double longitude = location.getLongitude();
-                        callback.onLocationResult(latitude, longitude);
-                    } else {
-                        // Location data is not available
-                        Log.d(TAG, "ERROR Location data is not available.");
-                        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, permissionsRequestLocation);
-                    }
-                }
-            });
-        }
-    }
-
-    private boolean hasLocationPermission() {
-        return ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-    }
-
+    /**
+     * Handles the result of the region search
+     *
+     * @param requestCode Code used for the request
+     * @param resultCode  Result of the request
+     * @param data        Data returned from the request
+     */
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case permissionsRequestLocation:
-                boolean isFineLocationGranted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                boolean isCoarseLocationGranted = grantResults.length > 1 && grantResults[1] == PackageManager.PERMISSION_GRANTED;
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 
-                if (isFineLocationGranted) {
-                    Log.d(TAG, "Execute if permission granted f.");
-                    getCurrentLocation(new LocationCallback() {
-                        @Override
-                        public void onLocationResult(double latitude, double longitude) {
-                            lat = latitude;
-                            lon = longitude;
-                            Log.d(TAG, "Latitude1 " + lat + ", Longitude1 " + lon);
-                            findQRCodeNearby(lat, lon, 50);
-                        }
-                    });
-                } else if (isCoarseLocationGranted) {
-                    Log.d(TAG, "Execute if permission granted c.");
-                    getCurrentLocation(new LocationCallback() {
-                        @Override
-                        public void onLocationResult(double latitude, double longitude) {
-                            lat = latitude;
-                            lon = longitude;
-                            Log.d(TAG, "Latitude2 " + lat + ", Longitude2 " + lon);
-                            findQRCodeNearby(lat, lon, 50);
-                        }
-                    });
-                } else {
-                    // Permission is not granted
-                    Log.d(TAG, "Execute if permission not granted.");
+        if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                assert data != null;
+
+                Place place = Autocomplete.getPlaceFromIntent(data);
+                String placeName = place.getName();
+
+                Geocoder geocoder = new Geocoder(getActivity().getApplicationContext(), Locale.getDefault());
+                List<Address> addresses;
+
+                try {
+                    addresses = geocoder.getFromLocation(place.getLatLng().latitude, place.getLatLng().longitude, 1);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+                if (addresses.size() > 0) {
+                    System.out.println(addresses);
+                    System.out.println(addresses.get(0).getCountryCode());
+                }
+                Log.i("TAG", "Place: " + place.getName() + ", " + place.getLatLng());
+            }
+            return;
         }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private void findQRCodeNearby(double latitude, double longitude, double radius) {
@@ -431,21 +353,6 @@ public class SearchFragment extends Fragment {
                 break;
             case "Top QR Code (Regional)":
                 queryField = "topQRCode";
-                if (hasLocationPermission()) {
-                    getCurrentLocation(new LocationCallback() {
-                        @Override
-                        public void onLocationResult(double latitude, double longitude) {
-                            lat = latitude;
-                            lon = longitude;
-                            Log.d(TAG, "Latitude3 " + lat + ", Longitude3 " + lon);
-                            findQRCodeNearby(lat, lon, 50);
-                        }
-                    });
-                } else {
-                    Log.d(TAG, "ASKING FOR PERMISSION.");
-                    requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, permissionsRequestLocation);
-                }
-
                 break;
         }
 

@@ -210,7 +210,7 @@ public class CameraFragment extends Fragment {
         //System.out.printf("%f\n", haversine);
         System.out.printf("%.20f\n", distance);
 
-        //convert distance to meters and compare with maxDistance
+        // Convert distance to meters and compare with maxDistance
         distance *= 1000;
         System.out.printf("distance in meters: %.20f\n", distance);
 

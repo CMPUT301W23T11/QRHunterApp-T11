@@ -65,7 +65,7 @@ public class QRCodeView extends DialogFragment {
     private TextView commentNumTextView;
     private ViewPager viewPager;
     private QRCodeAdapter adapter;
-    String currentUser;
+    private String currentUser;
 
     /**
      * Empty constructor
@@ -205,7 +205,6 @@ public class QRCodeView extends DialogFragment {
                         }
                     }
                 });
-
             }
         });
 
