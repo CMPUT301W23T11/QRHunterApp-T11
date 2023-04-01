@@ -1,6 +1,5 @@
 package com.example.qrhunterapp_t11.fragments;
 
-import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 
 import android.app.Dialog;
@@ -47,9 +46,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.Autocomplete;
@@ -122,58 +119,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         Places.initialize(getActivity().getApplicationContext(), getResources().getString(R.string.google_map_api_key));
 
         searchView = view.findViewById(R.id.search_view);
-        searchView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                List<Place.Field> fields = Arrays.asList(Place.Field.NAME, Place.Field.LAT_LNG);
-                Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
-                        .build(getActivity().getApplicationContext());
-                startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
-            }
-        });
 
         return view;
-    }
-
-    private void getDeviceLocation() {
-        try {
-            if (mLocationPermissionGranted) {
-                FusedLocationProviderClient mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
-                Task<Location> location = mFusedLocationProviderClient.getLastLocation();
-                location.addOnCompleteListener(new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Location> task) {
-                        if (task.isSuccessful()) {
-                            Location currentLocation = task.getResult();
-                            if (currentLocation != null) {
-                                LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f));
-                            }
-                        }
-                    }
-                });
-            }
-        } catch (SecurityException e) {
-            Log.e("Exception: %s", e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (mMap != null) {
-            isServicesOK();
-            if (isLocationEnabled()) {
-                getDeviceLocation();
-            }
-        }
-    }
-
-    private void searchLocation(LatLng latLng) {
-
-        System.out.println(latLng);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
     }
 
     /**
@@ -295,14 +242,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
             if (resultCode == RESULT_OK) {
                 Place place = Autocomplete.getPlaceFromIntent(data);
                 Log.i("TAG", "Place: " + place.getName() + ", " + place.getLatLng());
-                searchLocation(place.getLatLng());
+                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 16f);
+                mMap.animateCamera(cameraUpdate);
             } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
-                // TODO: Handle the error.
                 Status status = Autocomplete.getStatusFromIntent(data);
                 Log.i("TAG", status.getStatusMessage());
-            } else if (resultCode == RESULT_CANCELED) {
-                // The user canceled the operation.
             }
+
             return;
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -376,6 +322,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                             new QRCodeView(qrCode, null).show(getActivity().getSupportFragmentManager(), "Show QR");
                         }
                         return true;
+                    }
+                });
+
+                // Launch autocomplete when user clicks on search
+                searchView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        List<Place.Field> fields = Arrays.asList(Place.Field.NAME, Place.Field.LAT_LNG);
+                        Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+                                .build(getActivity().getApplicationContext());
+                        startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
                     }
                 });
 
