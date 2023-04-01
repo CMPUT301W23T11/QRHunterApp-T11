@@ -132,16 +132,16 @@ public class ProfileTest {
     @After
     public final void tearDown() {
         Activity activity = rule.getActivity();
-        //prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
-        //prefs.edit().clear().commit();
-        //usersReference.document(testUsername).delete();
-        //solo.finishOpenedActivities();
+        prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        prefs.edit().clear().commit();
+        usersReference.document(testUsername).delete();
+        solo.finishOpenedActivities();
     }
 
     /**
      * Verifies that when you click an item in the recyclerView the dialog for it appears
      */
-    //@Test
+    @Test
     public void checkListClick() {
         // Asserts that the current activity is the MainActivity. Otherwise, show Wrong Activity
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
@@ -167,7 +167,7 @@ public class ProfileTest {
         assertTrue(solo.waitForText(String.valueOf(qrCode.getPoints()), 4, 10000));
         solo.clickOnText(qrCode.getName());
         // wait for "Add Comment" to know the qrView dialog has opened
-        assertTrue(solo.waitForText("Add Comment", 1, 10000));
+        assertTrue(solo.waitForText("Add comment", 1, 10000));
         // should display the qRCode name as a header
         assertTrue(solo.waitForText(name, 1, 10000));
         // points should be displayed in dialog
@@ -179,9 +179,10 @@ public class ProfileTest {
     /**
      * Verifies comments can be added and that they will show up in the comment box after being sent
      */
-    //@Test
+    @Test
     public void checkCommentAdd() {
         // Asserts that the current activity is the MainActivity. Otherwise, show Wrong Activity
+        System.out.println("EJSGFBKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
 
         // Check that current user exists
@@ -203,7 +204,7 @@ public class ProfileTest {
         assertTrue(solo.waitForText("1", 1, 10000));
         solo.clickOnText(qrCode.getName());
         // wait for "Add Comment" to know the qrView dialog has opened
-        assertTrue(solo.waitForText("Add Comment", 1, 10000));
+        assertTrue(solo.waitForText("Add comment", 1, 10000));
         solo.enterText(0, "great catch king 😂");
         solo.clickOnView(solo.getView(R.id.imageViewSend));
         solo.enterText(0, "great catch king 😂");
@@ -218,7 +219,7 @@ public class ProfileTest {
     /**
      * Verifies scoreboard is updated accordingly when a new QR Code is added
      */
-    //@Test
+    @Test
     public void checkPointAddition() {
         // Asserts that the current activity is the MainActivity. Otherwise, show Wrong Activity
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
@@ -287,9 +288,8 @@ public class ProfileTest {
 
     /**
      * Verifies that a qrCode can be deleted from the profile correctly by a Long click when the positive button on the dialog confirmation box is
-     * TODO make this test not fail
      */
-    //@Test
+    @Test
     public void deleteLongClickPositive() {
         // Asserts that the current activity is the MainActivity. Otherwise, show Wrong Activity
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
@@ -310,10 +310,15 @@ public class ProfileTest {
         // Long click to delete
         solo.clickLongOnText(qrCode.getName());
         Assert.assertTrue(solo.waitForText("Delete", 1, 1000));
-        solo.clickOnText("Delete");
+        //solo.clickOnText("Delete");
+        solo.clickOnView(solo.getView(android.R.id.button1));
+        solo.sleep(2000);
+        Assert.assertFalse(solo.waitForText(String.valueOf(qrCode.getPoints()), 1, 100));
+        Assert.assertFalse(solo.waitForText(qrCode.getName(), 1, 100));
+        Assert.assertTrue(solo.waitForText("0", 4, 100));
 
-        // Check document has been deleted from the database
-        checkDocExists(qrCode.getID(), qrReference, new QueryCallback() {
+        //Check document has been deleted from the database
+        checkDocExists(qrCode.getID(), usersReference.document(testUsername).collection("User QR Codes"), new QueryCallback() {
             public void queryCompleteCheck(boolean docExists) {
                 assertFalse(docExists);
             }
@@ -322,9 +327,8 @@ public class ProfileTest {
 
     /**
      * Verifies that a qrCode will not be deleted from the profile correctly by a Long click when the negative button on the dialog confirmation box is clicked
-     * TODO make this test not fail when checking database
      */
-    //@Test
+    @Test
     public void deleteLongClickNegative() {
         // Asserts that the current activity is the MainActivity. Otherwise, show Wrong Activity
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
@@ -350,6 +354,14 @@ public class ProfileTest {
         Assert.assertTrue(solo.waitForText(String.valueOf(qrCode.getPoints()), 4, 100));
         Assert.assertTrue(solo.waitForText(qrCode.getName(), 1, 100));
         Assert.assertTrue(solo.waitForText("1", 1, 100));
+
+        // Check document has been deleted from the database
+        checkDocExists(qrCode.getID(), usersReference.document(testUsername).collection("User QR Codes"), new QueryCallback() {
+            public void queryCompleteCheck(boolean docExists) {
+                assertTrue(docExists);
+            }
+        });
+
 
     }
 
