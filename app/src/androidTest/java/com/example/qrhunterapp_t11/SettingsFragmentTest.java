@@ -40,7 +40,7 @@ public class SettingsFragmentTest {
     private final Random rand = new Random();
     private final String testUsername = "testUser" + rand.nextInt(1000000);
     private Solo solo;
-    private boolean uniqueUser;
+    private String username;
     private SharedPreferences prefs;
     @Rule
     public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
@@ -99,19 +99,19 @@ public class SettingsFragmentTest {
      */
     @Test
     public void testUsernameChangeNotUnique() {
-        String testUserDuplicate = "testUserDuplicate";
-        addTestUserToDB(testUserDuplicate);
+        String testUserDupe = "testUserDupe";
+        addTestUserToDB(testUserDupe);
 
         solo.clickOnView(solo.getView(R.id.settings));
         solo.clickOnView(solo.getView(R.id.username_edit_edittext));
         solo.clearEditText(0);
-        solo.enterText(0, testUserDuplicate);
-        //solo.clickOnView(solo.getView(R.id.settings_confirm_button));
+        solo.enterText(0, testUserDupe);
+        solo.clickOnView(solo.getView(R.id.change_username_button));
 
         EditText usernameEditText = solo.getEditText(0);
         assertEquals("Username is not unique", usernameEditText.getError());
 
-        usersReference.document("testUserDuplicate").delete();
+        usersReference.document(testUserDupe).delete();
     }
 
     /**
@@ -119,31 +119,35 @@ public class SettingsFragmentTest {
      */
     @Test
     public void testUsernameChange() {
+        String testUserUnique = "testUserUnique";
+        // Make sure testUserUnique displayName is unique
+        checkUniqueDisplayName(testUserUnique, new QueryCallback() {
+            public void queryCompleteCheck(boolean unique) {
+                assertTrue(unique);
+            }
+        });
+
         solo.clickOnView(solo.getView(R.id.settings));
 
         solo.clickOnView(solo.getView(R.id.username_edit_edittext));
         solo.clearEditText(0);
 
-        solo.enterText(0, "testUserUnique");
-       // solo.clickOnView(solo.getView(R.id.settings_confirm_button));
-        solo.clickOnText("Confirm");
+        solo.enterText(0, testUserUnique);
+        solo.clickOnView(solo.getView(R.id.change_username_button));
+        solo.clickOnText("Confirm", 2);
 
-        checkUniqueDisplayName("testUserUnique", new QueryCallback() {
-            public void queryCompleteCheck(boolean unique) {
-                uniqueUser = unique;
-                assertTrue(uniqueUser);
+        // I want to talk to whoever decided queries should be asynchronous.
+        // Just have a friendly chat.
+        solo.sleep(3000);
+        // Just a friendly, pleasant conversation.
 
-                usersReference.document(testUsername).update("displayName", "testUserUnique");
-
-                // Make sure user was successfully added
-                checkUniqueDisplayName("testUserUnique", new QueryCallback() {
-                    public void queryCompleteCheck(boolean unique) {
-                        assertTrue(unique);
-                    }
+        // Make sure displayName was successfully changed
+        usersReference.document(prefs.getString("currentUserUsername", null))
+                .get()
+                .addOnSuccessListener(user -> {
+                    assertEquals(user.get("displayName"), username);
+                    usersReference.document(testUserUnique).delete();
                 });
-            }
-        });
-        usersReference.document("testUserUnique").delete();
     }
 
     /**
@@ -159,18 +163,14 @@ public class SettingsFragmentTest {
     }
 
     /**
-     * Checks if the given username exists in the database.
+     * Checks if the given displayName exists in the database
      */
-    public void checkUniqueDisplayName(String username, final QueryCallback uniqueUsername) {
+    public void checkUniqueDisplayName(String displayName, final QueryCallback uniqueUsername) {
         usersReference
-                .whereEqualTo("displayName", username)
+                .whereEqualTo("displayName", displayName)
                 .get()
                 .addOnSuccessListener(results -> {
-
                     uniqueUsername.queryCompleteCheck(results.isEmpty());
-
                 });
     }
-
 }
-

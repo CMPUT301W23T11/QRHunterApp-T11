@@ -41,36 +41,36 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
         holder.ranking.setText(String.valueOf(position + 1));
 
         // SET APPEARANCE OF VIEWHOLDER BASED ON POSITION
-        switch(position + 1) { // set colors of top three rankings //TODO IMPLEMENT REGIONAL QR CODE
+        switch (position + 1) { // Set colors of top three rankings
             case 1:
                 holder.ranking.setText("\uD83C\uDFC6");
                 holder.ranking.setTextSize(25);
-                holder.ranking.setTextColor(Color.rgb(0,0,0)); // need to set color to black or otherwise emoji will be faded
-                holder.username.setTextColor(Color.rgb(255,196,0));
-                holder.typeOfRanking.setTextColor(Color.rgb(255,196,0));
+                holder.ranking.setTextColor(Color.rgb(0, 0, 0)); // need to set color to black or otherwise emoji will be faded
+                holder.username.setTextColor(Color.rgb(255, 196, 0));
+                holder.typeOfRanking.setTextColor(Color.rgb(255, 196, 0));
                 break;
 
             case 2:
                 holder.ranking.setText("\uD83E\uDD48");
                 holder.ranking.setTextSize(25);
-                holder.ranking.setTextColor(Color.rgb(0,0,0));
-                holder.username.setTextColor(Color.rgb(166,166,166));
-                holder.typeOfRanking.setTextColor(Color.rgb(166,166,166));
+                holder.ranking.setTextColor(Color.rgb(0, 0, 0));
+                holder.username.setTextColor(Color.rgb(166, 166, 166));
+                holder.typeOfRanking.setTextColor(Color.rgb(166, 166, 166));
                 break;
 
             case 3:
                 holder.ranking.setText("\uD83E\uDD49");
                 holder.ranking.setTextSize(25);
-                holder.ranking.setTextColor(Color.rgb(0,0,0));
-                holder.username.setTextColor(Color.rgb(206,112,18));
-                holder.typeOfRanking.setTextColor(Color.rgb(206,112,18));
+                holder.ranking.setTextColor(Color.rgb(0, 0, 0));
+                holder.username.setTextColor(Color.rgb(206, 112, 18));
+                holder.typeOfRanking.setTextColor(Color.rgb(206, 112, 18));
                 break;
 
             default: // MUST OVERWRITE DEFAULT CASES, otherwise when you scroll down, the recyclerview will re-apply the above changes to the new
                 holder.ranking.setTextSize(17);
-                holder.ranking.setTextColor(Color.rgb(128,128,128));
-                holder.username.setTextColor(Color.rgb(128,128,128));
-                holder.typeOfRanking.setTextColor(Color.rgb(128,128,128));
+                holder.ranking.setTextColor(Color.rgb(128, 128, 128));
+                holder.username.setTextColor(Color.rgb(128, 128, 128));
+                holder.typeOfRanking.setTextColor(Color.rgb(128, 128, 128));
                 break;
         }
 
@@ -126,7 +126,7 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
             ranking = itemView.findViewById(R.id.ranking_textview);
             typeOfRanking = itemView.findViewById(R.id.leaderboard_filter_type);
 
-            // This click listener responds to clicks done on an item in the recyclerview
+            // Click listener for items in the recyclerview
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
