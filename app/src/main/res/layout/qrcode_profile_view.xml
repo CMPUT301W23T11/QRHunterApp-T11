@@ -30,8 +30,19 @@
                 android:fontFamily="sans-serif-medium"
                 android:text="@string/textview_name"
                 android:textColor="@color/text_colour"
-                android:textSize="35sp"
+                android:textSize="30sp"
                 android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.111" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/qr_ic"
+                android:translationX="140dp"
+                android:translationY="35dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
