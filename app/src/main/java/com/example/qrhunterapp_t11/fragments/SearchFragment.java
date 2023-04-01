@@ -45,11 +45,14 @@ import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -129,6 +132,12 @@ public class SearchFragment extends Fragment {
                         }
                     }
                 }
+            }
+        });
+        filterQueryRegional("Top QR Code", new QueryCallback() {
+            @Override
+            public void queryCompleteCheck(boolean queryComplete) {
+                assert queryComplete;
             }
         });
 
@@ -415,29 +424,35 @@ public class SearchFragment extends Fragment {
                 break;
         }
 
-        HashMap<String, ArrayList<String>> usersQRReferences = new HashMap<>();
+        HashMap<String, ArrayList<DocumentReference>> usersQRReferences = new HashMap<>();
+        ArrayList<DocumentReference> usersQRCodes = new ArrayList<>();
 
         usersReference
                 .get()
                 .addOnSuccessListener(documentReferenceSnapshots -> {
-                    for (int i = 0; i < documentReferenceSnapshots.size(); i++) {
-                        String user = documentReferenceSnapshots.getDocuments().get(i).toString();
+                    for (QueryDocumentSnapshot userDocument : documentReferenceSnapshots) {
+                        String user = userDocument.get("username").toString();
                         usersReference.document(user).collection("User QR Codes")
                                 .get()
                                 .addOnSuccessListener(userQRCodes -> {
-                                    ArrayList<String> usersQRCodes = new ArrayList<>();
-                                    for (int j = 0; j < userQRCodes.size(); j++) {
-                                        String qrCodeReference = userQRCodes.getDocuments().get(j).get("Reference").toString();
+                                    for (QueryDocumentSnapshot reference : userQRCodes) {
+                                        DocumentReference qrCodeReference = (DocumentReference) reference.get("Reference");
+
                                         usersQRCodes.add(qrCodeReference);
                                     }
                                     usersQRReferences.put(user, usersQRCodes);
                                 });
-
                     }
-//                    leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
-//                            .setQuery(query, User.class)
-//                            .build();
-//                    queryCompleteCheck.queryCompleteCheck(true);
+                    qrCodesReference
+                            .whereIn(FieldPath.documentId(), usersQRCodes)
+                            .get()
+                            .addOnSuccessListener(referencedQRDocuments -> {
+                                for (QueryDocumentSnapshot referencedQR : referencedQRDocuments) {
+                                    System.out.println(referencedQR);
+
+                                    queryCompleteCheck.queryCompleteCheck(true);
+                                }
+                            });
                 });
     }
 }
