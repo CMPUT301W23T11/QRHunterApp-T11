@@ -42,7 +42,7 @@
     <string name="find_other_players">Find other Players</string>
     <string name="search">Search</string>
     <string name="profile_name_text_search">Profile Name</string>
-    <string name="profile_points_text_search">Points:</string>
+    <string name="profile_points_text_search">#####</string>
     <string name="ranking_profile">#</string>
     <string name="profile_scans_search_text">Scans:</string>
     <string name="profile_top_qr_code_search">Top QR Code:</string>

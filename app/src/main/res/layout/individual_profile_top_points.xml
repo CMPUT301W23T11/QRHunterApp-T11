@@ -25,13 +25,13 @@
             android:layout_weight="2"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-black"
+            android:fontFamily="sans-serif-medium"
             android:text="@string/profile_name_text_search"
             android:textSize="17sp"/>
 
         <TextView
             android:id="@+id/profile_points_search"
-            android:layout_weight="2"
+            android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/profile_points_text_search"

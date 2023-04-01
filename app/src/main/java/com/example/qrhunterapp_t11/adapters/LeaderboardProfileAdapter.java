@@ -1,5 +1,7 @@
 package com.example.qrhunterapp_t11.adapters;
 
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,23 +35,124 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
         this.viewMode = viewMode;
     }
 
+    /**
+     * @param holder
+     * @param position
+     * @param model the model object containing the data that should be used to populate the view.
+     * @reference Zun - https://stackoverflow.com/q/56749319/14445107 - how to not have recyclerview apply changes to multiple ViewHolders
+     */
     @Override
     protected void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position, @NonNull User model) {
         // Bind the QRCode object to the RecyclerViewHolder
         holder.username.setText(model.getDisplayName());
         holder.ranking.setText(String.valueOf(position + 1));
 
+        // SET APPEARANCE OF VIEWHOLDER BASED ON POSITION
+        switch(position + 1) { // set colors of top three rankings //TODO IMPLEMENT REGIONAL QR CODE
+            case 1:
+                holder.ranking.setText("\uD83C\uDFC6");
+                holder.ranking.setTextSize(25);
+                holder.ranking.setTextColor(Color.rgb(0,0,0)); // need to set color to black or otherwise emoji will be faded
+                holder.username.setTextColor(Color.rgb(255,196,0));
+
+                // SET COLOR FOR THE COUNT OF SELECTED CATEGORY - GOLD
+                switch (viewMode) {
+                    case MOST_POINTS:
+                        holder.totalPoints.setTextColor(Color.rgb(255,196,0));
+                        break;
+                    case MOST_SCANS:
+                        holder.totalScans.setTextColor(Color.rgb(255,196,0));
+                        break;
+                    case TOP_QR_CODE:
+                        holder.topQRCode.setTextColor(Color.rgb(255,196,0));
+                        break;
+                    case TOP_QR_CODE_REGIONAL:
+                        break;
+                }
+
+                break;
+
+            case 2:
+                holder.ranking.setText("\uD83E\uDD48");
+                holder.ranking.setTextSize(25);
+                holder.ranking.setTextColor(Color.rgb(0,0,0));
+                holder.username.setTextColor(Color.rgb(166,166,166));
+
+                // SET COLOR FOR THE COUNT OF SELECTED CATEGORY - SILVER
+                switch (viewMode) {
+                    case MOST_POINTS:
+                        holder.totalPoints.setTextColor(Color.rgb(166,166,166));
+                        break;
+                    case MOST_SCANS:
+                        holder.totalScans.setTextColor(Color.rgb(166,166,166));
+                        break;
+                    case TOP_QR_CODE:
+                        holder.topQRCode.setTextColor(Color.rgb(166,166,166));
+                        break;
+                    case TOP_QR_CODE_REGIONAL:
+                        break;
+                }
+
+                break;
+
+            case 3:
+                holder.ranking.setText("\uD83E\uDD49");
+                holder.ranking.setTextSize(25);
+                holder.ranking.setTextColor(Color.rgb(0,0,0));
+                holder.username.setTextColor(Color.rgb(206,112,18));
+
+                // SET COLOR FOR THE COUNT OF SELECTED CATEGORY - BRONZE
+                switch (viewMode) {
+                    case MOST_POINTS:
+                        holder.totalPoints.setTextColor(Color.rgb(206,112,18));
+                        break;
+                    case MOST_SCANS:
+                        holder.totalScans.setTextColor(Color.rgb(206,112,18));
+                        break;
+                    case TOP_QR_CODE:
+                        holder.topQRCode.setTextColor(Color.rgb(206,112,18));
+                        break;
+                    case TOP_QR_CODE_REGIONAL:
+                        break;
+                }
+
+                break;
+
+            default: // MUST OVERWRITE DEFAULT CASES, otherwise when you scroll down, the recyclerview will re-apply the above changes to the new
+                holder.ranking.setTextSize(17);
+                holder.ranking.setTextColor(Color.rgb(128,128,128));
+                holder.username.setTextColor(Color.rgb(128,128,128));
+
+                // SET COLOR FOR THE COUNT OF SELECTED CATEGORY - DEFAULT
+                switch (viewMode) {
+                    case MOST_POINTS:
+                        holder.totalPoints.setTextColor(Color.rgb(128,128,128));
+                        break;
+                    case MOST_SCANS:
+                        holder.totalScans.setTextColor(Color.rgb(128,128,128));
+                        break;
+                    case TOP_QR_CODE:
+                        holder.topQRCode.setTextColor(Color.rgb(128,128,128));
+                        break;
+                    case TOP_QR_CODE_REGIONAL:
+                        break;
+                }
+
+                break;
+        }
+
+        // SET VALUE OF COUNT BASED ON SORTED CATEGORY
         switch (viewMode) {
             case MOST_POINTS:
-                String totalPoints = "Points: " + model.getTotalPoints();
+                String totalPoints = "" + model.getTotalPoints();
                 holder.totalPoints.setText(totalPoints);
                 break;
             case MOST_SCANS:
-                String totalScans = "Scans: " + model.getTotalScans();
+                String totalScans = "" + model.getTotalScans();
                 holder.totalScans.setText(totalScans);
                 break;
             case TOP_QR_CODE:
-                String topQRCode = "Top QR Code: " + model.getTopQRCode();
+                String topQRCode = "" + model.getTopQRCode();
                 holder.topQRCode.setText(topQRCode);
                 break;
             case TOP_QR_CODE_REGIONAL:
