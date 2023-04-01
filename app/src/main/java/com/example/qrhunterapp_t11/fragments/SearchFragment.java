@@ -79,7 +79,7 @@ public class SearchFragment extends Fragment {
     private static final String TAG = "searchFragment";
     private final FirebaseFirestore db;
     private final CollectionReference usersReference;
-    private final CollectionReference qrCodeReference;
+    private final CollectionReference qrCodesReference;
     private LeaderboardProfileAdapter leaderboardAdapter;
     private RecyclerView leaderboardRecyclerView;
     private FirestoreRecyclerOptions<User> leaderboardOptions;
@@ -93,7 +93,7 @@ public class SearchFragment extends Fragment {
     public SearchFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
         this.usersReference = db.collection("Users");
-        this.qrCodeReference = db.collection("QRCodes");
+        this.qrCodesReference = db.collection("QRCodes");
     }
 
     @NonNull
@@ -371,8 +371,6 @@ public class SearchFragment extends Fragment {
     }
 
     private void findQRCodeNearby(double latitude, double longitude, double radius) {
-        CollectionReference qrCodesRef = db.collection("QRCodes");
-
         // Define the bounds of the query
         double lowerLat = latitude - (radius / 111.0);
         double lowerLon = longitude - (radius / (111.0 * Math.cos(latitude)));
@@ -380,11 +378,11 @@ public class SearchFragment extends Fragment {
         double upperLon = longitude + (radius / (111.0 * Math.cos(latitude)));
 
         // Query the Firestore database for QR codes within the bounds of latitude
-        Query latQuery = qrCodesRef.whereGreaterThanOrEqualTo("latitude", lowerLat)
+        Query latQuery = qrCodesReference.whereGreaterThanOrEqualTo("latitude", lowerLat)
                 .whereLessThanOrEqualTo("latitude", upperLat);
 
         // Query the Firestore database for QR codes within the bounds of longitude
-        Query lonQuery = qrCodesRef.whereGreaterThanOrEqualTo("longitude", lowerLon)
+        Query lonQuery = qrCodesReference.whereGreaterThanOrEqualTo("longitude", lowerLon)
                 .whereLessThanOrEqualTo("longitude", upperLon);
 
         // Combine the results of the two queries
