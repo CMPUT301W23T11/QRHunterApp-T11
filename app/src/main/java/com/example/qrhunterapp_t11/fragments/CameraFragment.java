@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -91,6 +92,7 @@ public class CameraFragment extends Fragment {
     private String qrCodeID;
     private FirebaseQueryAssistant firebaseQueryAssistant = new FirebaseQueryAssistant();
     private boolean showPoints = false;
+    private QRCode savedQR = null;
 
 
     public CameraFragment(@NonNull FirebaseFirestore db) {
@@ -137,99 +139,7 @@ public class CameraFragment extends Fragment {
         scanCode(); // Start scanning a QR code
     }
 
-    /**
-     * This function calculates the distance between two locations on earth (input
-     * via decimal latitude longitude coordinates) using the Haversine formula;
-     * if the distance between the two points is less than the input threshold,
-     * returns true, else false
-     * <p>
-     * In the context of a freshly scanned QRCode, if the hash function of the new code
-     * matches the hash of a QRCode already in the db, this function determines if they should
-     * be considered unique objects or the same QRcode (sharing comments, photos etc...)
-     * if the function returns true using the new QRCode and the QRCode object already in the database,
-     * no new document will be inserted (user profile will reference pre-existing QRCode), otherwise
-     * a new entry will be created
-     *
-     * @param qr          QRCode -
-     * @param dbQR        QRCode -
-     * @param givenRadius Double - the maximum distance allowed between the two points IN METERS
-     * @return true if distance shorter than uniqueness threshold, else false if 2 separate instances
-     * @sources <pre>
-     * <ul>
-     * <li><a href="https://www.trekview.org/blog/2021/reading-decimal-gps-coordinates-like-a-computer/">How to read lat/long</a></li>
-     * <li><a href="https://en.wikipedia.org/wiki/Haversine_formula">How to calculate distance between to locations on earth using lat/long</a></li>
-     * <li><a href="https://linuxhint.com/import-math-in-java/">How use Math library</a></li>
-     * <li><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Math.html">cos, sin, arcsin</a></li>
-     * <li><a href="https://www.movable-type.co.uk/scripts/latlong.html"> Verified test cases w/ this calculator</a></li>
-     * </ul>
-     * </pre>
-     */
 
-    public static boolean isSameLocation(@Nullable QRCode qr, @Nullable QRCode dbQR, double givenRadius) {
-        //TODO INPUT VALIDATION:
-        // some coordinates shouldn't make sense, iirc long can't have larger magnitude than +-180?
-        // and +-90 for lat?
-
-        // input validation
-        // hashes are same, no location data for either, treat as same QRCode object
-        if ((qr.getLatitude() == null) && (qr.getLongitude() == null) && (dbQR.getLatitude() == null) && (dbQR.getLongitude() == null)) {
-            return true;
-            // at least one of the qrs is null but not both, treat as separate objects
-        } else if ((qr.getLatitude() == null) || (qr.getLongitude() == null) || (dbQR.getLatitude() == null) || (dbQR.getLongitude() == null)) {
-            return false;
-        }
-
-        double lat1 = qr.getLatitude();
-        double lng1 = qr.getLongitude();
-        double lat2 = dbQR.getLatitude();
-        double lng2 = dbQR.getLongitude();
-        System.out.printf("lat1 %.20f\n", lat1);
-        System.out.printf("lng2 %.20f\n", lng1);
-        System.out.printf("lat2 %.20f\n", lat2);
-        System.out.printf("lng2 %.20f\n", lng2);
-
-
-        //COORDINATES HARDCODED FOR TESTING
-        //double maxDistance = 30;    // in meters
-        //double lat1 = 38.8977;
-        //double lng1 = -77.0365;
-
-        // latitude & longitude of second QRCode
-        //double lat2 = 48.8584;
-        //double lng2 = 2.2945;
-
-        // convert degrees to radians
-        // phi = latitude, lambda = longitude
-        double phi1 = (lat1 * Math.PI) / 180.0;
-        double lambda1 = (lng1 * Math.PI) / 180.0;
-
-        double phi2 = (lat2 * Math.PI) / 180.0;
-        double lambda2 = (lng2 * Math.PI) / 180.0;
-
-        // Calculate haversine(theta), the central angle between both locations relative to earth's center
-        // Haversine(theta) = sin^2((phi2-phi1)/2)+cos(phi1)cos(phi2)sin^2((lambda2-lambda1)/2)
-        double haversine = (Math.pow(Math.sin((phi2 - phi1) / 2), 2) + Math.cos(phi1) * Math.cos(phi2) * (Math.pow(Math.sin((lambda2 - lambda1) / 2), 2)));
-
-        // Calculate distance between both points using haversine
-        // 6371.0 is the Earth's radius in kilometers
-        // Distance = 2r*arcsin(sqr(haversine(theta)))
-        double distance = (2 * 6371.0) * (Math.asin(Math.sqrt(haversine)));
-
-        //System.out.printf("%f\n", haversine);
-        System.out.printf("%.20f\n", distance);
-
-        //convert distance to meters and compare with maxDistance
-        distance *= 1000;
-        System.out.printf("distance in meters: %.20f\n", distance);
-
-        if (distance <= givenRadius) {
-            System.out.printf("Same\n");
-            return true;
-        } else {
-            System.out.printf("Different\n");
-            return false;
-        }
-    }
 
     /**
      * Function to initialize QR scanner options, and order the QR scanner to start scanning using the CaptureAct.
@@ -512,7 +422,7 @@ public class CameraFragment extends Fragment {
                         // If user already has this qRCode, alert user that they cannot get the points for the same code again
                         System.out.println("HERE4");
                         if (hashExists){
-                            System.out.println("HERE3");
+
                             showPoints = false;
                             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                             builder.setTitle("You scanned the same QR twice!");
@@ -520,22 +430,17 @@ public class CameraFragment extends Fragment {
                             builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    firebaseQueryAssistant.deleteQR(currentUserUsername, qr.getID(), usersReference, new QueryCallback() {
-                                        @Override
-                                        public void queryCompleteCheck(boolean queryComplete) {
-                                            assert queryComplete;
-                                        }
-                                    });
+                                    System.out.println("HERE3");
+                                    savedQR = qr;
+                                    promptForPhoto();
                                 }
                             });
-
                             builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     returnToProfile();
                                 }
                             });
-
                             AlertDialog alert = builder.create();
                             alert.show();
                         }else{
@@ -549,7 +454,6 @@ public class CameraFragment extends Fragment {
                             builder.setCancelable(false);
                             String scored = qrCode.getPoints() + " Points";
                             scoredTV.setText(scored);
-
                             final AlertDialog alertDialog = builder.create();
                             alertDialog.show(); // create and display the dialog
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -566,35 +470,12 @@ public class CameraFragment extends Fragment {
                                     timer.cancel();
                                     promptForPhoto(); // prompt the user for a photo of the QR object or location once the score dialog disappears
                                 }
-                            }, 5000); // set a timer to automatically close the dialog after 5 seconds
+                            }, 7000); // set a timer to automatically close the dialog after 7 seconds
                         }
                     }
                 });
             }
         });
-    }
-
-    /**
-     * Helper function to check if a QR code document exists
-     *
-     * @param qrToCheck QR document that should be checked for
-     * @param username  User whose collection is being checked
-     * @sources <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
-     */
-    public void checkUserHasQR(@NonNull String qrToCheck, @NonNull String username, final @NonNull QueryCallback docExists) {
-
-        usersReference.document(username).collection("User QR Codes").document(qrToCheck)
-                .get()
-                .addOnSuccessListener(doc -> {
-
-                    if (doc.exists()) {
-                        Log.d("DocExist", "DocumentSnapshot data: " + doc.getData());
-                        docExists.queryCompleteCheck(true);
-                    } else {
-                        Log.d("DocExist", "No such document");
-                        docExists.queryCompleteCheck(false);
-                    }
-                });
     }
 
     /**
@@ -639,87 +520,42 @@ public class CameraFragment extends Fragment {
                     }
                 });
     }
-
-
-
-    /**
-     * @param qr           QR code to find matches of in db
-     * @param qrCodeExists Query callback
-     * @sources <a href="https://firebase.google.com/docs/firestore/query-data/queries#java_6">Firestore documentation</a>
-     */
-    public void checkQRCodeExists(@NonNull QRCode qr, final @NonNull QueryCallback qrCodeExists) {
-        String hashValue = qr.getHash();
-
-        qrCodesReference
-                .whereEqualTo("hash", hashValue)
-                .get()
-                .addOnSuccessListener(matchingQRCodes -> {
-
-                    boolean isSame = false;
-                    for (QueryDocumentSnapshot document : matchingQRCodes) {
-                        Log.d("QRExist", document.getId() + " => " + document.getData());
-                        QRCode dbQR = document.toObject(QRCode.class);      // rebuilds a QRCode object from db information
-                        isSame = isSameLocation(qr, dbQR, MAX_RADIUS);
-                        if (isSame) {                             // locations within threshold, treat as same qr, break from loop
-                            qrCodeID = dbQR.getID();
-                            //queryCompleteCheck.queryCompleteCheck(true);
-                            Log.d("QRExist", "locations close enough, count as equal object");
-                            break;
-                        }
-                        Log.d("QRExists", "location distance too far, not a match");
-                    }
-
-                    if (!isSame) {       // no matches in db within distance threshold
-                        Log.d("QRExists", "no matches within distance, create a new object");
-                    }
-                    qrCodeExists.queryCompleteCheck(isSame);
-
-                });
-    }
-
     /**
      * Helper function to add QRCode object to QRCodes and Users collections
      */
     private void addQRCode() {
-        qrCodeID = qrCode.getID();
+        float[] results = new float[1];
 
-        Map<String, Object> qrCodeRef = new HashMap<>();
-
-        // Check if qrCode within location threshold already exists in db in QRCodes collection
-        checkQRCodeExists(qrCode, new QueryCallback() {
-            public void queryCompleteCheck(boolean qrExists) {
-                qrCodeRef.put("Reference", qrCodesReference.document(qrCodeID));
-
-                // Check if reference to qrCode exists in db in Users collection
-                checkUserHasQR(qrCodeID, currentUserUsername, new QueryCallback() {
-                    public void queryCompleteCheck(boolean qrRefExists) {
-
-                        // If qrCode does not exist, add it to QRCode collection
-                        if (!qrExists) {
-                            qrCodesReference.document(qrCodeID).set(qrCode);
-                            if (resizedImageUrl != null) {
-                                qrCodesReference.document(qrCodeID).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
-                                //QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayRemove(resizedImageUrl));
-                            }
-                        }
-                        // If user does not already have this qrCode, add a reference to it, increment their total scans and points, add new photo to qrCode
-                        if (!qrRefExists) {
-                            usersReference.document(currentUserUsername).collection("User QR Codes").document(qrCodeID).set(qrCodeRef);
-                            usersReference.document(currentUserUsername).update("totalScans", FieldValue.increment(1));
-                            usersReference.document(currentUserUsername).update("totalPoints", FieldValue.increment(qrCode.getPoints()));
-                            if (resizedImageUrl != null) {
-                                qrCodesReference.document(qrCodeID).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
-                                //QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayRemove(resizedImageUrl));
-                            }
-                        }
-                        // If user does not have this qrCode but it already exists in qrCode collection, increase its total scans
-                        if ((qrExists) && (!qrRefExists)) {
-                            qrCodesReference.document(qrCodeID).update("numberOfScans", FieldValue.increment(1));
-                        }
-                    }
-                });
+        // If a user is updating the location reference of a QR Code they already scanned before
+        System.out.println(savedQR);
+        if(savedQR != null){
+            // if new version is scanned without location do nothing
+            if(qrCode.getLatitude() == null){
+                savedQR = null;
+                returnToProfile();
             }
-        });
+            // If the user's new location is the same as the old QR Code's location
+            System.out.println(savedQR);
+            System.out.println(qrCode);
+            if ((savedQR.getLatitude() != null) && (qrCode.getLatitude() != null)){
+
+                android.location.Location.distanceBetween(qrCode.getLatitude(),qrCode.getLongitude(), savedQR.getLatitude(), savedQR.getLongitude(), results);
+                if (results[0] < MAX_RADIUS){
+                    savedQR = null;
+                    returnToProfile();
+                }
+            }
+            // delete the old qrCode reference from the user's collection
+            firebaseQueryAssistant.deleteQR(currentUserUsername, savedQR.getID(), usersReference, new QueryCallback() {
+                @Override
+                public void queryCompleteCheck(boolean queryComplete) {
+                    System.out.println("HERE6query");
+                    assert queryComplete;
+                }
+            });
+        }
+
+        firebaseQueryAssistant.addQR(currentUserUsername, qrCode, resizedImageUrl, MAX_RADIUS, usersReference, qrCodesReference);
     }
 
     /**

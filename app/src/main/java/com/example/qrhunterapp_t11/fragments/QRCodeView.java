@@ -13,12 +13,14 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.LinearLayoutCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.DialogFragment;
 import androidx.viewpager.widget.ViewPager;
 
@@ -137,6 +139,8 @@ public class QRCodeView extends DialogFragment {
         viewPager = view.findViewById(R.id.pager);
         photoAdapter = new PhotoAdapter(getContext(), qrCode.getPhotoList());
         viewPager.setAdapter(photoAdapter);
+        NestedScrollView scrollView = view.findViewById(R.id.nested_scroll);
+        scrollView.post(() -> scrollView.fullScroll(View.FOCUS_UP));
 
         // If the QRCode has no associated photo, hide the photo box
         if (photoAdapter.getCount() == 0) {
