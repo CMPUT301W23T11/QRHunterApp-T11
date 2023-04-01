@@ -21,7 +21,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
@@ -52,6 +51,7 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -74,7 +74,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
     private static final String tag = "MapFragment";
     private GoogleMap mMap;
     private boolean mLocationPermissionGranted = false;
-    private SearchView searchView;
+    private FloatingActionButton searchButton;
     private final CollectionReference qrCodeRef;
     private static final int AUTOCOMPLETE_REQUEST_CODE = 1;
 
@@ -118,7 +118,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         MapsInitializer.initialize(getActivity().getApplicationContext(), MapsInitializer.Renderer.LATEST, this);
         Places.initialize(getActivity().getApplicationContext(), getResources().getString(R.string.google_map_api_key));
 
-        searchView = view.findViewById(R.id.search_view);
+        searchButton = view.findViewById(R.id.map_search_button);
 
         return view;
     }
@@ -326,7 +326,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                 });
 
                 // Launch autocomplete when user clicks on search
-                searchView.setOnClickListener(new View.OnClickListener() {
+                searchButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
 
