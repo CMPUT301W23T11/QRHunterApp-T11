@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:background="@color/headers"
         android:elevation="10dp"
-        android:fontFamily="sans-serif-medium"
+        android:fontFamily="@font/lato_black"
         android:padding="6dp"
         android:text="@string/settings"
         android:textAlignment="center"
@@ -26,7 +26,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="32dp"
-        android:fontFamily="sans-serif-medium"
+        android:fontFamily="@font/lato_black"
         android:text="@string/edittext_username"
         android:textColor="@color/text_colour"
         android:textSize="25sp" />
@@ -36,32 +36,33 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-    <EditText
-        android:id="@+id/username_edit_edittext"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:imeOptions="actionDone"
-        android:maxLength="16"
-        android:autofillHints="username"
-        android:fontFamily="sans-serif-medium"
-        android:hint="@string/edittext_username"
-        android:inputType="textPersonName"
-        android:text="@string/edittext_username" />
+        <EditText
+            android:id="@+id/username_edit_edittext"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:layout_weight="1"
+            android:autofillHints="username"
+            android:fontFamily="@font/lato"
+            android:hint="@string/edittext_username"
+            android:imeOptions="actionDone"
+            android:inputType="textPersonName"
+            android:maxLength="16"
+            android:text="@string/edittext_username" />
 
-    <Button
-        android:id="@+id/change_username_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginEnd="5dp"
-        android:layout_marginTop="32dp"
-        android:backgroundTint="@color/headers"
-        android:text="@string/edittext_submit"
-        android:textColor="@color/white" />
+        <Button
+            android:id="@+id/change_username_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="5dp"
+            android:backgroundTint="@color/headers"
+            android:fontFamily="@font/lato"
+            android:text="@string/edittext_submit"
+            android:textColor="@color/white" />
 
     </LinearLayout>
 
@@ -71,7 +72,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="32dp"
-        android:fontFamily="sans-serif-medium"
+        android:fontFamily="@font/lato_black"
         android:text="@string/edittext_email"
         android:textColor="@color/text_colour"
         android:textSize="25sp" />
@@ -81,31 +82,32 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-    <EditText
-        android:id="@+id/email_edit_edittext"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:autofillHints="emailAddress"
-        android:imeOptions="actionDone"
-        android:fontFamily="sans-serif-medium"
-        android:hint="@string/edittext_email"
-        android:inputType="textEmailAddress"
-        android:text="@string/edittext_email" />
+        <EditText
+            android:id="@+id/email_edit_edittext"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:layout_weight="1"
+            android:autofillHints="emailAddress"
+            android:fontFamily="@font/lato"
+            android:hint="@string/edittext_email"
+            android:imeOptions="actionDone"
+            android:inputType="textEmailAddress"
+            android:text="@string/edittext_email" />
 
-    <Button
-        android:id="@+id/change_email_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="5dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="32dp"
-        android:backgroundTint="@color/headers"
-        android:text="@string/edittext_submit"
-        android:textColor="@color/white" />
+        <Button
+            android:id="@+id/change_email_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="5dp"
+            android:backgroundTint="@color/headers"
+            android:fontFamily="@font/lato"
+            android:text="@string/edittext_submit"
+            android:textColor="@color/white" />
 
     </LinearLayout>
 
