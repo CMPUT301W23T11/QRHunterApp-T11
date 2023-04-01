@@ -1,5 +1,7 @@
 package com.example.qrhunterapp_t11.fragments;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -7,8 +9,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.VectorDrawable;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -31,6 +31,7 @@ import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
@@ -45,14 +46,17 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.AutocompleteActivity;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -72,6 +76,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
     private boolean mLocationPermissionGranted = false;
     private SearchView searchView;
     private final CollectionReference qrCodeRef;
+    private static final int AUTOCOMPLETE_REQUEST_CODE = 1;
 
     public MapFragment(@NonNull FirebaseFirestore db) {
         this.qrCodeRef = db.collection("QRCodes");
@@ -103,76 +108,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
      * @param container          ViewGroup object that will contain the inflated views.
      * @param savedInstanceState Bundle object containing the instance state of the fragment.
      * @return View object representing the fragment's UI.
+     * @sources <a href="https://developers.google.com/maps/documentation/places/android-sdk/autocomplete">For autocomplete</a>
      */
     @NonNull
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
+
         MapsInitializer.initialize(getActivity().getApplicationContext(), MapsInitializer.Renderer.LATEST, this);
+        Places.initialize(getActivity().getApplicationContext(), getResources().getString(R.string.google_map_api_key));
+
         searchView = view.findViewById(R.id.search_view);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                searchLocation(query);
-                return false;
-            }
 
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
-            }
-        });
         return view;
-    }
-
-    private void getDeviceLocation() {
-        try {
-            if (mLocationPermissionGranted) {
-                FusedLocationProviderClient mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
-                Task<Location> location = mFusedLocationProviderClient.getLastLocation();
-                location.addOnCompleteListener(new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Location> task) {
-                        if (task.isSuccessful()) {
-                            Location currentLocation = task.getResult();
-                            if (currentLocation != null) {
-                                LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f));
-                            }
-                        }
-                    }
-                });
-            }
-        } catch (SecurityException e) {
-            Log.e("Exception: %s", e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (mMap != null) {
-            isServicesOK();
-            if (isLocationEnabled()) {
-                getDeviceLocation();
-            }
-        }
-    }
-
-    private void searchLocation(String location) {
-        Geocoder geocoder = new Geocoder(getContext());
-        try {
-            List<Address> addresses = geocoder.getFromLocationName(location, 1);
-            if (!addresses.isEmpty()) {
-                Address address = addresses.get(0);
-                LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f));
-            } else {
-                Toast.makeText(getContext(), "Location not found", Toast.LENGTH_SHORT).show();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -283,7 +231,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         Log.d(tag, "onActivityResult");
-        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == permissionsRequestEnableGPS) {
             if (mLocationPermissionGranted) {
                 displayMap();
@@ -291,6 +238,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                 getLocationPermission();
             }
         }
+        if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                Place place = Autocomplete.getPlaceFromIntent(data);
+                Log.i("TAG", "Place: " + place.getName() + ", " + place.getLatLng());
+                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 16f);
+                mMap.animateCamera(cameraUpdate);
+            } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
+                Status status = Autocomplete.getStatusFromIntent(data);
+                Log.i("TAG", status.getStatusMessage());
+            }
+
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     /**
@@ -361,6 +322,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                             new QRCodeView(qrCode, null).show(getActivity().getSupportFragmentManager(), "Show QR");
                         }
                         return true;
+                    }
+                });
+
+                // Launch autocomplete when user clicks on search
+                searchView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        List<Place.Field> fields = Arrays.asList(Place.Field.NAME, Place.Field.LAT_LNG);
+                        Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+                                .build(getActivity().getApplicationContext());
+                        startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
                     }
                 });
 

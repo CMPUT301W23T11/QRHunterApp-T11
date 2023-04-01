@@ -30,12 +30,12 @@
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/profile_scans_search"
+            android:id="@+id/leaderboard_filter_type"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/profile_scans_search_text"
             android:fontFamily="sans-serif-medium"
+            android:text="Filter type"
             android:textSize="17sp" />
 
         <TextView
