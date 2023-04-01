@@ -346,7 +346,7 @@ public class SearchFragment extends Fragment {
                             lat = latitude;
                             lon = longitude;
                             Log.d(TAG, "Latitude1 " + lat + ", Longitude1 " + lon);
-                            findQRCodeNearby(lat, lon,50);
+                            findQRCodeNearby(lat, lon, 50);
                         }
                     });
                 } else if (isCoarseLocationGranted) {
@@ -357,7 +357,7 @@ public class SearchFragment extends Fragment {
                             lat = latitude;
                             lon = longitude;
                             Log.d(TAG, "Latitude2 " + lat + ", Longitude2 " + lon);
-                            findQRCodeNearby(lat, lon,50);
+                            findQRCodeNearby(lat, lon, 50);
                         }
                     });
                 } else {
@@ -438,7 +438,7 @@ public class SearchFragment extends Fragment {
                             lat = latitude;
                             lon = longitude;
                             Log.d(TAG, "Latitude3 " + lat + ", Longitude3 " + lon);
-                            findQRCodeNearby(lat, lon,50);
+                            findQRCodeNearby(lat, lon, 50);
                         }
                     });
                 } else {
@@ -447,7 +447,6 @@ public class SearchFragment extends Fragment {
                 }
 
                 break;
-
         }
 
         Query query = usersReference.orderBy(queryField, Query.Direction.DESCENDING);
