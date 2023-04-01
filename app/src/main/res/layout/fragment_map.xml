@@ -17,18 +17,20 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.appcompat.widget.SearchView
-            android:id="@+id/search_view"
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/map_search_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_margin="15dp"
-            android:background="@drawable/search_border"
-            android:elevation="10dp"
-            app:iconifiedByDefault="false"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:background="@color/background"
+            android:contentDescription="Button that opens autocomplete search"
+            android:src="@drawable/search_icon"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:searchIcon="@drawable/ic_google_maps" />
+            app:backgroundTint="@color/headers" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>
