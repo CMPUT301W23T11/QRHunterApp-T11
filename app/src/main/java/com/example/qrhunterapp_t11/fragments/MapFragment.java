@@ -63,9 +63,8 @@ import java.util.List;
 
 /**
  * Everything to do with google maps
- * Asks for location permissions and zooms in on current location.
  *
- * @author Daniel Guo
+ * @author Daniel, Afra
  */
 public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsSdkInitializedCallback {
 
@@ -246,7 +245,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                 assert data != null;
                 Place place = Autocomplete.getPlaceFromIntent(data);
                 Log.i(TAG, "Place: " + place.getName() + ", " + place.getLatLng());
-                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 16f);
+                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 15f);
                 mMap.animateCamera(cameraUpdate);
             } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
                 Status status = Autocomplete.getStatusFromIntent(data);
@@ -260,6 +259,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
 
     /**
      * Called when the map is ready to be used. Sets the map to the GoogleMap object passed in as a parameter and sets the current location if permission is granted.
+     * Loads map markers and autocomplete searchbar
      *
      * @param googleMap the GoogleMap object to set the map to
      */
@@ -272,7 +272,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
             try {
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
-                //mMap.setPadding(0, 0, 0, 0);
 
                 FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
                 fusedLocationClient.getLastLocation()
@@ -289,66 +288,66 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                                 }
                             }
                         });
-                VectorDrawable vectorDrawable = (VectorDrawable) ResourcesCompat.getDrawable(getResources(), R.drawable.ic_qr, null);
-
-                Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-                Canvas canvas = new Canvas(bitmap);
-                vectorDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-                vectorDrawable.draw(canvas);
-
-                BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(bitmap);
-
-                // Add markers for each QRCode
-                qrCodeRef
-                        .get()
-                        .addOnSuccessListener(qrCodes -> {
-
-                            for (QueryDocumentSnapshot qrCode : qrCodes) {
-                                Double latitude = qrCode.getDouble("latitude");
-                                Double longitude = qrCode.getDouble("longitude");
-                                if (latitude != null && longitude != null) {
-                                    LatLng location = new LatLng(latitude, longitude);
-                                    Marker marker = mMap.addMarker(new MarkerOptions()
-                                            .position(location)
-                                            .title(qrCode.getId())
-                                            .icon(icon));  // Use the custom icon
-                                    marker.setTag(qrCode.toObject(QRCode.class)); // Set QRCode object as the marker's tag
-                                }
-                            }
-                        });
-
-                // OnMarkerClickListener to show the QRCodeView dialog fragment when a marker is clicked
-                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                    @Override
-                    public boolean onMarkerClick(@NonNull Marker marker) {
-                        QRCode qrCode = (QRCode) marker.getTag();
-                        if (qrCode != null) {
-                            new QRCodeView(qrCode, null).show(getActivity().getSupportFragmentManager(), "Show QR");
-                        }
-                        return true;
-                    }
-                });
-
-                // Launch autocomplete when user clicks on search
-                searchButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-
-                        List<Place.Field> fields = Arrays.asList(Place.Field.NAME, Place.Field.LAT_LNG);
-
-                        LocationBias locationBias = rectangularBounds;
-                        Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
-                                .setHint("Search...")
-                                .setLocationBias(locationBias)
-                                .build(getActivity().getApplicationContext());
-                        startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
-                    }
-                });
 
             } catch (SecurityException e) {
                 Log.e(TAG, "SecurityException: " + e.getMessage());
             }
         }
+        VectorDrawable vectorDrawable = (VectorDrawable) ResourcesCompat.getDrawable(getResources(), R.drawable.ic_qr, null);
+
+        Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        vectorDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        vectorDrawable.draw(canvas);
+
+        BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(bitmap);
+
+        // Add markers for each QRCode
+        qrCodeRef
+                .get()
+                .addOnSuccessListener(qrCodes -> {
+
+                    for (QueryDocumentSnapshot qrCode : qrCodes) {
+                        Double latitude = qrCode.getDouble("latitude");
+                        Double longitude = qrCode.getDouble("longitude");
+                        if (latitude != null && longitude != null) {
+                            LatLng location = new LatLng(latitude, longitude);
+                            Marker marker = mMap.addMarker(new MarkerOptions()
+                                    .position(location)
+                                    .title(qrCode.getId())
+                                    .icon(icon));  // Use the custom icon
+                            marker.setTag(qrCode.toObject(QRCode.class)); // Set QRCode object as the marker's tag
+                        }
+                    }
+                });
+
+        // OnMarkerClickListener to show the QRCodeView dialog fragment when a marker is clicked
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(@NonNull Marker marker) {
+                QRCode qrCode = (QRCode) marker.getTag();
+                if (qrCode != null) {
+                    new QRCodeView(qrCode, null).show(getActivity().getSupportFragmentManager(), "Show QR");
+                }
+                return true;
+            }
+        });
+
+        // Launch autocomplete when user clicks on search
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                List<Place.Field> fields = Arrays.asList(Place.Field.NAME, Place.Field.LAT_LNG);
+
+                LocationBias locationBias = rectangularBounds;
+                Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+                        .setHint("Search...")
+                        .setLocationBias(locationBias)
+                        .build(getActivity().getApplicationContext());
+                startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
+            }
+        });
     }
 
     /**
