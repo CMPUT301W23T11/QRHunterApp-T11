@@ -1,5 +1,6 @@
 package com.example.qrhunterapp_t11.adapters;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,22 +38,61 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
     protected void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position, @NonNull User model) {
         // Bind the QRCode object to the RecyclerViewHolder
         holder.username.setText(model.getDisplayName());
-        holder.ranking.setText(String.valueOf(position + 1));
+        if ((position + 1) >= 4 && (position + 1) <= 9) {
+            holder.ranking.setText("0" + String.valueOf(position + 1));
+        } else {
+            holder.ranking.setText(String.valueOf(position + 1));
+        }
 
+        // SET APPEARANCE OF VIEWHOLDER BASED ON POSITION
+        switch (position + 1) { // Set colors of top three rankings
+            case 1:
+                holder.ranking.setText("\uD83C\uDFC6");
+                holder.ranking.setTextSize(21);
+                holder.ranking.setTextColor(Color.rgb(0, 0, 0)); // need to set color to black or otherwise emoji will be faded
+                holder.username.setTextColor(Color.rgb(255, 196, 0));
+                holder.typeOfRanking.setTextColor(Color.rgb(255, 196, 0));
+                break;
+
+            case 2:
+                holder.ranking.setText("\uD83E\uDD48");
+                holder.ranking.setTextSize(21);
+                holder.ranking.setTextColor(Color.rgb(0, 0, 0));
+                holder.username.setTextColor(Color.rgb(166, 166, 166));
+                holder.typeOfRanking.setTextColor(Color.rgb(166, 166, 166));
+                break;
+
+            case 3:
+                holder.ranking.setText("\uD83E\uDD49");
+                holder.ranking.setTextSize(21);
+                holder.ranking.setTextColor(Color.rgb(0, 0, 0));
+                holder.username.setTextColor(Color.rgb(206, 112, 18));
+                holder.typeOfRanking.setTextColor(Color.rgb(206, 112, 18));
+                break;
+
+            default: // MUST OVERWRITE DEFAULT CASES, otherwise when you scroll down, the recyclerview will re-apply the above changes to the new
+                holder.ranking.setTextSize(17);
+                holder.ranking.setTextColor(Color.rgb(128, 128, 128));
+                holder.username.setTextColor(Color.rgb(128, 128, 128));
+                holder.typeOfRanking.setTextColor(Color.rgb(128, 128, 128));
+                break;
+        }
+
+
+        // SET VALUE OF COUNT BASED ON SORTED CATEGORY
         switch (viewMode) {
             case MOST_POINTS:
-                String totalPoints = "Points: " + model.getTotalPoints();
-                holder.totalPoints.setText(totalPoints);
+                String totalPoints = "" + model.getTotalPoints();
+                holder.typeOfRanking.setText(totalPoints);
                 break;
             case MOST_SCANS:
-                String totalScans = "Scans: " + model.getTotalScans();
-                holder.totalScans.setText(totalScans);
+                String totalScans = "" + model.getTotalScans();
+                holder.typeOfRanking.setText(totalScans);
                 break;
             case TOP_QR_CODE:
-                String topQRCode = "Top QR Code: " + model.getTopQRCode();
-                holder.topQRCode.setText(topQRCode);
-                break;
             case TOP_QR_CODE_REGIONAL:
+                String topQRCode = "" + model.getTopQRCode();
+                holder.typeOfRanking.setText(topQRCode);
                 break;
         }
     }
@@ -60,21 +100,7 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
     @androidx.annotation.NonNull
     @Override
     public RecyclerViewHolder onCreateViewHolder(@androidx.annotation.NonNull ViewGroup group, int i) {
-        View view = null;
-        switch (viewMode) {
-            case MOST_POINTS:
-                view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_top_points, group, false);
-                break;
-            case MOST_SCANS:
-                view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_top_scans, group, false);
-                break;
-            case TOP_QR_CODE:
-                view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_top_code, group, false);
-                break;
-            case TOP_QR_CODE_REGIONAL:
-                view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_top_code, group, false);
-                break;
-        }
+        View view = LayoutInflater.from(group.getContext()).inflate(R.layout.individual_profile_leaderboard, group, false);
 
         return new RecyclerViewHolder(view);
     }
@@ -95,31 +121,16 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
 
         private final TextView username;
         private final TextView ranking;
-        private TextView totalPoints;
-        private TextView totalScans;
-        private TextView topQRCode;
+        private final TextView typeOfRanking;
 
         public RecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
 
             username = itemView.findViewById(R.id.profile_name_textview);
             ranking = itemView.findViewById(R.id.ranking_textview);
+            typeOfRanking = itemView.findViewById(R.id.leaderboard_filter_type);
 
-            switch (viewMode) {
-                case MOST_POINTS:
-                    totalPoints = itemView.findViewById(R.id.profile_points_search);
-                    break;
-                case MOST_SCANS:
-                    totalScans = itemView.findViewById(R.id.profile_scans_search);
-                    break;
-                case TOP_QR_CODE:
-                    topQRCode = itemView.findViewById(R.id.profile_top_qr_code_search);
-                    break;
-                case TOP_QR_CODE_REGIONAL:
-                    break;
-            }
-
-            // This click listener responds to clicks done on an item in the recyclerview
+            // Click listener for items in the recyclerview
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {

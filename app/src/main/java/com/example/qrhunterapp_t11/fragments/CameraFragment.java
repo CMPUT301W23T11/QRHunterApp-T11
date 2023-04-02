@@ -224,17 +224,13 @@ public class CameraFragment extends Fragment {
      * Adds QRCode to db and returns to profile
      */
     private void getCurrentLocation() {
-        System.out.println("HERE GETTING LCOATIONNNNNNNNN555555555555555555555522222222222222222222222222222222222222222555555555555555555555555555NNNNNNNNNNNNNNN");
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
         if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             fusedLocationClient
                     .getLastLocation()
                     .addOnSuccessListener(location -> {
-                        System.out.println("HERE GETTING L2222222222222222222222222222555555555555555555555555555NNNNNNNNNNNNNNN");
-
                         if (location != null) {
-                            System.out.println("HERE GEddddddddddddddddddddddL2222222222222222222222222222555555555555555555555555555NNNNNNNNNNNNNNN");
                             // Location data is available
                             double latitude = location.getLatitude();
                             double longitude = location.getLongitude();
@@ -245,7 +241,6 @@ public class CameraFragment extends Fragment {
                             qrCode.setLatitude(latitude);
                             qrCode.setLongitude(longitude);
                             qrCode.setID(latitude, longitude);
-                            System.out.println("HERE GETTING LCOATIONNNNNNNNN555555555555555555555555555555555555555555555555555NNNNNNNNNNNNNNN");
                         } else {
                             // Location data is not available
                             Log.d(locationPrompt, "ERROR Location data is not available.");
@@ -418,7 +413,6 @@ public class CameraFragment extends Fragment {
 
                 // Object instantiated
                 qrCode = new QRCode(resultString);
-                System.out.println("HERE1");
 
                 //Check if the user already has a QR Code object with this hash value in their collection
                 checkUserHasHash(qrCode, currentUserUsername, new QueryCallbackWithObject() {

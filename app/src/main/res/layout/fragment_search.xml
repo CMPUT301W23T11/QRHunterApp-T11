@@ -17,12 +17,12 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="@font/lato_black"
             android:padding="10dp"
             android:text="@string/find_other_players"
             android:textAlignment="center"
             android:textColor="@color/white"
-            android:textSize="18sp"
+            android:textSize="20sp"
             android:textStyle="bold" />
 
         <com.google.android.material.appbar.AppBarLayout
@@ -47,10 +47,10 @@
                     android:layout_weight="1"
                     android:background="@null"
                     android:dropDownHeight="150dp"
-                    android:fontFamily="sans-serif-medium"
+                    android:fontFamily="@font/lato"
                     android:hint="@string/search_hint"
                     android:inputType="text"
-                    android:textSize="22sp"
+                    android:textSize="20sp"
                     android:theme="@style/DropDownTheme" />
 
                 <Button
@@ -75,36 +75,33 @@
         android:orientation="vertical">
 
         <TextView
+
+            android:layout_marginBottom="10dp"
             android:id="@+id/leaderboard_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="@font/lato_black"
             android:padding="5dp"
             android:text="@string/leaderboard"
             android:textAlignment="center"
             android:textColor="@color/headers"
-            android:textSize="18sp"
+            android:textSize="34sp"
             android:textStyle="bold" />
-
-        <Spinner
-            android:id="@+id/leaderboard_radius_spinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:spinnerMode="dialog"
-            android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_marginBottom="15dp">
 
             <TextView
+                android:layout_marginLeft="15dp"
                 android:id="@+id/your_ranking_textview"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:fontFamily="sans-serif-medium"
-                android:padding="5dp"
+                android:fontFamily="@font/lato_bold"
+
                 android:text="@string/your_ranking"
                 android:textSize="18sp" />
 
@@ -116,6 +113,44 @@
                 android:spinnerMode="dialog" />
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="#61A3BAA4"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp">
+
+            <TextView
+                android:id="@+id/ranking_header"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/lato_black"
+                android:text="Rank"
+                android:textSize="17sp" />
+
+            <TextView
+                android:id="@+id/name_header"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:fontFamily="@font/lato_black"
+                android:text="Player"
+                android:textSize="17sp" />
+
+            <TextView
+                android:id="@+id/filter_header"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/lato_black"
+                android:text="Filter"
+                android:textSize="17sp" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -123,7 +158,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginBottom="25dp"
-        android:overScrollMode="never" />
+        android:overScrollMode="never"
+        android:paddingBottom="?android:attr/actionBarSize"/>
 
 
 </LinearLayout>

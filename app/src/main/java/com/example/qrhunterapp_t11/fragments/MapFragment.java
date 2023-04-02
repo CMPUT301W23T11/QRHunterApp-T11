@@ -1,5 +1,7 @@
 package com.example.qrhunterapp_t11.fragments;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -7,8 +9,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.VectorDrawable;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -21,7 +21,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
@@ -31,6 +30,7 @@ import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
@@ -45,14 +45,20 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.LocationBias;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.AutocompleteActivity;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -67,11 +73,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
     public static final int permissionsRequestEnableGPS = 9002;
     public static final int permissionsRequestAccessFineLocation = 9003;
     public static final int permissionsRequestAccessCoarseLocation = 9004;
-    private static final String tag = "MapFragment";
+    public static final int AUTOCOMPLETE_REQUEST_CODE = 1;
     private GoogleMap mMap;
     private boolean mLocationPermissionGranted = false;
-    private SearchView searchView;
+    private FloatingActionButton searchButton;
     private final CollectionReference qrCodeRef;
+    private static final String TAG = "MapFragment";
+    private RectangularBounds rectangularBounds;
 
     public MapFragment(@NonNull FirebaseFirestore db) {
         this.qrCodeRef = db.collection("QRCodes");
@@ -103,83 +111,26 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
      * @param container          ViewGroup object that will contain the inflated views.
      * @param savedInstanceState Bundle object containing the instance state of the fragment.
      * @return View object representing the fragment's UI.
+     * @sources <a href="https://developers.google.com/maps/documentation/places/android-sdk/autocomplete">For autocomplete</a>
      */
     @NonNull
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
+
         MapsInitializer.initialize(getActivity().getApplicationContext(), MapsInitializer.Renderer.LATEST, this);
-        searchView = view.findViewById(R.id.search_view);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                searchLocation(query);
-                return false;
-            }
+        Places.initialize(getActivity().getApplicationContext(), getResources().getString(R.string.google_map_api_key));
 
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
-            }
-        });
+        searchButton = view.findViewById(R.id.map_search_button);
+
         return view;
-    }
-
-    private void getDeviceLocation() {
-        try {
-            if (mLocationPermissionGranted) {
-                FusedLocationProviderClient mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
-                Task<Location> location = mFusedLocationProviderClient.getLastLocation();
-                location.addOnCompleteListener(new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Location> task) {
-                        if (task.isSuccessful()) {
-                            Location currentLocation = task.getResult();
-                            if (currentLocation != null) {
-                                LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f));
-                            }
-                        }
-                    }
-                });
-            }
-        } catch (SecurityException e) {
-            Log.e("Exception: %s", e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (mMap != null) {
-            isServicesOK();
-            if (isLocationEnabled()) {
-                getDeviceLocation();
-            }
-        }
-    }
-
-    private void searchLocation(String location) {
-        Geocoder geocoder = new Geocoder(getContext());
-        try {
-            List<Address> addresses = geocoder.getFromLocationName(location, 1);
-            if (!addresses.isEmpty()) {
-                Address address = addresses.get(0);
-                LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f));
-            } else {
-                Toast.makeText(getContext(), "Location not found", Toast.LENGTH_SHORT).show();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
      * Checks if GPS is enabled and requests permission to use the device's location if necessary.
      */
     private void checkMapWorking() {
-        Log.d(tag, "checkMapWorking");
+        Log.d(TAG, "checkMapWorking");
         LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (!isGPSEnabled) {
@@ -209,10 +160,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             getLocationPermission();
-            Log.d(tag, "isLocationEnabled: No");
+            Log.d(TAG, "isLocationEnabled: No");
             return false;
         } else {
-            Log.d(tag, "isLocationEnabled: Yes");
+            Log.d(TAG, "isLocationEnabled: Yes");
             return true;
         }
     }
@@ -223,7 +174,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
      * onRequestPermissionsResult.
      */
     private void getLocationPermission() {
-        Log.d(tag, "getLocationPermission");
+        Log.d(TAG, "getLocationPermission");
         if (ContextCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mLocationPermissionGranted = true;
@@ -246,28 +197,28 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         switch (requestCode) {
             case permissionsRequestEnableGPS:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(tag, "onRequestPermissionsResult: GPS permission granted");
+                    Log.d(TAG, "onRequestPermissionsResult: GPS permission granted");
                     displayMap();
                 } else {
-                    Log.d(tag, "onRequestPermissionsResult: GPS permission denied");
+                    Log.d(TAG, "onRequestPermissionsResult: GPS permission denied");
                 }
                 break;
             case permissionsRequestAccessCoarseLocation:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mLocationPermissionGranted = true;
-                    Log.d(tag, "onRequestPermissionsResult: Coarse Location permission granted");
+                    Log.d(TAG, "onRequestPermissionsResult: Coarse Location permission granted");
                     displayMap();
                 } else {
-                    Log.d(tag, "onRequestPermissionsResult: Coarse Location permission denied");
+                    Log.d(TAG, "onRequestPermissionsResult: Coarse Location permission denied");
                 }
                 break;
             case permissionsRequestAccessFineLocation:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(tag, "onRequestPermissionsResult: Fine Location permission granted");
+                    Log.d(TAG, "onRequestPermissionsResult: Fine Location permission granted");
                     mLocationPermissionGranted = true;
                     displayMap();
                 } else {
-                    Log.d(tag, "onRequestPermissionsResult: Fine Location permission denied");
+                    Log.d(TAG, "onRequestPermissionsResult: Fine Location permission denied");
                 }
                 break;
         }
@@ -282,8 +233,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
      */
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        Log.d(tag, "onActivityResult");
-        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "onActivityResult");
         if (requestCode == permissionsRequestEnableGPS) {
             if (mLocationPermissionGranted) {
                 displayMap();
@@ -291,6 +241,21 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                 getLocationPermission();
             }
         }
+        if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                assert data != null;
+                Place place = Autocomplete.getPlaceFromIntent(data);
+                Log.i(TAG, "Place: " + place.getName() + ", " + place.getLatLng());
+                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 16f);
+                mMap.animateCamera(cameraUpdate);
+            } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
+                Status status = Autocomplete.getStatusFromIntent(data);
+                Log.i(TAG, status.getStatusMessage());
+            }
+
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     /**
@@ -300,10 +265,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
      */
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-        Log.d(tag, "onMapReady");
+        Log.d(TAG, "onMapReady");
         mMap = googleMap;
         if (mLocationPermissionGranted) {
-            Log.d(tag, "myLocationPermissionGranted");
+            Log.d(TAG, "myLocationPermissionGranted");
             try {
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
@@ -317,7 +282,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                                 if (location != null) {
                                     // Create LatLng object with the current location
                                     LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
-
+                                    rectangularBounds = RectangularBounds.newInstance(currentLocation, currentLocation);
                                     // Create CameraUpdate object and move the camera to the current location
                                     CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(currentLocation, 15);
                                     mMap.animateCamera(cameraUpdate);
@@ -364,8 +329,24 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                     }
                 });
 
+                // Launch autocomplete when user clicks on search
+                searchButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        List<Place.Field> fields = Arrays.asList(Place.Field.NAME, Place.Field.LAT_LNG);
+
+                        LocationBias locationBias = rectangularBounds;
+                        Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+                                .setHint("Search...")
+                                .setLocationBias(locationBias)
+                                .build(getActivity().getApplicationContext());
+                        startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
+                    }
+                });
+
             } catch (SecurityException e) {
-                Log.e(tag, "SecurityException: " + e.getMessage());
+                Log.e(TAG, "SecurityException: " + e.getMessage());
             }
         }
     }
@@ -374,7 +355,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
      * Displays the map on the screen.
      */
     private void displayMap() {
-        Log.d(tag, "displayMap");
+        Log.d(TAG, "displayMap");
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
@@ -388,10 +369,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
     private boolean isServicesOK() {
         int available = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(getActivity());
         if (available == ConnectionResult.SUCCESS) {
-            Log.d(tag, "isServicesOK: Google Play Services is working");
+            Log.d(TAG, "isServicesOK: Google Play Services is working");
             return true;
         } else if (GoogleApiAvailability.getInstance().isUserResolvableError(available)) {
-            Log.d(tag, "isServicesOK: an error occurred but we can fix it");
+            Log.d(TAG, "isServicesOK: an error occurred but we can fix it");
             Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(getActivity(), available, errorDialogRequest);
             assert dialog != null;
             dialog.show();
@@ -411,10 +392,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
     public void onMapsSdkInitialized(@NonNull MapsInitializer.Renderer renderer) {
         switch (renderer) {
             case LATEST:
-                //Log.d(tag, "Latest Renderer");
+                //Log.d(TAG, "Latest Renderer");
                 break;
             case LEGACY:
-                //Log.d(tag, "Legacy Renderer");
+                //Log.d(TAG, "Legacy Renderer");
                 break;
         }
     }
