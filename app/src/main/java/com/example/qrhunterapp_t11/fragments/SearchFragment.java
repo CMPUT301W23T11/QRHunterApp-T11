@@ -46,6 +46,7 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
@@ -54,10 +55,12 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -72,6 +75,7 @@ import java.util.Set;
  * <li><a href="https://stackoverflow.com/a/5241720">For setting spinner</a></li>
  * <li><a href="https://stackoverflow.com/questions/41670850/prevent-user-to-go-next-line-by-pressing-softkey-enter-in-autocompletetextview">How to handle a ENTER click action</a></li>
  * <li><a href="https://stackoverflow.com/a/4145983">For setting EditText filter</a></li>
+ * <li><a href="https://www.geeksforgeeks.org/traverse-through-a-hashmap-in-java/">Iterating through HashMap</a></li>
  * </ul>
  * </pre>
  */
@@ -296,8 +300,29 @@ public class SearchFragment extends Fragment {
                 if (placeName != null) {
                     filterQueryRegional(placeName, placeType, new QueryCallbackWithHashMap() {
                         @Override
-                        public void setHashMap(@NonNull HashMap<?, ?> hashMap) {
+                        public void setHashMap(@NonNull HashMap<String, String> hashMap) {
                             System.out.println(hashMap);
+                            ArrayList<String> users = new ArrayList<>();
+                            ArrayList<String> qrsPoints = new ArrayList<>();
+                            for (Map.Entry<String, String> mapElement : hashMap.entrySet()) {
+                                String user = mapElement.getKey();
+                                users.add(user);
+                                String qrPoints = mapElement.getValue();
+                                qrsPoints.add(qrPoints);
+                                System.out.println(qrsPoints);
+
+                            }
+                            Query query = usersReference.whereIn(FieldPath.documentId(), users);
+                            leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
+                                    .setQuery(query, User.class)
+                                    .build();
+//                            query
+//                                    .get()
+//                                    .addOnSuccessListener(userSnapshots -> {
+//                                        for (QueryDocumentSnapshot userSnapshot : userSnapshots) {
+//                                            System.out.println(userSnapshot.getData());
+//                                        }
+//                                    });
                         }
                     });
                 }
@@ -450,15 +475,13 @@ public class SearchFragment extends Fragment {
                                     if (!usersWithQR.isEmpty()) {
                                         for (QueryDocumentSnapshot userWithQR : usersWithQR) {
 
-                                            usersPoints.put(userWithQR.get("username").toString(), qrCode.getLong("points").toString());
+                                            usersPoints.put(userWithQR.get("username").toString(), qrCode.get("points").toString());
                                             setHashMap.setHashMap(usersPoints);
-
                                         }
                                     }
                                 });
                     }
                 });
-
 
 //        // First, retrieve all users
 //        usersReference
