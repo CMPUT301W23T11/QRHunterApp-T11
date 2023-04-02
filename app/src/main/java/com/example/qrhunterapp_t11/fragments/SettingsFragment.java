@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
 public class SettingsFragment extends Fragment {
 
     private final CollectionReference usersReference;
-    private final CollectionReference qrCodeReference;
+    private final CollectionReference qrCodesReference;
     private EditText usernameEditText;
     private EditText emailEditText;
     private String usernameString;
@@ -56,7 +56,7 @@ public class SettingsFragment extends Fragment {
 
     public SettingsFragment(@NonNull FirebaseFirestore db) {
         this.usersReference = db.collection("Users");
-        this.qrCodeReference = db.collection("QRCodes");
+        this.qrCodesReference = db.collection("QRCodes");
     }
 
     @NonNull
@@ -235,7 +235,8 @@ public class SettingsFragment extends Fragment {
                     if (!userCommentedListRef.isEmpty()) {
 
                         // Retrieve matching QR Code data from the QRCodes collection using DocumentReferences
-                        qrCodeReference.whereIn(FieldPath.documentId(), userCommentedListRef)
+                        qrCodesReference
+                                .whereIn(FieldPath.documentId(), userCommentedListRef)
                                 .get()
                                 .addOnSuccessListener(referencedQRDocuments -> {
                                     for (QueryDocumentSnapshot referencedQR : referencedQRDocuments) {
