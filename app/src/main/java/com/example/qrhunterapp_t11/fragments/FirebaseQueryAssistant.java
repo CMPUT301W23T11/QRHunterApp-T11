@@ -345,7 +345,24 @@ public class FirebaseQueryAssistant {
 
                                 });
                     });
-        }
+    }
+
+    public void checkDocExists(String docToCheck, CollectionReference cr, final QueryCallback docExists) {
+        DocumentReference docRef = cr.document(docToCheck);
+        docRef.get().addOnSuccessListener(result -> {
+
+            if (result.exists()) {
+                Log.d("DocExist", "DocumentSnapshot data: " + result.getData());
+                docExists.queryCompleteCheck(true);
+            } else {
+                Log.d("DocExist", "No such document");
+                docExists.queryCompleteCheck(false);
+            }
+
+        });
+    }
+
+
 
 }
 

@@ -203,7 +203,6 @@ public class CameraFragmentTest {
             }
         });
 
-
         solo.clickOnView(solo.getView(R.id.addFab));
         assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
         solo.clickOnText("Yes");
