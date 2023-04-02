@@ -6,6 +6,8 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -20,6 +22,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.LinearLayoutCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.DialogFragment;
 import androidx.viewpager.widget.ViewPager;
@@ -246,9 +249,19 @@ public class QRCodeView extends DialogFragment {
             }
         });
 
+        // spaghetti code to set title of alert dialog
+        // sziraqui - https://stackoverflow.com/a/48689870/14445107- how to creaate a typeface object
+        TextView customTitle = new TextView(getContext());
+        customTitle.setTextSize(30);
+        customTitle.setTextColor(Color.rgb(39, 127, 80));
+        customTitle.setPadding(0,30,0,0);
+        customTitle.setText("  " +  qrCode.getName());
+        Typeface typeface = ResourcesCompat.getFont(getContext(), R.font.lato_black);
+        customTitle.setTypeface(typeface);
+
         return builder
                 .setView(view)
-                .setTitle(qrCode.getName())
+                .setCustomTitle(customTitle)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
