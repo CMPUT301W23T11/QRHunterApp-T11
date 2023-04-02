@@ -4,5 +4,7 @@
     <style name="ViewQRStyle">
         <item name="android:background">@color/background</item>
         <item name="fontFamily">@font/lato</item>
+
+
     </style>
 </resources>
