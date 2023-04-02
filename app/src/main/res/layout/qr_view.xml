@@ -94,9 +94,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
-                    android:fontFamily="sans-serif-medium"
+                    android:fontFamily="@font/lato_bold"
                     android:padding="3dp"
-                    android:text="Total Scans:"
+                    android:text="Scans:"
                     android:textColor="#000000"
                     android:textSize="20sp"
                     app:layout_constraintStart_toEndOf="@+id/imageColour"
@@ -107,7 +107,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
-                    android:fontFamily="sans-serif-medium"
+                    android:fontFamily="@font/lato_bold"
                     android:padding="3dp"
                     android:text="@string/edittext_points"
                     android:textColor="#000000"
@@ -120,7 +120,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
-                    android:fontFamily="sans-serif-medium"
+                    android:fontFamily="@font/lato_bold"
                     android:padding="3dp"
                     android:text="Comments: 0"
                     android:textColor="#000000"
@@ -164,7 +164,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-medium"
+                android:fontFamily="@font/lato_bold"
                 android:text="PHOTOS"
                 android:padding="5dp"
                 android:textAlignment="center"
@@ -189,6 +189,7 @@
 
                 <TextView
                     android:id="@+id/numeratorTV"
+                    android:fontFamily="@font/lato"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="3dp"
@@ -202,6 +203,7 @@
 
                 <TextView
                     android:id="@+id/fraction"
+                    android:fontFamily="@font/lato"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="3dp"
@@ -214,6 +216,7 @@
 
                 <TextView
                     android:id="@+id/denominatorTV"
+                    android:fontFamily="@font/lato"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="3dp"
@@ -222,9 +225,7 @@
                     android:textSize="20sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-
                     app:layout_constraintTop_toBottomOf="@+id/photoBackground" />
-
             </LinearLayout>
 
 
@@ -270,7 +271,7 @@
             android:background="@drawable/comment_box"
             android:ems="10"
             android:hint="@string/edittext_add_comment"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="@font/lato_light"
             android:inputType="textPersonName"
             android:padding="10dp"
             app:layout_constraintEnd_toEndOf="parent"

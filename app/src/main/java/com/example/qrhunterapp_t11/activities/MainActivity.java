@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         prefs = this.getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        //prefs.edit().clear().commit(); // ***TOGGLE TO WIPE SHARED PREF ON PHYSICAL***
 
         // If the user is logging in for the first time, create a new user
         if (!prefs.getBoolean("loggedIn", false)) {
