@@ -68,6 +68,7 @@ public class QRCodeView extends DialogFragment {
     private ViewPager viewPager;
     private QRCodeAdapter adapter;
     private String currentUser;
+    private FirebaseQueryAssistant firebaseQueryAssistant;
 
     /**
      * Empty constructor
@@ -86,6 +87,7 @@ public class QRCodeView extends DialogFragment {
         this.qrCode = qrCode;
         this.qrCodeID = qrCode.getID();
         this.adapter = adapter;
+        this.firebaseQueryAssistant = new FirebaseQueryAssistant(db);
     }
 
     /**
@@ -149,7 +151,7 @@ public class QRCodeView extends DialogFragment {
         denominatorTextView.setText(String.valueOf(photoAdapter.getCount()));
         numeratorTextView.setText(String.valueOf(viewPager.getCurrentItem() + 1));
 
-        hasCommentsCheck(qrCodeID, new QueryCallback() {
+        firebaseQueryAssistant.hasCommentsCheck(qrCodeID, new QueryCallback() {
             public void queryCompleteCheck(boolean hasComments) {
                 if (hasComments) {
                     getComments(qrCodeID, new QRCodeGetCommentsCallback() {
@@ -177,7 +179,7 @@ public class QRCodeView extends DialogFragment {
         // When the send image arrow ImageView is clicked, if a comment has been made it will be added
         // to the QRCode object's saved array of comments and appear in the comment box with the associated user
         // User can only comment on QR Codes if they already have that code in their collection
-        checkUserHasQRCode(currentUser, qrCodeID, new QueryCallback() {
+        firebaseQueryAssistant.checkUserHasQR(qrCodeID, currentUser, new QueryCallback() {
             @Override
             public void queryCompleteCheck(boolean userHasQRCode) {
 
@@ -259,21 +261,6 @@ public class QRCodeView extends DialogFragment {
     }
 
     /**
-     * Query database to check if QR code has any comments or not
-     *
-     * @param qrCodeID    QR to check for comments
-     * @param hasComments Callback function
-     */
-    public void hasCommentsCheck(@NonNull String qrCodeID, final @NonNull QueryCallback hasComments) {
-
-        qrCodesReference.document(qrCodeID).collection("commentList")
-                .get()
-                .addOnSuccessListener(qrCodeCommentList ->
-                        hasComments.queryCompleteCheck(!qrCodeCommentList.isEmpty())
-                );
-    }
-
-    /**
      * Gets all comments on a QR Code.
      * Comments are stored in the callback array
      *
@@ -295,21 +282,6 @@ public class QRCodeView extends DialogFragment {
                     }
                     setComments.setComments(comments);
                 });
-    }
-
-    /**
-     * Check if the given user has the given QR Code
-     *
-     * @param username      Username to check
-     * @param qrCodeID      QR Code to check
-     * @param userHasQRCode Callback for query
-     */
-    public void checkUserHasQRCode(@NonNull String username, @NonNull String qrCodeID, final @NonNull QueryCallback userHasQRCode) {
-        usersReference.document(username).collection("User QR Codes").document(qrCodeID)
-                .get()
-                .addOnSuccessListener(userQRCode ->
-                        userHasQRCode.queryCompleteCheck(userQRCode.exists())
-                );
     }
 
     /**
