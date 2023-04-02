@@ -105,7 +105,7 @@ public class QRCodeView extends DialogFragment {
         prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
         currentUser = prefs.getString("currentUserUsername", null);
         View view = LayoutInflater.from(getContext()).inflate(R.layout.qr_view, null);
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.ViewQRStyle);
 
         commentNumTextView = view.findViewById(R.id.commentsTV);
         commentEditText = view.findViewById(R.id.editTextComment);
