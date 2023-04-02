@@ -60,27 +60,27 @@ public class QRCodeTest {
         // test string from eclass
         QRCode qrCode = mockQRCode("BFG5DGW54\n");
         Assertions.assertEquals("696ce4dbd7bb57cbfe58b64f530f428b74999cb37e2ee60980490cd9552de3a6", qrCode.getID());
-        qrCode.setID(37.4219983,-122.084);
+        qrCode.setID(37.4219983, -122.084);
         Assertions.assertEquals("696ce4dbd7bb57cbfe58b64f530f428b74999cb37e2ee60980490cd9552de3a637.4219983-122.084", qrCode.getID());
 
         // test empty string
         QRCode qrCode1 = mockQRCode("");
         Assertions.assertEquals("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", qrCode1.getID());
-        qrCode1.setID(37.4219983,-122.084);
+        qrCode1.setID(37.4219983, -122.084);
         Assertions.assertEquals("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b85537.4219983-122.084", qrCode1.getID());
 
 
         // test emojis w/o \n
         QRCode qrCode2 = mockQRCode("😭😭😭😭😭😭😭😭");
         Assertions.assertEquals("05a62d8d5ae9aa2850e993e64cbb128838b0c8dc34c136fbb271a62e72e2ecc0", qrCode2.getID());
-        qrCode2.setID(37.4219983,-122.084);
+        qrCode2.setID(37.4219983, -122.084);
         Assertions.assertEquals("05a62d8d5ae9aa2850e993e64cbb128838b0c8dc34c136fbb271a62e72e2ecc037.4219983-122.084", qrCode2.getID());
 
 
         // ultimate nasty string
         QRCode qrCode3 = mockQRCode("u*SAt<BX<%P{!aUaIjyD?LkD`.DuY.>buZn\\'A6%W[nd<QDC];L#g)\"fURP:ddwOqZHTy`:del?a:,HnO}]7kd`elp_\"$ru/lg,P[$VU{XD{Ev^5L#C^K_yd//^#!$nu!9b%Fxz#4O>3r8D/p8x`VwpJ}]J@w{QR1s`2ZUCufs^3Jy&6_]V\\\\(d{T7tu.WReBE!iDhYQ;!uO+T\"nP9x5)<FyeE`K9{>!!:dFix[4#o1Zsj\\RdP@CjR>v]#RTV]^>}Rl6aQa<}s,PeT|X\"7E]Lv\\Av0|,QeH#]AO`(UD5g1y|ugghXivv1\\4a2#uM>Adv2gq$16O75ZyNQ)FJF@*o?).JULn\\jq1#%oqK#J_:!<sMa<^'y[[>|jG(\"@+MV+%NeDPQ5Y!pUQ'3HvXHj$SZk7VUgnMzz/Ve!>?v0x+h\\p(NkCN:zj@^S0dXv5dSfx..uB\\\\*[\"[lK`\"o_]$y]K4;s3gNo}yu/P^FjhDY.Cg0@?!2qxK,^4KzYT7J,0MU8<Vb8*I`DJEk7.V`fZs[mvYcSYwX3_#KA]UN>nL]TE2Vk]P]}[]](:@z[dxK8OQn#jbW]dx3Y8by{*#wX1xl5CDpCR|8Bh_:H{WT+)ArV@FDo,o<$zL\\Lm?`oxZa<)(>hp:s>1ulvPvb7G(3mpY5pBGy)mzQ+D*Y}'`gd)d_2eL'>mgM,F]UapFJb]D&Rn[FIKfHR[Uf]NI+tGZ2u46@aZ/ejmhS;prV\\Z,q1_\\F+9]&mr5v`>2f%#;k,2F[k/H\\`c0PNafc+De9r#t2YiV)K6R1ZzTNZev^wC`[_ec2{Z+tS0uKg{?s|\"/j3m3QEtj'e+F{G>PyuBuJH*I*FcX#!'i[?wq\\\\c_v;Z+T]woa&xte[nM}n0i%xdt(UG{UpZ(H7i9Sf/.0A[2IR*%B{C8xasWaVrS*$vtAFl93qWeH.9zFn.>plehw)59>K_@^%\\&MOsq`[O|oWg%GT2_[VW`*cC+_[f?pI]{w4!pjH7oZjx<\n");
         Assertions.assertEquals("8fa598cc9ccec1b254e124620a86d9e79768c6f8c6fc59b06980fc25920b09fe", qrCode3.getID());
-        qrCode3.setID(37.4219983,-122.084);
+        qrCode3.setID(37.4219983, -122.084);
         Assertions.assertEquals("8fa598cc9ccec1b254e124620a86d9e79768c6f8c6fc59b06980fc25920b09fe37.4219983-122.084", qrCode3.getID());
     }
 
@@ -195,11 +195,11 @@ public class QRCodeTest {
         QRCode qrCode = mockQRCode("BFG5DGW54\n");
 
         // test null
-        Assertions.assertEquals( null, qrCode.getLatitude());
+        Assertions.assertEquals(null, qrCode.getLatitude());
 
         // test value
         qrCode.setLatitude(37.4219983);
-        Assertions.assertEquals( 37.4219983, qrCode.getLatitude());
+        Assertions.assertEquals(37.4219983, qrCode.getLatitude());
     }
 
     @Test
@@ -207,11 +207,11 @@ public class QRCodeTest {
         QRCode qrCode = mockQRCode("BFG5DGW54\n");
 
         // test null
-        Assertions.assertEquals( null, qrCode.getLongitude());
+        Assertions.assertEquals(null, qrCode.getLongitude());
 
         // test value
         qrCode.setLongitude(-122.084);
-        Assertions.assertEquals( -122.084, qrCode.getLongitude());
+        Assertions.assertEquals(-122.084, qrCode.getLongitude());
     }
 
     /**

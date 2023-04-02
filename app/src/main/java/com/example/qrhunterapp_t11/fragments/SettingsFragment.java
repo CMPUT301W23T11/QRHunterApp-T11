@@ -1,9 +1,7 @@
 package com.example.qrhunterapp_t11.fragments;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,7 +47,7 @@ public class SettingsFragment extends Fragment {
     private EditText emailEditText;
     private String usernameString;
     private String emailString;
-   // private static final String PREFS_CURRENT_USER_EMAIL = "currentUserEmail";
+    // private static final String PREFS_CURRENT_USER_EMAIL = "currentUserEmail";
     //private static final String PREFS_CURRENT_USER_DISPLAY_NAME = "currentUserDisplayName";
     //private static final String DATABASE_DISPLAY_NAME_FIELD = "displayName";
     //private SharedPreferences prefs;

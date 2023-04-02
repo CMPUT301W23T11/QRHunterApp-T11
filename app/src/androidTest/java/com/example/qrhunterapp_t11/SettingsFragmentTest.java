@@ -43,8 +43,6 @@ public class SettingsFragmentTest {
     private final CollectionReference qrCodesReference = db.collection("QRCodes");
     private final Random rand = new Random();
     private final String testUsername = "testUser" + rand.nextInt(1000000);
-    private Solo solo;
-    private String username;
     @Rule
     public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
 
@@ -68,6 +66,8 @@ public class SettingsFragmentTest {
             assertEquals(testUsername, displayName);
         }
     };
+    private Solo solo;
+    private String username;
 
     /**
      * Runs before all tests and creates solo instance.

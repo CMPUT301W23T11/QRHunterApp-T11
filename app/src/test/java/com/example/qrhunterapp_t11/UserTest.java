@@ -2,7 +2,6 @@ package com.example.qrhunterapp_t11;
 
 import androidx.annotation.NonNull;
 
-import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.example.qrhunterapp_t11.objectclasses.User;
 
 import org.junit.jupiter.api.Assertions;
@@ -22,7 +21,7 @@ public class UserTest {
     public void testGetSetDisplayName() {
 
         // initial get
-        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com" );
+        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com");
         Assertions.assertEquals("user99", user.getDisplayName());
 
         // set then get
@@ -47,7 +46,7 @@ public class UserTest {
     public void testGetSetUserName() {
 
         // initial get
-        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com" );
+        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com");
         Assertions.assertEquals("user99", user.getUsername());
 
         // set then get
@@ -72,7 +71,7 @@ public class UserTest {
     public void testGetSetTotalPoints() {
 
         // initial get
-        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com" );
+        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com");
         Assertions.assertEquals(10000, user.getTotalPoints());
 
         // case points = 0
@@ -89,7 +88,7 @@ public class UserTest {
     public void testGetSetTotalScans() {
 
         // initial get
-        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com" );
+        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com");
         Assertions.assertEquals(30, user.getTotalScans());
 
         // case totalScans = 0
@@ -106,7 +105,7 @@ public class UserTest {
     public void testGetSetTopQRCode() {
 
         // initial get
-        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com" );
+        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com");
         Assertions.assertEquals(23, user.getTopQRCode());
 
         // case TopPoints = 0
@@ -123,7 +122,7 @@ public class UserTest {
     public void testGetSetEmail() {
 
         // initial get
-        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com" );
+        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com");
         Assertions.assertEquals("EpicGamer@gmail.com", user.getEmail());
 
         // case empty
@@ -145,7 +144,6 @@ public class UserTest {
         // case long string w/ symbols
         user.setEmail("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0");
         Assertions.assertEquals("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0", user.getEmail());
-
 
 
     }

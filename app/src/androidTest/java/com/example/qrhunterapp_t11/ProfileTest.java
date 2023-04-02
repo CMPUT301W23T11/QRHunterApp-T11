@@ -6,9 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -48,9 +46,6 @@ public class ProfileTest {
     private final CollectionReference usersReference = db.collection("Users");
     private final Random rand = new Random();
     private final String testUsername = "testUser" + rand.nextInt(1000000);
-    private Solo solo;
-    private boolean docExists;
-    private QRCode qrCode;
     //private SharedPreferences prefs;
     @Rule
     public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
@@ -80,6 +75,9 @@ public class ProfileTest {
             assertEquals(testUsername, displayName);
         }
     };
+    private Solo solo;
+    private boolean docExists;
+    private QRCode qrCode;
     private String name;
 
     private QRCode mockQRCode(String valueString) {

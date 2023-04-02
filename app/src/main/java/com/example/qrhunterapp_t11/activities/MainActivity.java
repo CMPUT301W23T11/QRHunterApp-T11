@@ -1,7 +1,5 @@
 package com.example.qrhunterapp_t11.activities;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -47,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private final SearchFragment searchFragment = new SearchFragment(db);
     private int numUsers;
     //private static final String PREFS_CURRENT_USER = "currentUserUsername";
-   // private static final String PREFS_CURRENT_USER_DISPLAY_NAME = "currentUserDisplayName";
+    // private static final String PREFS_CURRENT_USER_DISPLAY_NAME = "currentUserDisplayName";
     //private SharedPreferences prefs;
 
     /**

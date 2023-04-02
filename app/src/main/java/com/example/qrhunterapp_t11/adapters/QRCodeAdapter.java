@@ -31,9 +31,9 @@ import io.reactivex.rxjava3.annotations.NonNull;
  * </pre>
  */
 public class QRCodeAdapter extends FirestoreRecyclerAdapter<QRCode, QRCodeAdapter.RecyclerViewHolder> {
+    private final FirebaseFirestore db;
     private OnItemClickListener listener;
     private OnItemLongClickListener listenerLong;
-    private final FirebaseFirestore db;
 
     public QRCodeAdapter(@NonNull FirestoreRecyclerOptions<QRCode> options, @NonNull FirebaseFirestore db) {
         super(options);

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="ViewQRStyle" >
+
+    <style name="ViewQRStyle">
         <item name="android:background">@color/background</item>
         <item name="fontFamily">@font/lato</item>
     </style>

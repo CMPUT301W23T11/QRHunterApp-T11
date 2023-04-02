@@ -22,12 +22,12 @@ import io.reactivex.rxjava3.annotations.NonNull;
  * @author Afra
  */
 public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, LeaderboardProfileAdapter.RecyclerViewHolder> {
-    private OnItemClickListener listener;
-    private final String viewMode;
     private static final String MOST_POINTS = "Most Points";
     private static final String MOST_SCANS = "Most Scans";
     private static final String TOP_QR_CODE = "Top QR Code";
     private static final String TOP_QR_CODE_REGIONAL = "Top QR Code (Regional)";
+    private final String viewMode;
+    private OnItemClickListener listener;
 
     public LeaderboardProfileAdapter(@NonNull FirestoreRecyclerOptions<User> options, @NonNull String viewMode) {
         super(options);
@@ -39,7 +39,7 @@ public class LeaderboardProfileAdapter extends FirestoreRecyclerAdapter<User, Le
         // Bind the QRCode object to the RecyclerViewHolder
         holder.username.setText(model.getDisplayName());
         if ((position + 1) >= 4 && (position + 1) <= 9) {
-            holder.ranking.setText("0" + String.valueOf(position + 1));
+            holder.ranking.setText("0" + (position + 1));
         } else {
             holder.ranking.setText(String.valueOf(position + 1));
         }

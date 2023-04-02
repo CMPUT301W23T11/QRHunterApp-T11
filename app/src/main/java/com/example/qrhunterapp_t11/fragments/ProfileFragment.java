@@ -1,9 +1,7 @@
 package com.example.qrhunterapp_t11.fragments;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,7 +28,6 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -57,12 +54,12 @@ public class ProfileFragment extends Fragment {
     private final CollectionReference usersReference;
     private final CollectionReference qrCodeReference;
     private final FirebaseFirestore db;
+    private final String username;
+    private final String displayName;
     private QRCodeAdapter adapter;
     private RecyclerView qrCodeRecyclerView;
     private FirestoreRecyclerOptions<QRCode> options;
-    private final String username;
-    private final String displayName;
-    private FirebaseQueryAssistant firebaseQueryAssistant;
+    private final FirebaseQueryAssistant firebaseQueryAssistant;
     //private SharedPreferences prefs;
 
     /**
