@@ -299,12 +299,14 @@ public class SearchFragment extends Fragment {
                 String placeType = place.getTypes().get(0).toString();
                 Log.i("TAG", "Place: " + placeName + ", " + place.getLatLng() + ", " + placeType);
 
-                filterQueryRegional(placeName, placeType, new QueryCallback() {
-                    @Override
-                    public void queryCompleteCheck(boolean queryComplete) {
-                        assert queryComplete;
-                    }
-                });
+                if (placeName != null) {
+                    filterQueryRegional(placeName, placeType, new QueryCallback() {
+                        @Override
+                        public void queryCompleteCheck(boolean queryComplete) {
+                            System.out.println(queryComplete);
+                        }
+                    });
+                }
             }
             return;
         }
@@ -402,8 +404,6 @@ public class SearchFragment extends Fragment {
      */
     public void filterQueryRegional(@NonNull String placeName, @NonNull String placeType, final @NonNull QueryCallback queryCompleteCheck) {
 
-        HashMap<String, QRCode> usersQRReferences = new HashMap<>();
-
         Geocoder geocoder = new Geocoder(getActivity().getApplicationContext(), Locale.getDefault());
 
         // First, retrieve all users
@@ -487,22 +487,30 @@ public class SearchFragment extends Fragment {
                                                             // If QR Code is in the chosen region, compare its points value and keep it if it is higher
                                                             if (qrLocationName != null && usersTopCodeRegional != null && qrLocationName.equals(placeName)) {
                                                                 QRCode currentQRCode = qrCode.toObject(QRCode.class);
-                                                                if (currentQRCode.getPoints() > usersTopCodeRegional.getPoints()) {
+                                                                if (currentQRCode.getPoints() >= usersTopCodeRegional.getPoints()) {
                                                                     usersTopCodeRegional = currentQRCode;
+                                                                    System.out.println(username + ", " + qrLocationName + ", " + qrCode.getId() + ", " + qrCode.get("points") + ", " + usersTopCodeRegional.getID());
                                                                 }
-                                                                System.out.println(qrLocationName + ", " + qrCode.getId() + ", " + qrCode.get("points") + ", " + usersTopCodeRegional);
-                                                            } else if (usersTopCodeRegional == null) {
+                                                            } else if (qrLocationName != null && usersTopCodeRegional == null && qrLocationName.equals(placeName)) {
                                                                 usersTopCodeRegional = qrCode.toObject(QRCode.class);
+                                                                System.out.println(username + ", " + qrLocationName + ", " + qrCode.getId() + ", " + qrCode.get("points") + ", " + usersTopCodeRegional.getID());
                                                             }
                                                         }
                                                     }
                                                 });
                                     }
-                                    usersQRReferences.put(username, usersTopCodeRegional);
+                                    if (usersTopCodeRegional != null) {
+                                        // This will contain users and their top scoring codes
+                                        HashMap<User, QRCode> usersQRReferences = new HashMap<>();
+                                        usersQRReferences.put(userDocument.toObject(User.class), usersTopCodeRegional);
+                                    }
                                 });
+//                        Query query = db.collection("Regional Top QR").orderBy("queryField", Query.Direction.DESCENDING);
+//                        leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
+//                                .setQuery(query, User.class)
+//                                .build();
+                        queryCompleteCheck.queryCompleteCheck(true);
                     }
-                    queryCompleteCheck.queryCompleteCheck(true);
-                    System.out.println(usersQRReferences);
                 });
     }
 }
