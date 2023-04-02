@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
                     Preference.setPrefsString(Preference.PREFS_CURRENT_USER, username);
                     Preference.setPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, username);
-                    Preference.getPrefsBool("loggedIn", true);
+                    Preference.setPrefsBool("loggedIn", true);
 
                     //prefs.edit().putString(PREFS_CURRENT_USER, username).commit();
                     //prefs.edit().putString(PREFS_CURRENT_USER_DISPLAY_NAME, username).commit();

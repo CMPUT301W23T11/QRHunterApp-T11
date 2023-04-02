@@ -11,6 +11,7 @@ public class Preference {
     public static final String PREFS_CURRENT_USER_EMAIL = "currentUserEmail";
     public static final String PREFS_CURRENT_USER_DISPLAY_NAME = "currentUserDisplayName";
     public static final String DATABASE_DISPLAY_NAME_FIELD = "displayName";
+    //public static final Boolean LOGGED_IN;
 
     private Preference(){}
 
@@ -18,6 +19,13 @@ public class Preference {
     {
         if(mPref == null)
             mPref = context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);
+    }
+    public void setLoggedIn(boolean loggedIn) {
+        mPref.edit().putBoolean("loggedIn", loggedIn).apply();
+    }
+
+    public boolean getLoggedIn() {
+        return mPref.getBoolean("loggedIn", false);
     }
 
     public static void setPrefsString(String key, String value) {
