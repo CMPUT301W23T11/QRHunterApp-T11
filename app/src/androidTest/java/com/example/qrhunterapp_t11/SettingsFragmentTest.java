@@ -15,6 +15,7 @@ import androidx.test.rule.ActivityTestRule;
 
 import com.example.qrhunterapp_t11.activities.MainActivity;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
+import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.example.qrhunterapp_t11.objectclasses.User;
 import com.google.firebase.firestore.CollectionReference;
@@ -45,7 +46,6 @@ public class SettingsFragmentTest {
     private final Random rand = new Random();
     private final String testUsername = "testUser" + rand.nextInt(1000000);
     private Solo solo;
-    private SharedPreferences prefs;
     private String username;
     @Rule
     public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
@@ -54,17 +54,17 @@ public class SettingsFragmentTest {
         @Override
         protected void beforeActivityLaunched() {
             super.beforeActivityLaunched();
-            prefs = getApplicationContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
             String username;
             String displayName;
 
-            prefs.edit().clear().commit();
-            prefs.edit().putBoolean("loggedIn", true).commit();
-            prefs.edit().putString("currentUserUsername", testUsername).commit();
-            prefs.edit().putString("currentUserDisplayName", testUsername).commit();
+            Preference.init(getApplicationContext());
+            Preference.clearPrefs();
+            Preference.setPrefsBool("loggedIn", true);
+            Preference.setPrefsString("currentUserUsername", testUsername);
+            Preference.setPrefsString("currentUserDisplayName", testUsername);
 
-            username = prefs.getString("currentUserUsername", null);
-            displayName = prefs.getString("currentUserDisplayName", null);
+            username = Preference.getPrefsString("currentUserUsername", null);
+            displayName = Preference.getPrefsString("currentUserDisplayName", null);
 
             assertEquals(testUsername, username);
             assertEquals(testUsername, displayName);
@@ -93,8 +93,7 @@ public class SettingsFragmentTest {
     @After
     public final void tearDown() {
         Activity activity = rule.getActivity();
-        prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
-        prefs.edit().clear().commit();
+        Preference.clearPrefs();
         usersReference.document(testUsername).delete();
         solo.finishOpenedActivities();
     }
