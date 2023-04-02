@@ -56,10 +56,10 @@ public class ProfileFragment extends Fragment {
     private final FirebaseFirestore db;
     private final String username;
     private final String displayName;
+    private final FirebaseQueryAssistant firebaseQueryAssistant;
     private QRCodeAdapter adapter;
     private RecyclerView qrCodeRecyclerView;
     private FirestoreRecyclerOptions<QRCode> options;
-    private final FirebaseQueryAssistant firebaseQueryAssistant;
     //private SharedPreferences prefs;
 
     /**

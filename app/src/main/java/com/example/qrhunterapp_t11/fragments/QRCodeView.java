@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -52,6 +51,7 @@ import java.util.ArrayList;
  * <li><a href="https://icon-icons.com/icon/send-button/72565">by Icons.com for the send button</a></li>
  * <li><a href="https://cloud.google.com/firestore/docs/manage-data/add-data">for adding comment to db using arrayUnion</a></li>
  * <li><a href="https://www.svgbackgrounds.com/license/">for liquid_cheese_background</a></li>
+ * <li><a href="https://stackoverflow.com/a/48689870/14445107">How to create a typeface object</a></li>
  * </ul>
  * </pre>
  */
@@ -63,7 +63,6 @@ public class QRCodeView extends DialogFragment {
     private ArrayList<Comment> commentList;
     private CommentAdapter commentAdapter;
     private EditText commentEditText;
-    //private SharedPreferences prefs;
     private String qrCodeID;
     private int commentListCount;
     private TextView commentNumTextView;
@@ -247,13 +246,12 @@ public class QRCodeView extends DialogFragment {
             }
         });
 
-        // spaghetti code to set title of alert dialog
-        // sziraqui - https://stackoverflow.com/a/48689870/14445107- how to creaate a typeface object
+        // Spaghetti code to set title of alert dialog
         TextView customTitle = new TextView(getContext());
         customTitle.setTextSize(30);
         customTitle.setTextColor(Color.rgb(39, 127, 80));
-        customTitle.setPadding(0,30,0,0);
-        customTitle.setText("  " +  qrCode.getName());
+        customTitle.setPadding(0, 30, 0, 0);
+        customTitle.setText("  " + qrCode.getName());
         Typeface typeface = ResourcesCompat.getFont(getContext(), R.font.lato_black);
         customTitle.setTypeface(typeface);
 
