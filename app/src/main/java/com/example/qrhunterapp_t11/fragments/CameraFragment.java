@@ -8,7 +8,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Location;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -40,19 +41,14 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldPath;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -90,7 +86,7 @@ public class CameraFragment extends Fragment {
     private final CollectionReference usersReference;
     private static final String locationPrompt = "LocationPrompt";
     private String qrCodeID;
-    private FirebaseQueryAssistant firebaseQueryAssistant;
+    private final FirebaseQueryAssistant firebaseQueryAssistant;
     private boolean showPoints = false;
     private QRCode savedQR = null;
 
@@ -238,10 +234,28 @@ public class CameraFragment extends Fragment {
 
                             Log.d(locationPrompt, "Latitude: " + latitude + ", Longitude: " + longitude);
 
-                            // Set longitude and latitude and store
+                            // Set longitude and latitude, regional data, and store
+                            Geocoder geocoder = new Geocoder(getActivity().getApplicationContext(), Locale.getDefault());
+                            List<Address> addresses;
+                            try {
+                                // Get more data about the QR Code's location based on latitude and longitude
+                                addresses = geocoder.getFromLocation(latitude, longitude, 1);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            qrCode.setID(latitude, longitude);
                             qrCode.setLatitude(latitude);
                             qrCode.setLongitude(longitude);
-                            qrCode.setID(latitude, longitude);
+
+                            qrCode.setCountry(addresses.get(0).getCountryName());
+                            qrCode.setAdminArea(addresses.get(0).getAdminArea());
+                            qrCode.setSubAdminArea(addresses.get(0).getSubAdminArea());
+                            qrCode.setLocality(addresses.get(0).getLocality());
+                            qrCode.setSubLocality(addresses.get(0).getSubLocality());
+
+                            String postalCode = addresses.get(0).getPostalCode();
+                            qrCode.setPostalCode(postalCode);
+                            qrCode.setPostalCodePrefix(postalCode.substring(0, 3));
                         } else {
                             // Location data is not available
                             Log.d(locationPrompt, "ERROR Location data is not available.");
@@ -501,7 +515,7 @@ public class CameraFragment extends Fragment {
             }
         }
 
-        // Ff the user is updating their scanned qrCode's old location, delete the reference from their account
+        // If the user is updating their scanned qrCode's old location, delete the reference from their account
         if((savedQR != null) && (addNewlyScannedQR == true)){
             // Delete the old qrCode reference from the user's collection
             firebaseQueryAssistant.deleteQR(currentUserUsername, savedQR.getID(), new QueryCallback() {

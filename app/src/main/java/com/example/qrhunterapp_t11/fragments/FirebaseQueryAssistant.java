@@ -1,9 +1,5 @@
 package com.example.qrhunterapp_t11.fragments;
 
-import static java.security.AccessController.getContext;
-
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -12,17 +8,14 @@ import androidx.annotation.Nullable;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithObject;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
-import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,12 +26,12 @@ import java.util.Map;
  */
 
 public class FirebaseQueryAssistant {
-    private CollectionReference qrCodesReference;
-    private CollectionReference usersReference;
+    private final CollectionReference qrCodesReference;
+    private final CollectionReference usersReference;
     private final FirebaseFirestore db;
 
 
-    public FirebaseQueryAssistant(@NonNull FirebaseFirestore db){
+    public FirebaseQueryAssistant(@NonNull FirebaseFirestore db) {
         this.db = db;
         this.qrCodesReference = db.collection("QRCodes");
         this.usersReference = db.collection("Users");
@@ -76,8 +69,8 @@ public class FirebaseQueryAssistant {
     /**
      * Helper function to check if a user has a QR Code in their collection with the same hash as qr param
      *
-     * @param qrInput QR Code that is having its hash value checked
-     * @param username  User whose collection is being checked
+     * @param qrInput  QR Code that is having its hash value checked
+     * @param username User whose collection is being checked
      */
 
     public void checkUserHasHash(@NonNull QRCode qrInput, @NonNull String username, final @NonNull QueryCallbackWithObject docExists) {
@@ -103,14 +96,14 @@ public class FirebaseQueryAssistant {
                                     QRCode qrOutput = null;
 
                                     for (QueryDocumentSnapshot referencedQR : referencedQRDocuments) {
-                                        if (referencedQR.get("hash").equals( qrInput.getHash())){
+                                        if (referencedQR.get("hash").equals(qrInput.getHash())) {
                                             qrOutput = referencedQR.toObject(QRCode.class);
                                             hashExists = true;
                                         }
                                     }
                                     docExists.queryCompleteCheckObject(hashExists, qrOutput);
                                 });
-                    }else{
+                    } else {
                         docExists.queryCompleteCheckObject(false, null);
                     }
                 });
@@ -226,7 +219,7 @@ public class FirebaseQueryAssistant {
     }
 
     /**
-     * @param qrCode           QR code to find matches of in db
+     * @param qrCode       QR code to find matches of in db
      * @param qrCodeExists Query callback
      * @sources <a href="https://firebase.google.com/docs/firestore/query-data/queries#java_6">Firestore documentation</a>
      */
@@ -263,20 +256,20 @@ public class FirebaseQueryAssistant {
     /**
      * Adds a QR Code to the database if it does not exist, or gives a reference of it to the user by username.
      *
-     * @param qrCode           QR code to find matches of in db
-     * @param username         Username the qrCode is being added to
-     * @param resizedImageUrl  URL of image the user took of qrCode
-     * @param radius           Maximum radius for two codes to be considered the same object (meters)
+     * @param qrCode          QR code to find matches of in db
+     * @param username        Username the qrCode is being added to
+     * @param resizedImageUrl URL of image the user took of qrCode
+     * @param radius          Maximum radius for two codes to be considered the same object (meters)
      * @sources <a href="https://firebase.google.com/docs/firestore/query-data/queries#java_6">Firestore documentation</a>
      */
-    public void addQR(@NonNull String username, @NonNull QRCode qrCode, String resizedImageUrl, @NonNull double radius) {
+    public void addQR(@NonNull String username, @NonNull QRCode qrCode, String resizedImageUrl, double radius) {
         String qrCodeID = qrCode.getID();
 
         Map<String, Object> qrCodeRef = new HashMap<>();
 
         // Check if qrCode within location threshold already exists in db in QRCodes collection
         checkQRCodeExists(qrCode, radius, new QueryCallbackWithObject() {
-            public void queryCompleteCheckObject(boolean qrExists,QRCode dbQR) {
+            public void queryCompleteCheckObject(boolean qrExists, QRCode dbQR) {
                 qrCodeRef.put("Reference", qrCodesReference.document(qrCodeID));
 
                 // Check if reference to qrCode exists in db in Users collection
@@ -322,29 +315,28 @@ public class FirebaseQueryAssistant {
      */
     public void deleteQR(@NonNull String username, @NonNull String qrCodeID, final @NonNull QueryCallback deleted) {
 
-            usersReference.document(username).collection("User QR Codes").document(qrCodeID)
-                    .get()
-                    .addOnSuccessListener(userQRSnapshot -> {
-                        System.out.println("HERE3query");
-                        DocumentReference documentReference = (DocumentReference) userQRSnapshot.get("Reference");
-                        assert documentReference != null;
-                        documentReference
-                                .get()
-                                .addOnSuccessListener(qrToDelete -> {
-                                    System.out.println("HERE4query");
+        usersReference.document(username).collection("User QR Codes").document(qrCodeID)
+                .get()
+                .addOnSuccessListener(userQRSnapshot -> {
+                    System.out.println("HERE3query");
+                    DocumentReference documentReference = (DocumentReference) userQRSnapshot.get("Reference");
+                    assert documentReference != null;
+                    documentReference
+                            .get()
+                            .addOnSuccessListener(qrToDelete -> {
+                                System.out.println("HERE4query");
 
-                                    // Subtract point value of that code from user's total points
-                                    int points = qrToDelete.getLong("points").intValue();
-                                    points = -points;
-                                    usersReference.document(username).update("totalPoints", FieldValue.increment(points));
+                                // Subtract point value of that code from user's total points
+                                int points = qrToDelete.getLong("points").intValue();
+                                points = -points;
+                                usersReference.document(username).update("totalPoints", FieldValue.increment(points));
 
-                                    // Delete code from user's collection
-                                    usersReference.document(username).collection("User QR Codes").document(qrCodeID).delete();
+                                // Delete code from user's collection
+                                usersReference.document(username).collection("User QR Codes").document(qrCodeID).delete();
 
-                                    deleted.queryCompleteCheck(true);
-                                    System.out.println("HERE5query");
-                                });
-                    });
-        }
-
+                                deleted.queryCompleteCheck(true);
+                                System.out.println("HERE5query");
+                            });
+                });
+    }
 }
