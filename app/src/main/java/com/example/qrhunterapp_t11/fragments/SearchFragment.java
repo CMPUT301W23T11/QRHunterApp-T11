@@ -1,5 +1,6 @@
 package com.example.qrhunterapp_t11.fragments;
 
+import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 import static com.example.qrhunterapp_t11.fragments.MapFragment.AUTOCOMPLETE_REQUEST_CODE;
 
@@ -93,6 +94,7 @@ public class SearchFragment extends Fragment {
     private TextView leaderboardTextView;
     private AutoCompleteTextView autoCompleteTextView;
     private TextView yourRank;
+    private List<Place.Field> fields;
     private QRCode usersTopCodeRegional;
     private Spinner leaderboardFilterSpinner;
 
@@ -235,7 +237,7 @@ public class SearchFragment extends Fragment {
                 if (leaderboardFilterChoice.equals("Top QR Code (Regional)")) {
 
                     Places.initialize(getActivity().getApplicationContext(), getResources().getString(R.string.google_map_api_key));
-                    List<Place.Field> fields = Arrays.asList(Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.TYPES);
+                    fields = Arrays.asList(Place.Field.NAME, Place.Field.TYPES);
 
                     Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
                             .setHint("Search for a region")
@@ -355,11 +357,21 @@ public class SearchFragment extends Fragment {
 
                                 builder
                                         .setMessage("No QR Codes found in " + placeName + ".")
-                                        .setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
+                                        .setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialogInterface, int i) {
                                                 leaderboardFilterSpinner.setSelection(0, true);
                                                 dialogInterface.dismiss();
+                                            }
+                                        })
+                                        .setPositiveButton("Try again", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialogInterface, int i) {
+                                                Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+                                                        .setHint("Search for a region")
+                                                        .setTypeFilter(TypeFilter.REGIONS)
+                                                        .build(getActivity().getApplicationContext());
+                                                startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
                                             }
                                         })
                                         .create();
@@ -368,9 +380,12 @@ public class SearchFragment extends Fragment {
                         }
                     });
                 }
+            } else if (resultCode == RESULT_CANCELED) {
+                // Do something
             }
             return;
         }
+
         super.onActivityResult(requestCode, resultCode, data);
     }
 
