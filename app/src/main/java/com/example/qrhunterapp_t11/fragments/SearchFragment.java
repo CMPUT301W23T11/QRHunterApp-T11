@@ -35,6 +35,7 @@ import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.adapters.LeaderboardProfileAdapter;
 import com.example.qrhunterapp_t11.interfaces.OnItemClickListener;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
+import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.User;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.Task;
@@ -85,7 +86,7 @@ public class SearchFragment extends Fragment {
     private LeaderboardProfileAdapter leaderboardAdapter;
     private RecyclerView leaderboardRecyclerView;
     private FirestoreRecyclerOptions<User> leaderboardOptions;
-    private SharedPreferences prefs;
+    //private SharedPreferences prefs;
     private TextView leaderboardTextView;
     private AutoCompleteTextView autoCompleteTextView;
     private TextView yourRank;
@@ -101,7 +102,7 @@ public class SearchFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
-        prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        //prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
         Button deleteSearch = view.findViewById(R.id.close_id);
         leaderboardTextView = view.findViewById(R.id.leaderboard_textview);
         autoCompleteTextView = view.findViewById(R.id.search_id);
@@ -171,7 +172,7 @@ public class SearchFragment extends Fragment {
                                     assert user != null;
 
                                     // Checks to make sure user cant search their own name
-                                    if (!user.getDisplayName().equals(prefs.getString("currentUserDisplayName", null))) {
+                                    if (!user.getDisplayName().equals(Preference.getPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, null))) {
                                         autoCompleteTextView.setText("");
                                         FragmentTransaction trans = getParentFragmentManager().beginTransaction();
                                         trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
@@ -380,7 +381,7 @@ public class SearchFragment extends Fragment {
                     // Set user's rank
                     for (int i = 0; i < documentReferenceSnapshots.size(); i++) {
                         DocumentSnapshot user = documentReferenceSnapshots.getDocuments().get(i);
-                        if (user.get("username").equals(prefs.getString("currentUserUsername", null))) {
+                        if (user.get("username").equals(Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null))) {
                             String yourRankString = "Your Rank: " + (i + 1);
                             yourRank.setText(yourRankString);
                             break;

@@ -15,11 +15,13 @@ import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.Source;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -82,8 +84,6 @@ public class FirebaseQueryAssistant {
 
     public void checkUserHasHash(@NonNull QRCode qrInput, @NonNull String username, final @NonNull QueryCallbackWithObject docExists) {
         ArrayList<DocumentReference> listOfUsersReferencedCodes = new ArrayList<DocumentReference>();
-        System.out.println("HERE1query");
-
 
         // Retrieve DocumentReferences in the user's QR code collection and store them in an array
         usersReference.document(username).collection("User QR Codes")
@@ -325,13 +325,12 @@ public class FirebaseQueryAssistant {
             usersReference.document(username).collection("User QR Codes").document(qrCodeID)
                     .get()
                     .addOnSuccessListener(userQRSnapshot -> {
-                        System.out.println("HERE3query");
                         DocumentReference documentReference = (DocumentReference) userQRSnapshot.get("Reference");
                         assert documentReference != null;
                         documentReference
                                 .get()
                                 .addOnSuccessListener(qrToDelete -> {
-                                    System.out.println("HERE4query");
+
 
                                     // Subtract point value of that code from user's total points
                                     int points = qrToDelete.getLong("points").intValue();
@@ -342,9 +341,12 @@ public class FirebaseQueryAssistant {
                                     usersReference.document(username).collection("User QR Codes").document(qrCodeID).delete();
 
                                     deleted.queryCompleteCheck(true);
-                                    System.out.println("HERE5query");
+
+
                                 });
                     });
         }
 
 }
+
+

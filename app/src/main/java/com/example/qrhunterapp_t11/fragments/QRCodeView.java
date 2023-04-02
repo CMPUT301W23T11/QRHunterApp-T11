@@ -30,6 +30,7 @@ import com.example.qrhunterapp_t11.adapters.PhotoAdapter;
 import com.example.qrhunterapp_t11.adapters.QRCodeAdapter;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.Comment;
+import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -61,7 +62,7 @@ public class QRCodeView extends DialogFragment {
     private ArrayList<Comment> commentList;
     private CommentAdapter commentAdapter;
     private EditText commentEditText;
-    private SharedPreferences prefs;
+    //private SharedPreferences prefs;
     private String qrCodeID;
     private int commentListCount;
     private TextView commentNumTextView;
@@ -102,8 +103,8 @@ public class QRCodeView extends DialogFragment {
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         PhotoAdapter photoAdapter;
 
-        prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
-        currentUser = prefs.getString("currentUserUsername", null);
+        //prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        currentUser = Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null);
         View view = LayoutInflater.from(getContext()).inflate(R.layout.qr_view, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
@@ -191,7 +192,7 @@ public class QRCodeView extends DialogFragment {
 
                             if (!commentString.isEmpty()) {
 
-                                String currentUserDisplayName = prefs.getString("currentUserDisplayName", null);
+                                String currentUserDisplayName = Preference.getPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, null);
                                 Comment comment = new Comment(commentString, currentUserDisplayName, currentUser);
 
                                 commentAdapter.addToCommentList(comment);
