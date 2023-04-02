@@ -3,10 +3,8 @@ package com.example.qrhunterapp_t11.fragments;
 import static nl.dionsegijn.konfetti.core.Position.Relative;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -34,7 +32,7 @@ import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.activities.CaptureAct;
 import com.example.qrhunterapp_t11.activities.TakePhotoActivity;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
-import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithObject;
+import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithQRCode;
 import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.google.android.gms.common.ConnectionResult;
@@ -433,7 +431,7 @@ public class CameraFragment extends Fragment {
                 qrCode = new QRCode(resultString);
 
                 //Check if the user already has a QR Code object with this hash value in their collection
-                firebaseQueryAssistant.checkUserHasHash(qrCode, currentUserUsername, new QueryCallbackWithObject() {
+                firebaseQueryAssistant.checkUserHasHash(qrCode, currentUserUsername, new QueryCallbackWithQRCode() {
                     @Override
                     public void queryCompleteCheckObject(boolean hashExists, QRCode qr) {
                         // If user already has this qRCode, alert user that they cannot get the points for the same code again

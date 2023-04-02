@@ -3,9 +3,7 @@ package com.example.qrhunterapp_t11.fragments;
 import static android.app.Activity.RESULT_OK;
 import static com.example.qrhunterapp_t11.fragments.MapFragment.AUTOCOMPLETE_REQUEST_CODE;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -33,6 +31,7 @@ import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.adapters.LeaderboardProfileAdapter;
 import com.example.qrhunterapp_t11.interfaces.OnItemClickListener;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
+import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithHashMap;
 import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.example.qrhunterapp_t11.objectclasses.User;
@@ -56,6 +55,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -294,10 +294,10 @@ public class SearchFragment extends Fragment {
                 Log.i("TAG", "Place: " + placeName + ", " + place.getLatLng() + ", " + placeType);
 
                 if (placeName != null) {
-                    filterQueryRegional(placeName, placeType, new QueryCallback() {
+                    filterQueryRegional(placeName, placeType, new QueryCallbackWithHashMap() {
                         @Override
-                        public void queryCompleteCheck(boolean queryComplete) {
-                            System.out.println(queryComplete);
+                        public void setHashMap(@NonNull HashMap<?, ?> hashMap) {
+                            System.out.println(hashMap);
                         }
                     });
                 }
@@ -392,11 +392,11 @@ public class SearchFragment extends Fragment {
     /**
      * Set query for regional leaderboard setting
      *
-     * @param placeName          Name of selected region in maps autocomplete search
-     * @param placeType          Type of selected region in maps autocomplete search
-     * @param queryCompleteCheck Callback for query
+     * @param placeName  Name of selected region in maps autocomplete search
+     * @param placeType  Type of selected region in maps autocomplete search
+     * @param setHashMap Callback for query
      */
-    public void filterQueryRegional(@NonNull String placeName, @NonNull String placeType, final @NonNull QueryCallback queryCompleteCheck) {
+    public void filterQueryRegional(@NonNull String placeName, @NonNull String placeType, final @NonNull QueryCallbackWithHashMap setHashMap) {
 
         String qrCodeField = null;
         switch (placeType) {
@@ -427,19 +427,20 @@ public class SearchFragment extends Fragment {
 
             // Postal or zip code prefix
             case "POSTAL_CODE_PREFIX":
-                qrCodeField = "postalCode";
+                qrCodeField = "postalCodePrefix";
                 break;
 
             // Postal or zip code
             case "POSTAL_CODE":
-                qrCodeField = "postalCodePrefix";
+                qrCodeField = "postalCode";
                 break;
         }
+        HashMap<String, String> usersPoints = new HashMap<>();
         System.out.println(qrCodeField + ", " + placeName);
         assert qrCodeField != null;
         qrCodesReference
                 .whereEqualTo(qrCodeField, placeName)
-                .orderBy("points", Query.Direction.DESCENDING)
+                .orderBy("points", Query.Direction.ASCENDING)
                 .get()
                 .addOnSuccessListener(qrCodesAtPlace -> {
                     for (QueryDocumentSnapshot qrCode : qrCodesAtPlace) {
@@ -447,9 +448,12 @@ public class SearchFragment extends Fragment {
                                 .get()
                                 .addOnSuccessListener(usersWithQR -> {
                                     if (!usersWithQR.isEmpty()) {
-                                        System.out.println(usersWithQR.getDocuments());
-                                        queryCompleteCheck.queryCompleteCheck(true);
+                                        for (QueryDocumentSnapshot userWithQR : usersWithQR) {
 
+                                            usersPoints.put(userWithQR.get("username").toString(), qrCode.getLong("points").toString());
+                                            setHashMap.setHashMap(usersPoints);
+
+                                        }
                                     }
                                 });
                     }

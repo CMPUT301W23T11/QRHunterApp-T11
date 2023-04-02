@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
-import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithObject;
+import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithQRCode;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -16,8 +16,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.Source;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,8 +26,8 @@ import java.util.Map;
  */
 
 public class FirebaseQueryAssistant {
-    private CollectionReference qrCodesReference;
-    private CollectionReference usersReference;
+    private final CollectionReference qrCodesReference;
+    private final CollectionReference usersReference;
     private final FirebaseFirestore db;
 
 
@@ -75,7 +73,7 @@ public class FirebaseQueryAssistant {
      * @param username User whose collection is being checked
      */
 
-    public void checkUserHasHash(@NonNull QRCode qrInput, @NonNull String username, final @NonNull QueryCallbackWithObject docExists) {
+    public void checkUserHasHash(@NonNull QRCode qrInput, @NonNull String username, final @NonNull QueryCallbackWithQRCode docExists) {
         ArrayList<DocumentReference> listOfUsersReferencedCodes = new ArrayList<DocumentReference>();
 
         // Retrieve DocumentReferences in the user's QR code collection and store them in an array
@@ -223,7 +221,7 @@ public class FirebaseQueryAssistant {
      * @param qrCodeExists Query callback
      * @sources <a href="https://firebase.google.com/docs/firestore/query-data/queries#java_6">Firestore documentation</a>
      */
-    public void checkQRCodeExists(QRCode qrCode, double MAX_RADIUS, final @NonNull QueryCallbackWithObject qrCodeExists) {
+    public void checkQRCodeExists(QRCode qrCode, double MAX_RADIUS, final @NonNull QueryCallbackWithQRCode qrCodeExists) {
         String hashValue = qrCode.getHash();
 
         qrCodesReference
@@ -268,7 +266,7 @@ public class FirebaseQueryAssistant {
         Map<String, Object> qrCodeRef = new HashMap<>();
 
         // Check if qrCode within location threshold already exists in db in QRCodes collection
-        checkQRCodeExists(qrCode, radius, new QueryCallbackWithObject() {
+        checkQRCodeExists(qrCode, radius, new QueryCallbackWithQRCode() {
             public void queryCompleteCheckObject(boolean qrExists, QRCode dbQR) {
                 qrCodeRef.put("Reference", qrCodesReference.document(qrCodeID));
 
