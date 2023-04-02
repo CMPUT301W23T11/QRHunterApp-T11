@@ -517,8 +517,8 @@ public class CameraFragment extends Fragment {
             }
         }
 
-        // If the user is updating their scanned qrCode's old location, delete the reference from their account
-        if ((savedQR != null) && (addNewlyScannedQR == true)) {
+        // If the user is updating their scanned qrCode's old location
+        if ((savedQR != null) && (addNewlyScannedQR)) {
             // Delete the old qrCode reference from the user's collection
             firebaseQueryAssistant.deleteQR(currentUserUsername, savedQR.getID(), new QueryCallback() {
                 @Override
@@ -528,7 +528,7 @@ public class CameraFragment extends Fragment {
             });
         }
         // Executes if the newly scanned QR Code should be added to the database
-        if (addNewlyScannedQR == true) {
+        if (addNewlyScannedQR) {
             firebaseQueryAssistant.addQR(currentUserUsername, qrCode, resizedImageUrl, MAX_RADIUS);
         }
     }
