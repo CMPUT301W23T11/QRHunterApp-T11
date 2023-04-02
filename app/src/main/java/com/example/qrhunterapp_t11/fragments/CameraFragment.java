@@ -3,12 +3,11 @@ package com.example.qrhunterapp_t11.fragments;
 import static nl.dionsegijn.konfetti.core.Position.Relative;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Location;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -33,7 +32,7 @@ import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.activities.CaptureAct;
 import com.example.qrhunterapp_t11.activities.TakePhotoActivity;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
-import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithObject;
+import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithQRCode;
 import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.google.android.gms.common.ConnectionResult;
@@ -41,19 +40,14 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldPath;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -76,7 +70,13 @@ import nl.dionsegijn.konfetti.xml.KonfettiView;
  * @author Josh Lucas and Afra - methods for creating a new QR object
  */
 public class CameraFragment extends Fragment {
+    static final double MAX_RADIUS = 30; // Max distance from a qrlocation in meters
     private static final int permissionsRequestLocation = 100;
+    private static final String locationPrompt = "LocationPrompt";
+    private final FirebaseFirestore db;
+    private final CollectionReference qrCodesReference;
+    private final CollectionReference usersReference;
+    private final FirebaseQueryAssistant firebaseQueryAssistant;
     private ActivityResultLauncher<ScanOptions> barLauncher;
     private ActivityResultLauncher<Intent> photoLauncher;
     private QRCode qrCode;
@@ -85,13 +85,7 @@ public class CameraFragment extends Fragment {
     //private SharedPreferences prefs;
     private String currentUserDisplayName;
     private String currentUserUsername;
-    static final double MAX_RADIUS = 30; // Max distance from a qrlocation in meters
-    private final FirebaseFirestore db;
-    private final CollectionReference qrCodesReference;
-    private final CollectionReference usersReference;
-    private static final String locationPrompt = "LocationPrompt";
     private String qrCodeID;
-    private FirebaseQueryAssistant firebaseQueryAssistant;
     private boolean showPoints = false;
     private QRCode savedQR = null;
 
@@ -140,7 +134,6 @@ public class CameraFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         scanCode(); // Start scanning a QR code
     }
-
 
 
     /**
@@ -239,10 +232,31 @@ public class CameraFragment extends Fragment {
 
                             Log.d(locationPrompt, "Latitude: " + latitude + ", Longitude: " + longitude);
 
-                            // Set longitude and latitude and store
+                            // Set longitude and latitude, regional data, and store
+                            Geocoder geocoder = new Geocoder(getActivity().getApplicationContext(), Locale.getDefault());
+                            List<Address> addresses;
+                            try {
+                                // Get more data about the QR Code's location based on latitude and longitude
+                                addresses = geocoder.getFromLocation(latitude, longitude, 1);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            qrCode.setID(latitude, longitude);
                             qrCode.setLatitude(latitude);
                             qrCode.setLongitude(longitude);
-                            qrCode.setID(latitude, longitude);
+
+                            if (!addresses.isEmpty()) {
+                                qrCode.setCountry(addresses.get(0).getCountryName());
+                                qrCode.setAdminArea(addresses.get(0).getAdminArea());
+                                qrCode.setSubAdminArea(addresses.get(0).getSubAdminArea());
+                                qrCode.setLocality(addresses.get(0).getLocality());
+                                qrCode.setSubLocality(addresses.get(0).getSubLocality());
+
+                                String postalCode = addresses.get(0).getPostalCode();
+                                qrCode.setPostalCode(postalCode);
+                                // Convert code to prefix (For most countries this is just the first three digits)
+                                qrCode.setPostalCodePrefix(postalCode.substring(0, 3));
+                            }
                         } else {
                             // Location data is not available
                             Log.d(locationPrompt, "ERROR Location data is not available.");
@@ -389,7 +403,7 @@ public class CameraFragment extends Fragment {
         currentUserDisplayName = Preference.getPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, null);
         currentUserUsername = Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null);
         resizedImageUrl = null; // for some reason resizedImageUrl appears to persist between scans; if you add a QR with a photo, and then immediately add a QR
-                                // without a photo, the second QR will re-use the the photo from the first QR code. Clearing resizedImageUrl here appears to fix this.
+        // without a photo, the second QR will re-use the the photo from the first QR code. Clearing resizedImageUrl here appears to fix this.
 
         photoLauncher = registerForActivityResult( // should be okay to initialize before scanner
                 new ActivityResultContracts.StartActivityForResult(),
@@ -417,11 +431,11 @@ public class CameraFragment extends Fragment {
                 qrCode = new QRCode(resultString);
 
                 //Check if the user already has a QR Code object with this hash value in their collection
-                firebaseQueryAssistant.checkUserHasHash(qrCode, currentUserUsername, new QueryCallbackWithObject() {
+                firebaseQueryAssistant.checkUserHasHash(qrCode, currentUserUsername, new QueryCallbackWithQRCode() {
                     @Override
                     public void queryCompleteCheckObject(boolean hashExists, QRCode qr) {
                         // If user already has this qRCode, alert user that they cannot get the points for the same code again
-                        if (hashExists){
+                        if (hashExists) {
 
                             showPoints = false;
                             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -442,7 +456,7 @@ public class CameraFragment extends Fragment {
                             });
                             AlertDialog alert = builder.create();
                             alert.show();
-                        }else{
+                        } else {
                             System.out.println("HERE2");
                             // If the user does not already have the scanned qRCode in their collection, show points and the ask to take a photo...
                             // Create custom dialog to display QR score
@@ -485,14 +499,14 @@ public class CameraFragment extends Fragment {
         boolean addNewlyScannedQR = true;
 
         // If a user is updating the location reference of a QR Code they already scanned before
-        if(savedQR != null) {
+        if (savedQR != null) {
 
-            // if new version is scanned without location do nothing
+            // If new version is scanned without location do nothing
             if (qrCode.getLatitude() == null) {
                 savedQR = null;
                 addNewlyScannedQR = false;
                 // If the user's new location is the same as the old QR Code's location do nothing
-            }else if((savedQR.getLatitude() != null) && (qrCode.getLatitude() != null)) {
+            } else if ((savedQR.getLatitude() != null) && (qrCode.getLatitude() != null)) {
 
                 android.location.Location.distanceBetween(qrCode.getLatitude(), qrCode.getLongitude(), savedQR.getLatitude(), savedQR.getLongitude(), results);
                 if (results[0] < MAX_RADIUS) {
@@ -502,8 +516,8 @@ public class CameraFragment extends Fragment {
             }
         }
 
-        // Ff the user is updating their scanned qrCode's old location, delete the reference from their account
-        if((savedQR != null) && (addNewlyScannedQR == true)){
+        // If the user is updating their scanned qrCode's old location
+        if ((savedQR != null) && (addNewlyScannedQR)) {
             // Delete the old qrCode reference from the user's collection
             firebaseQueryAssistant.deleteQR(currentUserUsername, savedQR.getID(), new QueryCallback() {
                 @Override
@@ -513,8 +527,8 @@ public class CameraFragment extends Fragment {
             });
         }
         // Executes if the newly scanned QR Code should be added to the database
-        if(addNewlyScannedQR == true){
-             firebaseQueryAssistant.addQR(currentUserUsername, qrCode, resizedImageUrl, MAX_RADIUS);
+        if (addNewlyScannedQR) {
+            firebaseQueryAssistant.addQR(currentUserUsername, qrCode, resizedImageUrl, MAX_RADIUS);
         }
     }
 
@@ -562,4 +576,3 @@ public class CameraFragment extends Fragment {
         return urlFirstHalf + "_504x416" + urlSecondHalf; //TODO probably shouldn't use a string literal; make a constant or something
     }
 }
-

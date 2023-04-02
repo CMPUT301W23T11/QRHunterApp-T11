@@ -16,7 +16,6 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
 import com.example.qrhunterapp_t11.activities.MainActivity;
-import com.example.qrhunterapp_t11.fragments.CameraFragment;
 import com.example.qrhunterapp_t11.fragments.FirebaseQueryAssistant;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
@@ -52,9 +51,6 @@ public class CameraFragmentTest {
     private Solo solo;
     private boolean docExists;
     private SharedPreferences prefs;
-    private QRCode mockQRCode(String valueString) {
-        return new QRCode(valueString);
-    }
     @Rule
     public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
 
@@ -78,6 +74,10 @@ public class CameraFragmentTest {
             assertEquals(testUsername, displayName);
         }
     };
+
+    private QRCode mockQRCode(String valueString) {
+        return new QRCode(valueString);
+    }
 
     /**
      * Runs before all tests and creates solo instance.
@@ -118,73 +118,73 @@ public class CameraFragmentTest {
 
 
         // initial case, both coordinates null, small threshold 30m
-        Assert.assertEquals(true, firebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 30));
+        Assert.assertEquals(true, FirebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 30));
 
         // initial case, both coordinates null, big threshold 5km
-        Assert.assertEquals(true, firebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 5000));
+        Assert.assertEquals(true, FirebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 5000));
 
         // test exact same location small threshold 30m
         qrCode1.setLatitude(37.4219983);
         qrCode1.setLongitude(-122.084);
         qrCode2.setLatitude(37.4219983);
         qrCode2.setLongitude(-122.084);
-        Assert.assertEquals(true, firebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 30));
+        Assert.assertEquals(true, FirebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 30));
 
         // test exact same location big threshold 5km
         qrCode1.setLatitude(37.4219983);
         qrCode1.setLongitude(-122.084);
         qrCode2.setLatitude(37.4219983);
         qrCode2.setLongitude(-122.084);
-        Assert.assertEquals(true, firebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 5000));
+        Assert.assertEquals(true, FirebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 5000));
 
         // test close points, within a small distance threshold 30m
         qrCode1.setLatitude(53.439966);
         qrCode1.setLongitude(-113.567222);
         qrCode2.setLatitude(53.439966);
         qrCode2.setLongitude(-113.567122);
-        Assert.assertEquals(true, firebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 30));
+        Assert.assertEquals(true, FirebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 30));
 
         // test close points, outside a small distance threshold 30m
         qrCode1.setLatitude(53.439966);
         qrCode1.setLongitude(-113.567222);
         qrCode2.setLatitude(53.439966);
         qrCode2.setLongitude(-113.569222);
-        Assert.assertEquals(false, firebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 30));
+        Assert.assertEquals(false, FirebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 30));
 
         // test close points within a big distance threshold 5km
         qrCode1.setLatitude(53.439966);
         qrCode1.setLongitude(-113.567222);
         qrCode2.setLatitude(53.439966);
         qrCode2.setLongitude(-113.567122);
-        Assert.assertEquals(true, firebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 5000));
+        Assert.assertEquals(true, FirebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 5000));
 
         // test far points, outside a small distance threshold 30m
         qrCode1.setLatitude(53.439966);
         qrCode1.setLongitude(-113.567222);
         qrCode2.setLatitude(38.897957);
-        qrCode2.setLongitude( -77.036560);
-        Assert.assertEquals(false, firebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 30));
+        qrCode2.setLongitude(-77.036560);
+        Assert.assertEquals(false, FirebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 30));
 
         // test far points within a big distance threshold 5km
         qrCode1.setLatitude(53.439966);
         qrCode1.setLongitude(-113.567222);
         qrCode2.setLatitude(53.449966);
         qrCode2.setLongitude(-113.567122);
-        Assert.assertEquals(true, firebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 5000));
+        Assert.assertEquals(true, FirebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 5000));
 
         // test far points outside a big distance threshold 5km
         qrCode1.setLatitude(53.439966);
         qrCode1.setLongitude(-113.567222);
         qrCode2.setLatitude(38.897957);
-        qrCode2.setLongitude( -77.036560);
-        Assert.assertEquals(false, firebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 5000));
+        qrCode2.setLongitude(-77.036560);
+        Assert.assertEquals(false, FirebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 5000));
 
         // test a 0 distance threshold
         qrCode1.setLatitude(53.439966);
         qrCode1.setLongitude(-113.567222);
         qrCode2.setLatitude(38.897957);
-        qrCode2.setLongitude( -77.036560);
-        Assert.assertEquals(false, firebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 0));
+        qrCode2.setLongitude(-77.036560);
+        Assert.assertEquals(false, FirebaseQueryAssistant.isSameLocation(qrCode1, qrCode2, 0));
 
     }
 

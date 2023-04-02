@@ -1,30 +1,21 @@
 package com.example.qrhunterapp_t11.fragments;
 
-import static java.security.AccessController.getContext;
-
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
-import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithObject;
+import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithQRCode;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
-import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.Source;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,101 +26,15 @@ import java.util.Map;
  */
 
 public class FirebaseQueryAssistant {
-    private CollectionReference qrCodesReference;
-    private CollectionReference usersReference;
+    private final CollectionReference qrCodesReference;
+    private final CollectionReference usersReference;
     private final FirebaseFirestore db;
 
 
-    public FirebaseQueryAssistant(@NonNull FirebaseFirestore db){
+    public FirebaseQueryAssistant(@NonNull FirebaseFirestore db) {
         this.db = db;
         this.qrCodesReference = db.collection("QRCodes");
         this.usersReference = db.collection("Users");
-    }
-
-    /**
-     * Query database to check if QR code has any comments or not
-     *
-     * @param qrCodeID    QR to check for comments
-     * @param hasComments Callback function
-     */
-    public void hasCommentsCheck(@NonNull String qrCodeID, final @NonNull QueryCallback hasComments) {
-
-        qrCodesReference.document(qrCodeID).collection("commentList")
-                .get()
-                .addOnSuccessListener(qrCodeCommentList ->
-                        hasComments.queryCompleteCheck(!qrCodeCommentList.isEmpty())
-                );
-    }
-
-    /**
-     * Query database to check if user has any QR codes in their collection or not
-     *
-     * @param username Current user's username
-     * @param hasCodes Callback function
-     */
-    public void hasQRCodesCheck(@NonNull String username, final @NonNull QueryCallback hasCodes) {
-
-        usersReference.document(username).collection("User QR Codes")
-                .get()
-                .addOnSuccessListener(userQRCodes ->
-                        hasCodes.queryCompleteCheck(!userQRCodes.isEmpty()));
-    }
-
-    /**
-     * Helper function to check if a user has a QR Code in their collection with the same hash as qr param
-     *
-     * @param qrInput QR Code that is having its hash value checked
-     * @param username  User whose collection is being checked
-     */
-
-    public void checkUserHasHash(@NonNull QRCode qrInput, @NonNull String username, final @NonNull QueryCallbackWithObject docExists) {
-        ArrayList<DocumentReference> listOfUsersReferencedCodes = new ArrayList<DocumentReference>();
-
-        // Retrieve DocumentReferences in the user's QR code collection and store them in an array
-        usersReference.document(username).collection("User QR Codes")
-                .get()
-                .addOnSuccessListener(documentReferences -> {
-                    for (QueryDocumentSnapshot reference : documentReferences) {
-
-                        DocumentReference documentReference = (DocumentReference) reference.get("Reference");
-                        listOfUsersReferencedCodes.add(documentReference);
-                    }
-                    if (!listOfUsersReferencedCodes.isEmpty()) {
-                        // Retrieve matching QR Code data from the QRCodes collection using DocumentReferences
-                        qrCodesReference.whereIn(FieldPath.documentId(), listOfUsersReferencedCodes)
-                                .get()
-                                .addOnSuccessListener(referencedQRDocuments -> {
-                                    boolean hashExists = false;
-                                    QRCode qrOutput = null;
-
-                                    for (QueryDocumentSnapshot referencedQR : referencedQRDocuments) {
-                                        if (referencedQR.get("hash").equals( qrInput.getHash())){
-                                            qrOutput = referencedQR.toObject(QRCode.class);
-                                            hashExists = true;
-                                        }
-                                    }
-                                    docExists.queryCompleteCheckObject(hashExists, qrOutput);
-                                });
-                    }else{
-                        docExists.queryCompleteCheckObject(false, null);
-                    }
-                });
-    }
-
-    /**
-     * Check if the given user has the given QR Code
-     *
-     * @param username      Username to check
-     * @param qrCodeID      QR Code to check
-     * @param userHasQRCode Callback for query
-     * @sources <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
-     */
-    public void checkUserHasQR(@NonNull String qrCodeID, @NonNull String username, final @NonNull QueryCallback userHasQRCode) {
-        usersReference.document(username).collection("User QR Codes").document(qrCodeID)
-                .get()
-                .addOnSuccessListener(userQRCode ->
-                        userHasQRCode.queryCompleteCheck(userQRCode.exists())
-                );
     }
 
     /**
@@ -226,11 +131,97 @@ public class FirebaseQueryAssistant {
     }
 
     /**
-     * @param qrCode           QR code to find matches of in db
+     * Query database to check if QR code has any comments or not
+     *
+     * @param qrCodeID    QR to check for comments
+     * @param hasComments Callback function
+     */
+    public void hasCommentsCheck(@NonNull String qrCodeID, final @NonNull QueryCallback hasComments) {
+
+        qrCodesReference.document(qrCodeID).collection("commentList")
+                .get()
+                .addOnSuccessListener(qrCodeCommentList ->
+                        hasComments.queryCompleteCheck(!qrCodeCommentList.isEmpty())
+                );
+    }
+
+    /**
+     * Query database to check if user has any QR codes in their collection or not
+     *
+     * @param username Current user's username
+     * @param hasCodes Callback function
+     */
+    public void hasQRCodesCheck(@NonNull String username, final @NonNull QueryCallback hasCodes) {
+
+        usersReference.document(username).collection("User QR Codes")
+                .get()
+                .addOnSuccessListener(userQRCodes ->
+                        hasCodes.queryCompleteCheck(!userQRCodes.isEmpty()));
+    }
+
+    /**
+     * Helper function to check if a user has a QR Code in their collection with the same hash as qr param
+     *
+     * @param qrInput  QR Code that is having its hash value checked
+     * @param username User whose collection is being checked
+     */
+
+    public void checkUserHasHash(@NonNull QRCode qrInput, @NonNull String username, final @NonNull QueryCallbackWithQRCode docExists) {
+        ArrayList<DocumentReference> listOfUsersReferencedCodes = new ArrayList<DocumentReference>();
+
+        // Retrieve DocumentReferences in the user's QR code collection and store them in an array
+        usersReference.document(username).collection("User QR Codes")
+                .get()
+                .addOnSuccessListener(documentReferences -> {
+                    for (QueryDocumentSnapshot reference : documentReferences) {
+
+                        DocumentReference documentReference = (DocumentReference) reference.get("Reference");
+                        listOfUsersReferencedCodes.add(documentReference);
+                    }
+                    if (!listOfUsersReferencedCodes.isEmpty()) {
+                        // Retrieve matching QR Code data from the QRCodes collection using DocumentReferences
+                        qrCodesReference.whereIn(FieldPath.documentId(), listOfUsersReferencedCodes)
+                                .get()
+                                .addOnSuccessListener(referencedQRDocuments -> {
+                                    boolean hashExists = false;
+                                    QRCode qrOutput = null;
+
+                                    for (QueryDocumentSnapshot referencedQR : referencedQRDocuments) {
+                                        if (referencedQR.get("hash").equals(qrInput.getHash())) {
+                                            qrOutput = referencedQR.toObject(QRCode.class);
+                                            hashExists = true;
+                                        }
+                                    }
+                                    docExists.queryCompleteCheckObject(hashExists, qrOutput);
+                                });
+                    } else {
+                        docExists.queryCompleteCheckObject(false, null);
+                    }
+                });
+    }
+
+    /**
+     * Check if the given user has the given QR Code
+     *
+     * @param username      Username to check
+     * @param qrCodeID      QR Code to check
+     * @param userHasQRCode Callback for query
+     * @sources <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
+     */
+    public void checkUserHasQR(@NonNull String qrCodeID, @NonNull String username, final @NonNull QueryCallback userHasQRCode) {
+        usersReference.document(username).collection("User QR Codes").document(qrCodeID)
+                .get()
+                .addOnSuccessListener(userQRCode ->
+                        userHasQRCode.queryCompleteCheck(userQRCode.exists())
+                );
+    }
+
+    /**
+     * @param qrCode       QR code to find matches of in db
      * @param qrCodeExists Query callback
      * @sources <a href="https://firebase.google.com/docs/firestore/query-data/queries#java_6">Firestore documentation</a>
      */
-    public void checkQRCodeExists(QRCode qrCode, double MAX_RADIUS, final @NonNull QueryCallbackWithObject qrCodeExists) {
+    public void checkQRCodeExists(QRCode qrCode, double MAX_RADIUS, final @NonNull QueryCallbackWithQRCode qrCodeExists) {
         String hashValue = qrCode.getHash();
 
         qrCodesReference
@@ -263,10 +254,10 @@ public class FirebaseQueryAssistant {
     /**
      * Adds a QR Code to the database if it does not exist, or gives a reference of it to the user by username.
      *
-     * @param qrCode           QR code to find matches of in db
-     * @param username         Username the qrCode is being added to
-     * @param resizedImageUrl  URL of image the user took of qrCode
-     * @param radius           Maximum radius for two codes to be considered the same object (meters)
+     * @param qrCode          QR code to find matches of in db
+     * @param username        Username the qrCode is being added to
+     * @param resizedImageUrl URL of image the user took of qrCode
+     * @param radius          Maximum radius for two codes to be considered the same object (meters)
      * @sources <a href="https://firebase.google.com/docs/firestore/query-data/queries#java_6">Firestore documentation</a>
      */
     public void addQR(@NonNull String username, @NonNull QRCode qrCode, String resizedImageUrl, @NonNull double radius) {
@@ -275,8 +266,8 @@ public class FirebaseQueryAssistant {
         Map<String, Object> qrCodeRef = new HashMap<>();
 
         // Check if qrCode within location threshold already exists in db in QRCodes collection
-        checkQRCodeExists(qrCode, radius, new QueryCallbackWithObject() {
-            public void queryCompleteCheckObject(boolean qrExists,QRCode dbQR) {
+        checkQRCodeExists(qrCode, radius, new QueryCallbackWithQRCode() {
+            public void queryCompleteCheckObject(boolean qrExists, QRCode dbQR) {
                 qrCodeRef.put("Reference", qrCodesReference.document(qrCodeID));
 
                 // Check if reference to qrCode exists in db in Users collection
@@ -305,6 +296,9 @@ public class FirebaseQueryAssistant {
                         if ((qrExists) && (!qrRefExists)) {
                             qrCodesReference.document(qrCodeID).update("numberOfScans", FieldValue.increment(1));
                         }
+                        HashMap<String, String> user = new HashMap<>();
+                        user.put("username", username);
+                        qrCodesReference.document(qrCodeID).collection("In Collection").document(username).set(user);
                     }
                 });
             }
@@ -322,31 +316,30 @@ public class FirebaseQueryAssistant {
      */
     public void deleteQR(@NonNull String username, @NonNull String qrCodeID, final @NonNull QueryCallback deleted) {
 
-            usersReference.document(username).collection("User QR Codes").document(qrCodeID)
-                    .get()
-                    .addOnSuccessListener(userQRSnapshot -> {
-                        DocumentReference documentReference = (DocumentReference) userQRSnapshot.get("Reference");
-                        assert documentReference != null;
-                        documentReference
-                                .get()
-                                .addOnSuccessListener(qrToDelete -> {
+        usersReference.document(username).collection("User QR Codes").document(qrCodeID)
+                .get()
+                .addOnSuccessListener(userQRSnapshot -> {
+                    DocumentReference documentReference = (DocumentReference) userQRSnapshot.get("Reference");
+                    assert documentReference != null;
+                    documentReference
+                            .get()
+                            .addOnSuccessListener(qrToDelete -> {
 
 
-                                    // Subtract point value of that code from user's total points
-                                    int points = qrToDelete.getLong("points").intValue();
-                                    points = -points;
-                                    usersReference.document(username).update("totalPoints", FieldValue.increment(points));
+                                // Subtract point value of that code from user's total points
+                                int points = qrToDelete.getLong("points").intValue();
+                                points = -points;
+                                usersReference.document(username).update("totalPoints", FieldValue.increment(points));
 
-                                    // Delete code from user's collection
-                                    usersReference.document(username).collection("User QR Codes").document(qrCodeID).delete();
+                                // Delete code from user's collection
+                                usersReference.document(username).collection("User QR Codes").document(qrCodeID).delete();
+                                qrCodesReference.document(qrCodeID).collection("In Collection").document(username).delete();
 
-                                    deleted.queryCompleteCheck(true);
+                                deleted.queryCompleteCheck(true);
 
 
-                                });
-                    });
-        }
+                            });
+                });
+    }
 
 }
-
-

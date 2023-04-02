@@ -41,9 +41,8 @@
         android:backgroundTint="@color/green_fab"
         android:contentDescription="@string/adds_a_qr_code"
         android:src="@drawable/add_icon"
-        app:tint="@color/white"
-        app:layout_anchor="@id/bottomAppBar"
         app:borderWidth="0dp"
-        />
+        app:layout_anchor="@id/bottomAppBar"
+        app:tint="@color/white" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

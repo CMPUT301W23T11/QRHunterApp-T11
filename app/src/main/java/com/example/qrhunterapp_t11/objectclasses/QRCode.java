@@ -22,6 +22,15 @@ public class QRCode {
     private ArrayList<String> faceList;
     private ArrayList<String> photoList;
 
+    private String country;
+    private String adminArea;
+    private String subAdminArea;
+    private String locality;
+    private String subLocality;
+    private String postalCode;
+    private String postalCodePrefix;
+
+
     /**
      * Main QRCode class constructor
      * takes an arbitrary string (supplied by scanning a qr w/ camera) as input and
@@ -44,9 +53,13 @@ public class QRCode {
         this.latitude = null;
         this.longitude = null;
         this.id = this.hash;
-        // if for some reason null doesn't work out, we can fall back on init to 0
-        //this.longitude = Double.valueOf(0);
-        //this.latitude = Double.valueOf(0);
+        this.country = null;
+        this.adminArea = null;
+        this.subAdminArea = null;
+        this.locality = null;
+        this.subLocality = null;
+        this.postalCode = null;
+        this.postalCodePrefix = null;
     }
 
     /**
@@ -131,35 +144,6 @@ public class QRCode {
             grandTotal = (int) Math.pow(10, 8);
         }
         return grandTotal;
-    }
-
-    /**
-     * Getter for QRCode Object's id attribute, used to define uniqueness of QRCode objects
-     * id is used as a key for the firebase database when accessing QRCodes.
-     * default value is the QRCode's hashkey, if location is added
-     * by player, location value is concatenated to create a unique id
-     *
-     * @return id - a string representing a unique instance of a QRCode
-     */
-    @NonNull
-    public String getID() {
-        return id;
-    }
-
-    /**
-     * Setter for QRCode Object's id attribute, used to define uniqueness of QRCode objects
-     * id is used as a key for the firebase database when accessing QRCodes.
-     * default value is the QRCode's hashkey, if location is added
-     * by player, location value is concatenated to create a unique id
-     *
-     * @param latitude  Double representing latitude of where QRCode was captured
-     * @param longitude Double representing longitude of where QRCode was captured
-     * @reference https://docs.oracle.com/javase/tutorial/java/data/converting.html
-     */
-    public void setID(@NonNull Double latitude, @NonNull Double longitude) {
-        String strLat = Double.toString(latitude);
-        String strLong = Double.toString(longitude);
-        this.id = this.hash + strLat + strLong;
     }
 
     /**
@@ -282,6 +266,35 @@ public class QRCode {
     }
 
     /**
+     * Getter for QRCode Object's id attribute, used to define uniqueness of QRCode objects
+     * id is used as a key for the firebase database when accessing QRCodes.
+     * default value is the QRCode's hashkey, if location is added
+     * by player, location value is concatenated to create a unique id
+     *
+     * @return id - a string representing a unique instance of a QRCode
+     */
+    @NonNull
+    public String getID() {
+        return id;
+    }
+
+    /**
+     * Setter for QRCode Object's id attribute, used to define uniqueness of QRCode objects
+     * id is used as a key for the firebase database when accessing QRCodes.
+     * default value is the QRCode's hashkey, if location is added
+     * by player, location value is concatenated to create a unique id
+     *
+     * @param latitude  Double representing latitude of where QRCode was captured
+     * @param longitude Double representing longitude of where QRCode was captured
+     * @reference https://docs.oracle.com/javase/tutorial/java/data/converting.html
+     */
+    public void setID(@NonNull Double latitude, @NonNull Double longitude) {
+        String strLat = Double.toString(latitude);
+        String strLong = Double.toString(longitude);
+        this.id = this.hash + strLat + strLong;
+    }
+
+    /**
      * Getter for QRCode's points attribute
      *
      * @return points - integer amount of points
@@ -366,9 +379,70 @@ public class QRCode {
      *
      * @return faceList - An ArrayList containing information to create face visual display
      */
+
+    /**
+     * Bunch of getters and setters for regional data
+     */
     @NonNull
     public ArrayList<String> getFaceList() {
         return faceList;
+    }
+
+    @NonNull
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getAdminArea() {
+        return adminArea;
+    }
+
+    public void setAdminArea(String adminArea) {
+        this.adminArea = adminArea;
+    }
+
+    public String getSubAdminArea() {
+        return subAdminArea;
+    }
+
+    public void setSubAdminArea(String subAdminArea) {
+        this.subAdminArea = subAdminArea;
+    }
+
+    public String getLocality() {
+        return locality;
+    }
+
+    public void setLocality(String locality) {
+        this.locality = locality;
+    }
+
+    public String getSubLocality() {
+        return subLocality;
+    }
+
+    public void setSubLocality(String subLocality) {
+        this.subLocality = subLocality;
+    }
+
+    public String getPostalCode() {
+        return postalCode;
+    }
+
+    public void setPostalCode(String postalCode) {
+        this.postalCode = postalCode;
+    }
+
+    public String getPostalCodePrefix() {
+        return postalCodePrefix;
+    }
+
+    public void setPostalCodePrefix(String postalCodePrefix) {
+        this.postalCodePrefix = postalCodePrefix;
     }
 
 

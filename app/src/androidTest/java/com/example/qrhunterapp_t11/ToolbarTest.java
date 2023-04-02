@@ -2,7 +2,6 @@ package com.example.qrhunterapp_t11;
 
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
@@ -37,8 +36,8 @@ public class ToolbarTest {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");
     private final Random rand = new Random();
-    private Solo solo;
     private final String testUsername = "testUser" + rand.nextInt(1000000);
+    private Solo solo;
     private SharedPreferences prefs;
     @Rule
     public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
@@ -298,7 +297,7 @@ public class ToolbarTest {
 
         // checks that the map button works
         solo.clickOnView(solo.getView(R.id.map));
-        assertTrue(solo.waitForText("Search location",1, 26000));
+        assertTrue(solo.waitForText("Search location", 1, 26000));
 
     }
 

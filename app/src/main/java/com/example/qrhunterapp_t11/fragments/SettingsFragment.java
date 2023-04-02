@@ -1,9 +1,7 @@
 package com.example.qrhunterapp_t11.fragments;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,19 +42,19 @@ import java.util.regex.Pattern;
 public class SettingsFragment extends Fragment {
 
     private final CollectionReference usersReference;
-    private final CollectionReference qrCodeReference;
+    private final CollectionReference qrCodesReference;
     private EditText usernameEditText;
     private EditText emailEditText;
     private String usernameString;
     private String emailString;
-   // private static final String PREFS_CURRENT_USER_EMAIL = "currentUserEmail";
+    // private static final String PREFS_CURRENT_USER_EMAIL = "currentUserEmail";
     //private static final String PREFS_CURRENT_USER_DISPLAY_NAME = "currentUserDisplayName";
     //private static final String DATABASE_DISPLAY_NAME_FIELD = "displayName";
     //private SharedPreferences prefs;
 
     public SettingsFragment(@NonNull FirebaseFirestore db) {
         this.usersReference = db.collection("Users");
-        this.qrCodeReference = db.collection("QRCodes");
+        this.qrCodesReference = db.collection("QRCodes");
     }
 
     @NonNull
@@ -235,7 +233,8 @@ public class SettingsFragment extends Fragment {
                     if (!userCommentedListRef.isEmpty()) {
 
                         // Retrieve matching QR Code data from the QRCodes collection using DocumentReferences
-                        qrCodeReference.whereIn(FieldPath.documentId(), userCommentedListRef)
+                        qrCodesReference
+                                .whereIn(FieldPath.documentId(), userCommentedListRef)
                                 .get()
                                 .addOnSuccessListener(referencedQRDocuments -> {
                                     for (QueryDocumentSnapshot referencedQR : referencedQRDocuments) {

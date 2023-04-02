@@ -4,8 +4,8 @@
     android:id="@+id/nested_scroll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="@color/background">
+    android:background="@color/background"
+    android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -131,7 +131,6 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-
         </androidx.appcompat.widget.LinearLayoutCompat>
 
         <androidx.appcompat.widget.LinearLayoutCompat
@@ -142,9 +141,7 @@
             app:layout_constraintTop_toBottomOf="@+id/linearLayoutCompat">
 
 
-
         </androidx.appcompat.widget.LinearLayoutCompat>
-
 
 
         <androidx.appcompat.widget.LinearLayoutCompat
@@ -152,10 +149,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:layout_marginTop="15dp"
             android:layout_margin="15dp"
-            android:padding = "5dp"
+            android:layout_marginTop="15dp"
             android:orientation="vertical"
+            android:padding="5dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.448"
             app:layout_constraintStart_toStartOf="parent"
@@ -165,8 +162,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/lato_bold"
-                android:text="PHOTOS"
                 android:padding="5dp"
+                android:text="PHOTOS"
                 android:textAlignment="center"
                 android:textColor="@color/headers"
                 android:textSize="18sp"
@@ -189,9 +186,9 @@
 
                 <TextView
                     android:id="@+id/numeratorTV"
-                    android:fontFamily="@font/lato"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/lato"
                     android:padding="3dp"
                     android:text="0"
                     android:textColor="#000000"
@@ -203,9 +200,9 @@
 
                 <TextView
                     android:id="@+id/fraction"
-                    android:fontFamily="@font/lato"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/lato"
                     android:padding="3dp"
                     android:text="/"
                     android:textColor="#000000"
@@ -216,9 +213,9 @@
 
                 <TextView
                     android:id="@+id/denominatorTV"
-                    android:fontFamily="@font/lato"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/lato"
                     android:padding="3dp"
                     android:text="0"
                     android:textColor="#000000"
@@ -229,11 +226,7 @@
             </LinearLayout>
 
 
-
-
-
         </androidx.appcompat.widget.LinearLayoutCompat>
-
 
 
         <androidx.appcompat.widget.LinearLayoutCompat
@@ -270,8 +263,8 @@
             android:autofillHints=""
             android:background="@drawable/comment_box"
             android:ems="10"
-            android:hint="@string/edittext_add_comment"
             android:fontFamily="@font/lato_light"
+            android:hint="@string/edittext_add_comment"
             android:inputType="textPersonName"
             android:padding="10dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -290,4 +283,4 @@
             app:srcCompat="@drawable/send_button" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.core.widget.NestedScrollView >
+</androidx.core.widget.NestedScrollView>

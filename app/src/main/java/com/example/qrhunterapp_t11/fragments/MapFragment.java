@@ -61,7 +61,6 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -76,12 +75,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
     public static final int permissionsRequestAccessFineLocation = 9003;
     public static final int permissionsRequestAccessCoarseLocation = 9004;
     public static final int AUTOCOMPLETE_REQUEST_CODE = 1;
+    private static final String TAG = "MapFragment";
+    private final CollectionReference qrCodeRef;
+    private final CollectionReference userRef;
     private GoogleMap mMap;
     private boolean mLocationPermissionGranted = false;
     private FloatingActionButton searchButton;
-    private final CollectionReference qrCodeRef;
-    private final CollectionReference userRef;
-    private static final String TAG = "MapFragment";
     private RectangularBounds rectangularBounds;
 
     public MapFragment(@NonNull FirebaseFirestore db) {
@@ -276,7 +275,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
             Log.d(TAG, "myLocationPermissionGranted");
             try {
                 mMap.setMyLocationEnabled(true);
-                mMap.getUiSettings().setMyLocationButtonEnabled(false);
+                mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
                 FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
                 fusedLocationClient.getLastLocation()

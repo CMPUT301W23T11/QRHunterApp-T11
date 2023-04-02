@@ -17,7 +17,7 @@ public class CommentTest {
     @Test
     public void testGetSetCommentString() {
         Comment comment = mockComment("Hello", "Epic Gamer", "user99");
-        Assertions.assertEquals( "Hello" , comment.getCommentString());
+        Assertions.assertEquals("Hello", comment.getCommentString());
 
         // test set empty string
         comment.setCommentString("");
