@@ -619,6 +619,7 @@ public class CameraFragment extends Fragment {
                             usersReference.document(currentUserUsername).collection("User QR Codes").document(qrCodeID).set(qrCodeRef);
                             usersReference.document(currentUserUsername).update("totalScans", FieldValue.increment(1));
                             usersReference.document(currentUserUsername).update("totalPoints", FieldValue.increment(qrCode.getPoints()));
+                            qrCodesReference.document(qrCodeID).collection("In Collections").document(currentUserUsername).set(userReference);
                             if (resizedImageUrl != null) {
                                 qrCodesReference.document(qrCodeID).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
                                 //QRCodesReference.document(QRCodeId).update("photoList", FieldValue.arrayRemove(resizedImageUrl));
