@@ -59,7 +59,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Everything to do with google maps
@@ -77,11 +80,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
     private boolean mLocationPermissionGranted = false;
     private FloatingActionButton searchButton;
     private final CollectionReference qrCodeRef;
+    private final CollectionReference userRef;
     private static final String TAG = "MapFragment";
     private RectangularBounds rectangularBounds;
 
     public MapFragment(@NonNull FirebaseFirestore db) {
         this.qrCodeRef = db.collection("QRCodes");
+        this.userRef = db.collection("Users");
     }
 
     /**
@@ -302,12 +307,40 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
 
         BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(bitmap);
 
-        // Add markers for each QRCode
-        qrCodeRef
-                .get()
-                .addOnSuccessListener(qrCodes -> {
+//        // Add markers for each QRCode
+//        qrCodeRef
+//                .get()
+//                .addOnSuccessListener(qrCodes -> {
+//
+//                    for (QueryDocumentSnapshot qrCode : qrCodes) {
+//                        Double latitude = qrCode.getDouble("latitude");
+//                        Double longitude = qrCode.getDouble("longitude");
+//                        if (latitude != null && longitude != null) {
+//                            LatLng location = new LatLng(latitude, longitude);
+//                            Marker marker = mMap.addMarker(new MarkerOptions()
+//                                    .position(location)
+//                                    .title(qrCode.getId())
+//                                    .icon(icon));  // Use the custom icon
+//                            marker.setTag(qrCode.toObject(QRCode.class)); // Set QRCode object as the marker's tag
+//                        }
+//                    }
+//                });
 
-                    for (QueryDocumentSnapshot qrCode : qrCodes) {
+        // Retrieve all QRCode documents
+        qrCodeRef.get().addOnSuccessListener(qrCodes -> {
+            Set<String> referencedQRCodeIds = new HashSet<>();
+            // Retrieve all User QR Code documents and add their referenced QR code IDs to the set
+            userRef.document(userId).collection("User QR Codes").get().addOnSuccessListener(userQrCodes -> {
+                for (QueryDocumentSnapshot userQrCode : userQrCodes) {
+                    Map<String, Object> qrCodeRefMap = (Map<String, Object>) userQrCode.getData().get("qrCodeRef");
+                    if (qrCodeRefMap != null) {
+                        String qrCodeId = (String) qrCodeRefMap.get("documentId");
+                        referencedQRCodeIds.add(qrCodeId);
+                    }
+                }
+                // Add markers for each QRCode that is still being referenced by at least one user
+                for (QueryDocumentSnapshot qrCode : qrCodes) {
+                    if (referencedQRCodeIds.contains(qrCode.getId())) {
                         Double latitude = qrCode.getDouble("latitude");
                         Double longitude = qrCode.getDouble("longitude");
                         if (latitude != null && longitude != null) {
@@ -319,7 +352,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                             marker.setTag(qrCode.toObject(QRCode.class)); // Set QRCode object as the marker's tag
                         }
                     }
-                });
+                }
+            });
+        });
+
 
         // OnMarkerClickListener to show the QRCodeView dialog fragment when a marker is clicked
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
