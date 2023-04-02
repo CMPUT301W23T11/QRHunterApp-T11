@@ -63,7 +63,6 @@ import java.util.List;
 
 /**
  * Everything to do with google maps
- * Asks for location permissions and zooms in on current location.
  *
  * @author Daniel, Afra
  */
