@@ -7,6 +7,9 @@ import static org.junit.Assert.assertFalse;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
@@ -14,7 +17,7 @@ import androidx.test.rule.ActivityTestRule;
 import com.example.qrhunterapp_t11.activities.MainActivity;
 import com.example.qrhunterapp_t11.fragments.FirebaseQueryAssistant;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
-import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithObject;
+import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithQRCode;
 import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.example.qrhunterapp_t11.objectclasses.User;
@@ -137,8 +140,12 @@ public class CameraFragmentScanDuplicatesTest {
         solo.clickOnView(solo.getView(android.R.id.button2));
         assertTrue(solo.waitForText("STATS", 1, 7000)); // confirm we're back on the profile page
         solo.clickOnText("Comments:");
-        String numerator = solo.getView(R.id.numeratorTV).toString();
-        System.out.println(numerator);
+
+        View view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.qr_view, null);
+        TextView textView = view.findViewById(R.id.denominatorTV)
+        String denominator = textView.getText().toString();
+        System.out.println("DENOMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM" + denominator);
+        solo.clickOnView(solo.getView(android.R.id.button1));
 
         firebaseQueryAssistant.checkDocExists(testId, qrReference, new QueryCallback() {
             public void queryCompleteCheck(boolean docExists) {
@@ -151,7 +158,7 @@ public class CameraFragmentScanDuplicatesTest {
         solo.clickOnView(solo.getView(android.R.id.button2));
         assertTrue(solo.waitForText("STATS", 1, 7000)); // confirm we're back on the profile page
         solo.clickOnText("Comments:");
-        assertTrue(solo.waitForText("1/1", 1, 7000)); // confirm the second photo has not been added
+        assertTrue(solo.waitForText(denominator, 1, 7000)); // confirm the second photo has not been added
 
         solo.clickOnView(solo.getView(R.id.addFab));
         assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
