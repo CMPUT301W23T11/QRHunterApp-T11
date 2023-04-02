@@ -7,6 +7,10 @@ import com.example.qrhunterapp_t11.objectclasses.Comment;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+/**
+ * This Test class is to verify the methods of the Comment object run as expected.
+ */
+
 public class CommentTest {
 
 

@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * This Test class is to verify the methods of the QRCode object run as expected.
+ * This Test class is to verify the methods of the User object run as expected.
  */
 
 public class UserTest {

@@ -266,4 +266,180 @@ public class QRCodeTest {
         QRCode qrCode = mockQRCode("BFG5DGW54\n");
         Assertions.assertEquals(1, qrCode.getNumberOfScans());
     }
+
+    @Test
+    public void testGetSetCountry() {
+        // test initial state
+        QRCode qrCode = mockQRCode("BFG5DGW54\n");
+        Assertions.assertEquals(null, qrCode.getCountry());
+
+        // test empty string
+        qrCode.setCountry("");
+        Assertions.assertEquals("", qrCode.getCountry());
+
+        // case realistic
+        qrCode.setCountry("Zimbabwe");
+        Assertions.assertEquals("Zimbabwe", qrCode.getCountry());
+
+        // case set emojis
+        qrCode.setCountry("😭😭😭😭😭😭😭😭😭😭😭");
+        Assertions.assertEquals("😭😭😭😭😭😭😭😭😭😭😭", qrCode.getCountry());
+
+        // case long string w/ symbols
+        qrCode.setCountry("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0");
+        Assertions.assertEquals("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0", qrCode.getCountry());
+
+
+    }
+
+    @Test
+    public void testGetSetAdminArea() {
+        // test initial state
+        QRCode qrCode = mockQRCode("BFG5DGW54\n");
+        Assertions.assertEquals(null, qrCode.getAdminArea());
+
+        // test empty string
+        qrCode.setAdminArea("");
+        Assertions.assertEquals("", qrCode.getAdminArea());
+
+        // case realistic
+        qrCode.setAdminArea("Zimbabwe");
+        Assertions.assertEquals("Zimbabwe", qrCode.getAdminArea());
+
+        // case set emojis
+        qrCode.setAdminArea("😭😭😭😭😭😭😭😭😭😭😭");
+        Assertions.assertEquals("😭😭😭😭😭😭😭😭😭😭😭", qrCode.getAdminArea());
+
+        // case long string w/ symbols
+        qrCode.setAdminArea("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0");
+        Assertions.assertEquals("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0", qrCode.getAdminArea());
+
+    }
+
+
+
+    @Test
+    public void testGetSetSubAdminArea() {
+        // test initial state
+        QRCode qrCode = mockQRCode("BFG5DGW54\n");
+        Assertions.assertEquals(null, qrCode.getSubAdminArea());
+
+        // test empty string
+        qrCode.setSubAdminArea("");
+        Assertions.assertEquals("", qrCode.getSubAdminArea());
+
+        // case realistic
+        qrCode.setSubAdminArea("Zimbabwe");
+        Assertions.assertEquals("Zimbabwe", qrCode.getSubAdminArea());
+
+        // case set emojis
+        qrCode.setSubAdminArea("😭😭😭😭😭😭😭😭😭😭😭");
+        Assertions.assertEquals("😭😭😭😭😭😭😭😭😭😭😭", qrCode.getSubAdminArea());
+
+        // case long string w/ symbols
+        qrCode.setSubAdminArea("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0");
+        Assertions.assertEquals("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0", qrCode.getSubAdminArea());
+
+    }
+
+
+    @Test
+    public void testGetSetLocality() {
+        // test initial state
+        QRCode qrCode = mockQRCode("BFG5DGW54\n");
+        Assertions.assertEquals(null, qrCode.getLocality());
+
+        // test empty string
+        qrCode.setLocality("");
+        Assertions.assertEquals("", qrCode.getLocality());
+
+        // case realistic
+        qrCode.setLocality("Zimbabwe");
+        Assertions.assertEquals("Zimbabwe", qrCode.getLocality());
+
+        // case set emojis
+        qrCode.setLocality("😭😭😭😭😭😭😭😭😭😭😭");
+        Assertions.assertEquals("😭😭😭😭😭😭😭😭😭😭😭", qrCode.getLocality());
+
+        // case long string w/ symbols
+        qrCode.setLocality("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0");
+        Assertions.assertEquals("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0", qrCode.getLocality());
+
+    }
+
+
+    @Test
+    public void testGetSetSubLocality() {
+        // test initial state
+        QRCode qrCode = mockQRCode("BFG5DGW54\n");
+        Assertions.assertEquals(null, qrCode.getSubLocality());
+
+        // test empty string
+        qrCode.setSubLocality("");
+        Assertions.assertEquals("", qrCode.getSubLocality());
+
+        // case realistic
+        qrCode.setSubLocality("Zimbabwe");
+        Assertions.assertEquals("Zimbabwe", qrCode.getSubLocality());
+
+        // case set emojis
+        qrCode.setSubLocality("😭😭😭😭😭😭😭😭😭😭😭");
+        Assertions.assertEquals("😭😭😭😭😭😭😭😭😭😭😭", qrCode.getSubLocality());
+
+        // case long string w/ symbols
+        qrCode.setSubLocality("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0");
+        Assertions.assertEquals("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0", qrCode.getSubLocality());
+
+    }
+
+
+
+    @Test
+    public void testGetSetPostalCode() {
+        // test initial state
+        QRCode qrCode = mockQRCode("BFG5DGW54\n");
+        Assertions.assertEquals(null, qrCode.getPostalCode());
+
+        // test empty string
+        qrCode.setPostalCode("");
+        Assertions.assertEquals("", qrCode.getPostalCode());
+
+        // case realistic
+        qrCode.setPostalCode("T6W 0L7");
+        Assertions.assertEquals("T6W 0L7", qrCode.getPostalCode());
+
+        // case set emojis
+        qrCode.setPostalCode("😭😭😭😭😭😭😭😭😭😭😭");
+        Assertions.assertEquals("😭😭😭😭😭😭😭😭😭😭😭", qrCode.getPostalCode());
+
+        // case long string w/ symbols
+        qrCode.setPostalCode("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0");
+        Assertions.assertEquals("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0", qrCode.getPostalCode());
+
+      }
+
+     @Test
+    public void testSetPostalCodePrefix() {
+         // test initial state
+         QRCode qrCode = mockQRCode("BFG5DGW54\n");
+         Assertions.assertEquals(null, qrCode.getPostalCodePrefix());
+
+         // test empty string
+         qrCode.setPostalCodePrefix("");
+         Assertions.assertEquals("", qrCode.getPostalCodePrefix());
+
+         // case realistic
+         qrCode.setPostalCodePrefix("T6W");
+         Assertions.assertEquals("T6W", qrCode.getPostalCodePrefix());
+
+         // case set emojis
+         qrCode.setPostalCodePrefix("😭😭😭😭😭😭😭😭😭😭😭");
+         Assertions.assertEquals("😭😭😭😭😭😭😭😭😭😭😭", qrCode.getPostalCodePrefix());
+
+         // case long string w/ symbols
+         qrCode.setPostalCodePrefix("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0");
+         Assertions.assertEquals("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0", qrCode.getPostalCodePrefix());
+
+     }
+
 }
