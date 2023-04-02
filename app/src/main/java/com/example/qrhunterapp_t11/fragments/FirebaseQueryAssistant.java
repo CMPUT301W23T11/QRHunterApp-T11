@@ -16,6 +16,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.Source;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,8 +28,8 @@ import java.util.Map;
  */
 
 public class FirebaseQueryAssistant {
-    private final CollectionReference qrCodesReference;
-    private final CollectionReference usersReference;
+    private CollectionReference qrCodesReference;
+    private CollectionReference usersReference;
     private final FirebaseFirestore db;
 
 
@@ -75,8 +77,6 @@ public class FirebaseQueryAssistant {
 
     public void checkUserHasHash(@NonNull QRCode qrInput, @NonNull String username, final @NonNull QueryCallbackWithObject docExists) {
         ArrayList<DocumentReference> listOfUsersReferencedCodes = new ArrayList<DocumentReference>();
-        System.out.println("HERE1query");
-
 
         // Retrieve DocumentReferences in the user's QR code collection and store them in an array
         usersReference.document(username).collection("User QR Codes")
@@ -262,7 +262,7 @@ public class FirebaseQueryAssistant {
      * @param radius          Maximum radius for two codes to be considered the same object (meters)
      * @sources <a href="https://firebase.google.com/docs/firestore/query-data/queries#java_6">Firestore documentation</a>
      */
-    public void addQR(@NonNull String username, @NonNull QRCode qrCode, String resizedImageUrl, double radius) {
+    public void addQR(@NonNull String username, @NonNull QRCode qrCode, String resizedImageUrl, @NonNull double radius) {
         String qrCodeID = qrCode.getID();
 
         Map<String, Object> qrCodeRef = new HashMap<>();
@@ -321,13 +321,12 @@ public class FirebaseQueryAssistant {
         usersReference.document(username).collection("User QR Codes").document(qrCodeID)
                 .get()
                 .addOnSuccessListener(userQRSnapshot -> {
-                    System.out.println("HERE3query");
                     DocumentReference documentReference = (DocumentReference) userQRSnapshot.get("Reference");
                     assert documentReference != null;
                     documentReference
                             .get()
                             .addOnSuccessListener(qrToDelete -> {
-                                System.out.println("HERE4query");
+
 
                                 // Subtract point value of that code from user's total points
                                 int points = qrToDelete.getLong("points").intValue();
@@ -339,8 +338,10 @@ public class FirebaseQueryAssistant {
                                 qrCodesReference.document(qrCodeID).collection("In Collection").document(username).delete();
 
                                 deleted.queryCompleteCheck(true);
-                                System.out.println("HERE5query");
+
+
                             });
                 });
     }
+
 }

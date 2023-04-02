@@ -23,6 +23,7 @@ import com.example.qrhunterapp_t11.adapters.QRCodeAdapter;
 import com.example.qrhunterapp_t11.interfaces.OnItemClickListener;
 import com.example.qrhunterapp_t11.interfaces.OnItemLongClickListener;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
+import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.CollectionReference;
@@ -62,7 +63,7 @@ public class ProfileFragment extends Fragment {
     private final String username;
     private final String displayName;
     private FirebaseQueryAssistant firebaseQueryAssistant;
-    private SharedPreferences prefs;
+    //private SharedPreferences prefs;
 
     /**
      * Constructor for profile fragment.
@@ -96,7 +97,7 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        //prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         TextView displayNameTextView = view.findViewById(R.id.profile_name);
         displayNameTextView.setText(displayName);
@@ -104,7 +105,7 @@ public class ProfileFragment extends Fragment {
         Button backButton = view.findViewById(R.id.profile_back_button);
 
         // Makes a back button visible if not the current user
-        if (!currentUserCheck(username, prefs)) {
+        if (!currentUserCheck(username)) {
             backButton.setVisibility(View.VISIBLE);
 
             // Takes the user back to the leaderboard screen
@@ -155,7 +156,7 @@ public class ProfileFragment extends Fragment {
                                 @Override
                                 public void onItemLongClick(@NonNull DocumentSnapshot documentSnapshot, int position) {
                                     // Only operable if the profile is the current user
-                                    if (currentUserCheck(username, prefs)) {
+                                    if (currentUserCheck(username)) {
                                         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
                                         String qrCodeID = documentSnapshot.getId();
@@ -271,11 +272,10 @@ public class ProfileFragment extends Fragment {
      * Helper class to check if the current profile is the current user
      *
      * @param username The current profile's username
-     * @param prefs    The SharedPreferences of the app
      * @return A boolean representing if the profile is the current user
      */
-    public boolean currentUserCheck(@NonNull String username, @NonNull SharedPreferences prefs) {
-        return (username.equals(prefs.getString("currentUserUsername", null)));
+    public boolean currentUserCheck(@NonNull String username) {
+        return (username.equals(Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null)));
     }
 
     /**
