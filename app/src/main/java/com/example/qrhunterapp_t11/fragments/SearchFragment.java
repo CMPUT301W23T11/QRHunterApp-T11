@@ -44,7 +44,6 @@ import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -56,7 +55,6 @@ import com.google.firebase.firestore.QuerySnapshot;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -399,98 +397,156 @@ public class SearchFragment extends Fragment {
      */
     public void filterQueryRegional(@NonNull String placeName, @NonNull String placeType, final @NonNull QueryCallback queryCompleteCheck) {
 
-        // First, retrieve all users
-        usersReference
+        String qrCodeField = null;
+        switch (placeType) {
+            // Country
+            case "COUNTRY":
+                qrCodeField = "country";
+                break;
+
+            // 1st order civil entity below country level, e.g. province/state
+            case "ADMINISTRATIVE_AREA_LEVEL_1":
+                qrCodeField = "adminArea";
+                break;
+
+            // 2nd order civil entity below country level, e.g. county
+            case "ADMINISTRATIVE_AREA_LEVEL_2":
+                qrCodeField = "subAdminArea";
+                break;
+
+            // City or town
+            case "LOCALITY":
+                qrCodeField = "locality";
+                break;
+
+            // 1st order civil entity below locality, e.g. borough/neighborhood
+            case "SUBLOCALITY_LEVEL_1":
+                qrCodeField = "subLocality";
+                break;
+
+            // Postal or zip code prefix
+            case "POSTAL_CODE_PREFIX":
+                qrCodeField = "postalCode";
+                break;
+
+            // Postal or zip code
+            case "POSTAL_CODE":
+                qrCodeField = "postalCodePrefix";
+                break;
+        }
+        System.out.println(qrCodeField + ", " + placeName);
+        assert qrCodeField != null;
+        qrCodesReference
+                .whereEqualTo(qrCodeField, placeName)
+                .orderBy("points", Query.Direction.DESCENDING)
                 .get()
-                .addOnSuccessListener(documentReferenceSnapshots -> {
-                    for (QueryDocumentSnapshot userDocument : documentReferenceSnapshots) {
-                        String username = userDocument.get("username").toString();
-
-                        // The user's current top scoring code
-                        usersTopCodeRegional = null;
-
-                        // For each user, iterate through their collection of QR Codes
-                        usersReference.document(username).collection("User QR Codes")
+                .addOnSuccessListener(qrCodesAtPlace -> {
+                    for (QueryDocumentSnapshot qrCode : qrCodesAtPlace) {
+                        qrCodesReference.document(qrCode.getId()).collection("In Collection")
                                 .get()
-                                .addOnSuccessListener(userQRCodes -> {
+                                .addOnSuccessListener(usersWithQR -> {
+                                    if (!usersWithQR.isEmpty()) {
+                                        System.out.println(usersWithQR.getDocuments());
+                                        queryCompleteCheck.queryCompleteCheck(true);
 
-                                    // Retrieve the location of each of the user's QR Codes
-                                    for (QueryDocumentSnapshot reference : userQRCodes) {
-                                        DocumentReference qrCodeReference = (DocumentReference) reference.get("Reference");
-
-                                        qrCodeReference
-                                                .get()
-                                                .addOnSuccessListener(qrCode -> {
-                                                    if ((qrCode.getDouble("latitude") != null) && (qrCode.getDouble("longitude") != null)) {
-                                                        QRCode currentQRCode = qrCode.toObject(QRCode.class);
-
-                                                        System.out.println(placeName + ", " + placeType);
-                                                        String qrLocationName = null;
-
-                                                        // Depending on the type of region selected, see if QR Code is in that region
-                                                        switch (placeType) {
-                                                            // Country
-                                                            case "COUNTRY":
-                                                                qrLocationName = currentQRCode.getCountry();
-                                                                break;
-
-                                                            // 1st order civil entity below country level, e.g. province/state
-                                                            case "ADMINISTRATIVE_AREA_LEVEL_1":
-                                                                qrLocationName = currentQRCode.getAdminArea();
-                                                                break;
-
-                                                            // 2nd order civil entity below country level, e.g. county
-                                                            case "ADMINISTRATIVE_AREA_LEVEL_2":
-                                                                qrLocationName = currentQRCode.getSubAdminArea();
-                                                                break;
-
-                                                            // City or town
-                                                            case "LOCALITY":
-                                                                qrLocationName = currentQRCode.getLocality();
-                                                                break;
-
-                                                            // 1st order civil entity below locality, e.g. borough/neighborhood
-                                                            case "SUBLOCALITY_LEVEL_1":
-                                                                qrLocationName = currentQRCode.getSubLocality();
-                                                                break;
-
-                                                            // Postal or zip code prefix
-                                                            case "POSTAL_CODE_PREFIX":
-                                                                qrLocationName = currentQRCode.getPostalCodePrefix();
-                                                                break;
-
-                                                            // Postal or zip code
-                                                            case "POSTAL_CODE":
-                                                                qrLocationName = currentQRCode.getPostalCode();
-                                                                break;
-                                                        }
-
-                                                        // If QR Code is in the chosen region, compare its points value and keep it if it is higher
-                                                        if (qrLocationName != null && usersTopCodeRegional != null && qrLocationName.equals(placeName)) {
-                                                            if (currentQRCode.getPoints() >= usersTopCodeRegional.getPoints()) {
-                                                                usersTopCodeRegional = currentQRCode;
-                                                                System.out.println(username + ", " + qrLocationName + ", " + qrCode.getId() + ", " + qrCode.get("points") + ", " + usersTopCodeRegional.getID());
-                                                            }
-                                                        } else if (qrLocationName != null && usersTopCodeRegional == null && qrLocationName.equals(placeName)) {
-                                                            usersTopCodeRegional = currentQRCode;
-                                                            System.out.println(username + ", " + qrLocationName + ", " + qrCode.getId() + ", " + qrCode.get("points") + ", " + usersTopCodeRegional.getID());
-                                                        }
-                                                    }
-                                                });
-                                    }
-                                    if (usersTopCodeRegional != null) {
-                                        // This will contain users and their top scoring codes
-                                        HashMap<String, QRCode> usersQRReferences = new HashMap<>();
-                                        usersQRReferences.put(username, usersTopCodeRegional);
                                     }
                                 });
-//                        Query query = usersReference.whereIn(FieldPath.documentId(), usersQRReferences)
-//                                .orderBy("queryField", Query.Direction.DESCENDING);
-//                        leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
-//                                .setQuery(query, User.class)
-//                                .build();
-                        queryCompleteCheck.queryCompleteCheck(true);
                     }
                 });
+
+
+//        // First, retrieve all users
+//        usersReference
+//                .get()
+//                .addOnSuccessListener(documentReferenceSnapshots -> {
+//                    for (QueryDocumentSnapshot userDocument : documentReferenceSnapshots) {
+//                        String username = userDocument.get("username").toString();
+//
+//                        // The user's current top scoring code
+//                        usersTopCodeRegional = null;
+//
+//                        // For each user, iterate through their collection of QR Codes
+//                        usersReference.document(username).collection("User QR Codes")
+//                                .get()
+//                                .addOnSuccessListener(userQRCodes -> {
+//
+//                                    // Retrieve the location of each of the user's QR Codes
+//                                    for (QueryDocumentSnapshot reference : userQRCodes) {
+//                                        DocumentReference qrCodeReference = (DocumentReference) reference.get("Reference");
+//
+//                                        qrCodeReference
+//                                                .get()
+//                                                .addOnSuccessListener(qrCode -> {
+//                                                    if ((qrCode.getDouble("latitude") != null) && (qrCode.getDouble("longitude") != null)) {
+//                                                        QRCode currentQRCode = qrCode.toObject(QRCode.class);
+//
+//                                                        System.out.println(placeName + ", " + placeType);
+//                                                        String qrLocationName = null;
+//
+//                                                        // Depending on the type of region selected, see if QR Code is in that region
+//                                                        switch (placeType) {
+//                                                            // Country
+//                                                            case "COUNTRY":
+//                                                                qrLocationName = currentQRCode.getCountry();
+//                                                                break;
+//
+//                                                            // 1st order civil entity below country level, e.g. province/state
+//                                                            case "ADMINISTRATIVE_AREA_LEVEL_1":
+//                                                                qrLocationName = currentQRCode.getAdminArea();
+//                                                                break;
+//
+//                                                            // 2nd order civil entity below country level, e.g. county
+//                                                            case "ADMINISTRATIVE_AREA_LEVEL_2":
+//                                                                qrLocationName = currentQRCode.getSubAdminArea();
+//                                                                break;
+//
+//                                                            // City or town
+//                                                            case "LOCALITY":
+//                                                                qrLocationName = currentQRCode.getLocality();
+//                                                                break;
+//
+//                                                            // 1st order civil entity below locality, e.g. borough/neighborhood
+//                                                            case "SUBLOCALITY_LEVEL_1":
+//                                                                qrLocationName = currentQRCode.getSubLocality();
+//                                                                break;
+//
+//                                                            // Postal or zip code prefix
+//                                                            case "POSTAL_CODE_PREFIX":
+//                                                                qrLocationName = currentQRCode.getPostalCodePrefix();
+//                                                                break;
+//
+//                                                            // Postal or zip code
+//                                                            case "POSTAL_CODE":
+//                                                                qrLocationName = currentQRCode.getPostalCode();
+//                                                                break;
+//                                                        }
+//
+//                                                        // If QR Code is in the chosen region, compare its points value and keep it if it is higher
+//                                                        if (qrLocationName != null && usersTopCodeRegional != null && qrLocationName.equals(placeName)) {
+//                                                            if (currentQRCode.getPoints() >= usersTopCodeRegional.getPoints()) {
+//                                                                usersTopCodeRegional = currentQRCode;
+//                                                                System.out.println(username + ", " + qrLocationName + ", " + qrCode.getId() + ", " + qrCode.get("points") + ", " + usersTopCodeRegional.getID());
+//                                                            }
+//                                                        } else if (qrLocationName != null && usersTopCodeRegional == null && qrLocationName.equals(placeName)) {
+//                                                            usersTopCodeRegional = currentQRCode;
+//                                                            System.out.println(username + ", " + qrLocationName + ", " + qrCode.getId() + ", " + qrCode.get("points") + ", " + usersTopCodeRegional.getID());
+//                                                        }
+//                                                    }
+//                                                });
+//                                    }
+//                                    if (usersTopCodeRegional != null) {
+//                                        // This will contain users and their top scoring codes
+//                                        HashMap<String, QRCode> usersQRReferences = new HashMap<>();
+//                                        usersQRReferences.put(username, usersTopCodeRegional);
+//                                    }
+//                                });
+////                        Query query = usersReference.whereIn(FieldPath.documentId(), usersQRReferences)
+////                                .orderBy("queryField", Query.Direction.DESCENDING);
+////                        leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
+////                                .setQuery(query, User.class)
+////                                .build();
+//                        queryCompleteCheck.queryCompleteCheck(true);
+//                    }
+//                });
     }
 }
