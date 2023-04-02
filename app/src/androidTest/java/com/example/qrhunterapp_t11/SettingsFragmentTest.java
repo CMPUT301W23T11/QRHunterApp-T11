@@ -5,9 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.widget.EditText;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -206,23 +204,31 @@ public class SettingsFragmentTest {
      * Checks if the given displayName was correctly changed
      */
     public void checkDisplayNameChanged(QRCode qrCode1, QRCode qrCode2, final QueryCallback queryComplete) {
-        usersReference.document(prefs.getString("currentUserUsername", null))
+        usersReference.document(Preference.getPrefsString("currentUserUsername", null))
                 .get()
                 .addOnSuccessListener(user -> {
-                    assertEquals(user.get("displayName"), prefs.getString("currentUserDisplayName", null));
+                    assertEquals(user.get("displayName"), Preference.getPrefsString("currentUserDisplayName", null));
 
                     qrCodesReference.document(qrCode1.getID()).collection("commentList")
                             .get()
                             .addOnSuccessListener(qrCode1Comments -> {
                                 for (QueryDocumentSnapshot comment : qrCode1Comments) {
-                                    System.out.println(comment.getData());
+                                    if (comment.getData().get("username").equals("falseTestUser")) {
+                                        assertEquals(testUsername, comment.getData().get("displayName"));
+                                    } else if (comment.getData().get("username").equals(testUsername)) {
+                                        assertEquals("testUserUnique", comment.getData().get("displayName"));
+                                    }
                                 }
 
                                 qrCodesReference.document(qrCode2.getID()).collection("commentList")
                                         .get()
                                         .addOnSuccessListener(qrCode2Comments -> {
                                             for (QueryDocumentSnapshot comment : qrCode2Comments) {
-                                                System.out.println(comment.getData());
+                                                if (comment.getData().get("username").equals("falseTestUser")) {
+                                                    assertEquals(testUsername, comment.getData().get("displayName"));
+                                                } else if (comment.getData().get("username").equals(testUsername)) {
+                                                    assertEquals("testUserUnique", comment.getData().get("displayName"));
+                                                }
                                             }
 
                                             queryComplete.queryCompleteCheck(true);
