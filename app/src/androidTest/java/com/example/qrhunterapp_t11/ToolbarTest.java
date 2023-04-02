@@ -13,6 +13,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
 import com.example.qrhunterapp_t11.activities.MainActivity;
+import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.User;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -38,7 +39,6 @@ public class ToolbarTest {
     private final Random rand = new Random();
     private final String testUsername = "testUser" + rand.nextInt(1000000);
     private Solo solo;
-    private SharedPreferences prefs;
     @Rule
     public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
 
@@ -46,17 +46,17 @@ public class ToolbarTest {
         @Override
         protected void beforeActivityLaunched() {
             super.beforeActivityLaunched();
-            prefs = getApplicationContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
             String username;
             String displayName;
 
-            prefs.edit().clear().commit();
-            prefs.edit().putBoolean("loggedIn", true).commit();
-            prefs.edit().putString("currentUserUsername", testUsername).commit();
-            prefs.edit().putString("currentUserDisplayName", testUsername).commit();
+            Preference.init(getApplicationContext());
+            Preference.clearPrefs();
+            Preference.setPrefsBool("loggedIn", true);
+            Preference.setPrefsString("currentUserUsername", testUsername);
+            Preference.setPrefsString("currentUserDisplayName", testUsername);
 
-            username = prefs.getString("currentUserUsername", null);
-            displayName = prefs.getString("currentUserDisplayName", null);
+            username = Preference.getPrefsString("currentUserUsername", null);
+            displayName = Preference.getPrefsString("currentUserDisplayName", null);
 
             assertEquals(testUsername, username);
             assertEquals(testUsername, displayName);
@@ -85,8 +85,7 @@ public class ToolbarTest {
     @After
     public final void tearDown() {
         Activity activity = rule.getActivity();
-        prefs = activity.getSharedPreferences("prefs", Context.MODE_PRIVATE);
-        prefs.edit().clear().commit();
+        Preference.clearPrefs();
         usersReference.document(testUsername).delete();
         solo.finishOpenedActivities();
     }
@@ -174,7 +173,10 @@ public class ToolbarTest {
 
         // checks that the map button works
         solo.clickOnView(solo.getView(R.id.map));
-        assertTrue(solo.waitForText("Search location", 1, 26000));
+        solo.sleep(5);
+        solo.clickOnView(solo.getView(R.id.map_search_button));
+        solo.sleep(7);
+        assertTrue(solo.waitForText("Search...", 1, 26000));
 
     }
 
@@ -297,7 +299,10 @@ public class ToolbarTest {
 
         // checks that the map button works
         solo.clickOnView(solo.getView(R.id.map));
-        assertTrue(solo.waitForText("Search location", 1, 26000));
+        solo.sleep(10);
+        solo.clickOnView(solo.getView(R.id.map_search_button));
+        solo.sleep(10);
+        assertTrue(solo.waitForText("Search...", 1, 26000));
 
     }
 
@@ -335,7 +340,10 @@ public class ToolbarTest {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.map));
-        assertTrue(solo.waitForText("Search location", 1, 7000));
+        solo.sleep(10);
+        solo.clickOnView(solo.getView(R.id.map_search_button));
+        solo.sleep(10);
+        assertTrue(solo.waitForText("Search...", 1, 26000));
     }
 
     /**
@@ -348,10 +356,16 @@ public class ToolbarTest {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.map));
-        solo.waitForText("Search location", 1, 8000);
+        solo.sleep(5);
+        solo.clickOnView(solo.getView(R.id.map_search_button));
+        solo.sleep(7);
+        solo.waitForText("Search...", 1, 8000);
 
         solo.clickOnView(solo.getView(R.id.map));
-        assertTrue(solo.waitForText("Search location", 1, 8000));
+        solo.sleep(5);
+        solo.clickOnView(solo.getView(R.id.map_search_button));
+        solo.sleep(7);
+        assertTrue(solo.waitForText("Search...", 1, 8000));
 
     }
 
@@ -384,7 +398,6 @@ public class ToolbarTest {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.map));
-        solo.waitForText("Search location", 1, 4000);
 
         // checks that the profile button works
         solo.clickOnView(solo.getView(R.id.profile));
@@ -402,7 +415,6 @@ public class ToolbarTest {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.map));
-        solo.waitForText("Search location", 1, 7000);
 
         // checks that the search button does nothing yet
         solo.clickOnView(solo.getView(R.id.search));
@@ -421,7 +433,6 @@ public class ToolbarTest {
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
         solo.waitForText("STATS", 1, 4000);
         solo.clickOnView(solo.getView(R.id.map));
-        solo.waitForText("Search location", 1, 7000);
 
         // checks that the add button works
         solo.clickOnView(solo.getView(R.id.addFab));
