@@ -137,7 +137,6 @@ public class CameraFragment extends Fragment {
     }
 
 
-
     /**
      * Function to initialize QR scanner options, and order the QR scanner to start scanning using the CaptureAct.
      *
@@ -247,15 +246,18 @@ public class CameraFragment extends Fragment {
                             qrCode.setLatitude(latitude);
                             qrCode.setLongitude(longitude);
 
-                            qrCode.setCountry(addresses.get(0).getCountryName());
-                            qrCode.setAdminArea(addresses.get(0).getAdminArea());
-                            qrCode.setSubAdminArea(addresses.get(0).getSubAdminArea());
-                            qrCode.setLocality(addresses.get(0).getLocality());
-                            qrCode.setSubLocality(addresses.get(0).getSubLocality());
+                            if (!addresses.isEmpty()) {
+                                qrCode.setCountry(addresses.get(0).getCountryName());
+                                qrCode.setAdminArea(addresses.get(0).getAdminArea());
+                                qrCode.setSubAdminArea(addresses.get(0).getSubAdminArea());
+                                qrCode.setLocality(addresses.get(0).getLocality());
+                                qrCode.setSubLocality(addresses.get(0).getSubLocality());
 
-                            String postalCode = addresses.get(0).getPostalCode();
-                            qrCode.setPostalCode(postalCode);
-                            qrCode.setPostalCodePrefix(postalCode.substring(0, 3));
+                                String postalCode = addresses.get(0).getPostalCode();
+                                qrCode.setPostalCode(postalCode);
+                                // Convert code to prefix (For most countries this is just the first three digits)
+                                qrCode.setPostalCodePrefix(postalCode.substring(0, 3));
+                            }
                         } else {
                             // Location data is not available
                             Log.d(locationPrompt, "ERROR Location data is not available.");
@@ -402,7 +404,7 @@ public class CameraFragment extends Fragment {
         currentUserDisplayName = prefs.getString("currentUserDisplayName", null);
         currentUserUsername = prefs.getString("currentUserUsername", null);
         resizedImageUrl = null; // for some reason resizedImageUrl appears to persist between scans; if you add a QR with a photo, and then immediately add a QR
-                                // without a photo, the second QR will re-use the the photo from the first QR code. Clearing resizedImageUrl here appears to fix this.
+        // without a photo, the second QR will re-use the the photo from the first QR code. Clearing resizedImageUrl here appears to fix this.
 
         photoLauncher = registerForActivityResult( // should be okay to initialize before scanner
                 new ActivityResultContracts.StartActivityForResult(),
@@ -434,7 +436,7 @@ public class CameraFragment extends Fragment {
                     @Override
                     public void queryCompleteCheckObject(boolean hashExists, QRCode qr) {
                         // If user already has this qRCode, alert user that they cannot get the points for the same code again
-                        if (hashExists){
+                        if (hashExists) {
 
                             showPoints = false;
                             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -455,7 +457,7 @@ public class CameraFragment extends Fragment {
                             });
                             AlertDialog alert = builder.create();
                             alert.show();
-                        }else{
+                        } else {
                             System.out.println("HERE2");
                             // If the user does not already have the scanned qRCode in their collection, show points and the ask to take a photo...
                             // Create custom dialog to display QR score
@@ -498,14 +500,14 @@ public class CameraFragment extends Fragment {
         boolean addNewlyScannedQR = true;
 
         // If a user is updating the location reference of a QR Code they already scanned before
-        if(savedQR != null) {
+        if (savedQR != null) {
 
-            // if new version is scanned without location do nothing
+            // If new version is scanned without location do nothing
             if (qrCode.getLatitude() == null) {
                 savedQR = null;
                 addNewlyScannedQR = false;
                 // If the user's new location is the same as the old QR Code's location do nothing
-            }else if((savedQR.getLatitude() != null) && (qrCode.getLatitude() != null)) {
+            } else if ((savedQR.getLatitude() != null) && (qrCode.getLatitude() != null)) {
 
                 android.location.Location.distanceBetween(qrCode.getLatitude(), qrCode.getLongitude(), savedQR.getLatitude(), savedQR.getLongitude(), results);
                 if (results[0] < MAX_RADIUS) {
@@ -516,7 +518,7 @@ public class CameraFragment extends Fragment {
         }
 
         // If the user is updating their scanned qrCode's old location, delete the reference from their account
-        if((savedQR != null) && (addNewlyScannedQR == true)){
+        if ((savedQR != null) && (addNewlyScannedQR == true)) {
             // Delete the old qrCode reference from the user's collection
             firebaseQueryAssistant.deleteQR(currentUserUsername, savedQR.getID(), new QueryCallback() {
                 @Override
@@ -526,8 +528,8 @@ public class CameraFragment extends Fragment {
             });
         }
         // Executes if the newly scanned QR Code should be added to the database
-        if(addNewlyScannedQR == true){
-             firebaseQueryAssistant.addQR(currentUserUsername, qrCode, resizedImageUrl, MAX_RADIUS);
+        if (addNewlyScannedQR == true) {
+            firebaseQueryAssistant.addQR(currentUserUsername, qrCode, resizedImageUrl, MAX_RADIUS);
         }
     }
 

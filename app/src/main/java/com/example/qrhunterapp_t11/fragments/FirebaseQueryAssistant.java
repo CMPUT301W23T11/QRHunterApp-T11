@@ -298,6 +298,7 @@ public class FirebaseQueryAssistant {
                         if ((qrExists) && (!qrRefExists)) {
                             qrCodesReference.document(qrCodeID).update("numberOfScans", FieldValue.increment(1));
                         }
+                        qrCodesReference.document(qrCodeID).collection("In Collections").document(username).set(username);
                     }
                 });
             }
@@ -333,6 +334,7 @@ public class FirebaseQueryAssistant {
 
                                 // Delete code from user's collection
                                 usersReference.document(username).collection("User QR Codes").document(qrCodeID).delete();
+                                qrCodesReference.document(qrCodeID).collection("In Collections").document(username).delete();
 
                                 deleted.queryCompleteCheck(true);
                                 System.out.println("HERE5query");
