@@ -34,6 +34,7 @@ import com.example.qrhunterapp_t11.activities.CaptureAct;
 import com.example.qrhunterapp_t11.activities.TakePhotoActivity;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithObject;
+import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -81,7 +82,7 @@ public class CameraFragment extends Fragment {
     private QRCode qrCode;
     private String imageUrl = null;
     private String resizedImageUrl;
-    private SharedPreferences prefs;
+    //private SharedPreferences prefs;
     private String currentUserDisplayName;
     private String currentUserUsername;
     static final double MAX_RADIUS = 30; // Max distance from a qrlocation in meters
@@ -384,9 +385,9 @@ public class CameraFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
-        currentUserDisplayName = prefs.getString("currentUserDisplayName", null);
-        currentUserUsername = prefs.getString("currentUserUsername", null);
+        //prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        currentUserDisplayName = Preference.getPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, null);
+        currentUserUsername = Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null);
         resizedImageUrl = null; // for some reason resizedImageUrl appears to persist between scans; if you add a QR with a photo, and then immediately add a QR
                                 // without a photo, the second QR will re-use the the photo from the first QR code. Clearing resizedImageUrl here appears to fix this.
 

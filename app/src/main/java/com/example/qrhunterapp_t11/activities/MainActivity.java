@@ -15,6 +15,7 @@ import com.example.qrhunterapp_t11.fragments.MapFragment;
 import com.example.qrhunterapp_t11.fragments.ProfileFragment;
 import com.example.qrhunterapp_t11.fragments.SearchFragment;
 import com.example.qrhunterapp_t11.fragments.SettingsFragment;
+import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -45,9 +46,9 @@ public class MainActivity extends AppCompatActivity {
     private final MapFragment mapFragment = new MapFragment(db);
     private final SearchFragment searchFragment = new SearchFragment(db);
     private int numUsers;
-    private static final String PREFS_CURRENT_USER = "currentUserUsername";
-    private static final String PREFS_CURRENT_USER_DISPLAY_NAME = "currentUserDisplayName";
-    private SharedPreferences prefs;
+    //private static final String PREFS_CURRENT_USER = "currentUserUsername";
+   // private static final String PREFS_CURRENT_USER_DISPLAY_NAME = "currentUserDisplayName";
+    //private SharedPreferences prefs;
 
     /**
      * Called after the activity launches and sets the activity content to the provided layout resource
@@ -63,29 +64,33 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        prefs = this.getSharedPreferences("prefs", Context.MODE_PRIVATE);
-        //prefs.edit().clear().commit(); // ***TOGGLE TO WIPE SHARED PREF ON PHYSICAL***
+        Preference.init(getApplicationContext());
+        //prefs = this.getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         // If the user is logging in for the first time, create a new user
-        if (!prefs.getBoolean("loggedIn", false)) {
+        if (!Preference.getPrefsBool("loggedIn", false)) {
             firstTimeLaunch(new MainActivityCallback() {
                 public void setNumUsers(int numUsers) {
 
                     String username = "user" + (numUsers + 1);
 
-                    prefs.edit().putString(PREFS_CURRENT_USER, username).commit();
-                    prefs.edit().putString(PREFS_CURRENT_USER_DISPLAY_NAME, username).commit();
-                    prefs.edit().putBoolean("loggedIn", true).commit();
+                    Preference.setPrefsString(Preference.PREFS_CURRENT_USER, username);
+                    Preference.setPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, username);
+                    Preference.setPrefsBool("loggedIn", true);
+
+                    //prefs.edit().putString(PREFS_CURRENT_USER, username).commit();
+                    //prefs.edit().putString(PREFS_CURRENT_USER_DISPLAY_NAME, username).commit();
+                    //prefs.edit().putBoolean("loggedIn", true).commit();
 
                     User user = new User(username, username, 0, 0, 0, "No email");
 
                     usersReference.document(username).set(user);
-                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString(PREFS_CURRENT_USER, null), prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null))).commit();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null), Preference.getPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, null))).commit();
 
                 }
             });
         } else {
-            getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString(PREFS_CURRENT_USER, null), prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null))).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null), Preference.getPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, null))).commit();
 
         }
 
@@ -107,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         bottomToolbar.setOnItemSelectedListener(item -> {
             switch (item.getTitle().toString()) {
                 case "Profile": // Changes the main screen to the profile
-                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, prefs.getString(PREFS_CURRENT_USER, null), prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null))).commit();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null), Preference.getPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, null))).commit();
 
                     return true;
 

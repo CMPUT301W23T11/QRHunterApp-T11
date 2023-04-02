@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
+import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -48,10 +49,10 @@ public class SettingsFragment extends Fragment {
     private EditText emailEditText;
     private String usernameString;
     private String emailString;
-    private static final String PREFS_CURRENT_USER_EMAIL = "currentUserEmail";
-    private static final String PREFS_CURRENT_USER_DISPLAY_NAME = "currentUserDisplayName";
-    private static final String DATABASE_DISPLAY_NAME_FIELD = "displayName";
-    private SharedPreferences prefs;
+   // private static final String PREFS_CURRENT_USER_EMAIL = "currentUserEmail";
+    //private static final String PREFS_CURRENT_USER_DISPLAY_NAME = "currentUserDisplayName";
+    //private static final String DATABASE_DISPLAY_NAME_FIELD = "displayName";
+    //private SharedPreferences prefs;
 
     public SettingsFragment(@NonNull FirebaseFirestore db) {
         this.usersReference = db.collection("Users");
@@ -64,15 +65,15 @@ public class SettingsFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
-        prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        //prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         usernameEditText = view.findViewById(R.id.username_edit_edittext);
         emailEditText = view.findViewById(R.id.email_edit_edittext);
         Button confirmUsernameButton = view.findViewById(R.id.change_username_button);
         Button confirmEmailButton = view.findViewById(R.id.change_email_button);
 
-        usernameString = prefs.getString(PREFS_CURRENT_USER_DISPLAY_NAME, null);
-        emailString = prefs.getString(PREFS_CURRENT_USER_EMAIL, null);
+        usernameString = Preference.getPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, null);
+        emailString = Preference.getPrefsString(Preference.PREFS_CURRENT_USER_EMAIL, null);
         usernameEditText.setText(usernameString);
         emailEditText.setText(emailString);
 
@@ -93,11 +94,11 @@ public class SettingsFragment extends Fragment {
                                 .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
-                                        String user = prefs.getString("currentUserUsername", null);
+                                        String user = Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null);
 
-                                        usersReference.document(user).update(DATABASE_DISPLAY_NAME_FIELD, usernameString);
+                                        usersReference.document(user).update(Preference.DATABASE_DISPLAY_NAME_FIELD, usernameString);
 
-                                        prefs.edit().putString(PREFS_CURRENT_USER_DISPLAY_NAME, usernameString).commit();
+                                        Preference.setPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, usernameString);
 
                                         // Update username in all user's previous comments
                                         updateUserComments(user, usernameString, new QueryCallback() {
@@ -128,7 +129,7 @@ public class SettingsFragment extends Fragment {
                         .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                String user = prefs.getString("currentUserUsername", null);
+                                String user = Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null);
 
                                 if (!Objects.equals(emailString, "")) {
                                     usersReference.document(user).update("email", emailString);
@@ -136,7 +137,8 @@ public class SettingsFragment extends Fragment {
                                     usersReference.document(user).update("email", null);
                                 }
 
-                                prefs.edit().putString(PREFS_CURRENT_USER_EMAIL, emailString).commit();
+                                //prefs.edit().putString(PREFS_CURRENT_USER_EMAIL, emailString).commit();
+                                Preference.setPrefsString(Preference.PREFS_CURRENT_USER_EMAIL, emailString);
 
                             }
                         })
@@ -196,7 +198,7 @@ public class SettingsFragment extends Fragment {
         // Check if username exists already
         else {
             usersReference
-                    .whereEqualTo(DATABASE_DISPLAY_NAME_FIELD, usernameString)
+                    .whereEqualTo(Preference.DATABASE_DISPLAY_NAME_FIELD, usernameString)
                     .get()
                     .addOnSuccessListener(queryResult -> {
                         if (queryResult.isEmpty()) {
@@ -244,13 +246,13 @@ public class SettingsFragment extends Fragment {
                                         // Find exactly which comments need to be updated and update them
                                         commentList
                                                 .whereEqualTo("username", username)
-                                                .whereNotEqualTo(DATABASE_DISPLAY_NAME_FIELD, newDisplayUsername) // Filter out documents that don't need updating
+                                                .whereNotEqualTo(Preference.DATABASE_DISPLAY_NAME_FIELD, newDisplayUsername) // Filter out documents that don't need updating
                                                 .get()
                                                 .addOnSuccessListener(commentedQRDocuments -> {
                                                     ArrayList<DocumentSnapshot> commentedQR;
                                                     commentedQR = (ArrayList) commentedQRDocuments.getDocuments();
                                                     for (DocumentSnapshot commented : commentedQR) {
-                                                        commented.getReference().update(DATABASE_DISPLAY_NAME_FIELD, newDisplayUsername);
+                                                        commented.getReference().update(Preference.DATABASE_DISPLAY_NAME_FIELD, newDisplayUsername);
                                                     }
                                                     queryCompleteCheck.queryCompleteCheck(true);
                                                 });
