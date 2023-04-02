@@ -298,6 +298,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                 Log.e(TAG, "SecurityException: " + e.getMessage());
             }
         }
+
         VectorDrawable vectorDrawable = (VectorDrawable) ResourcesCompat.getDrawable(getResources(), R.drawable.ic_qr, null);
 
         Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
@@ -307,55 +308,37 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
 
         BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(bitmap);
 
-//        // Add markers for each QRCode
-//        qrCodeRef
-//                .get()
-//                .addOnSuccessListener(qrCodes -> {
-//
-//                    for (QueryDocumentSnapshot qrCode : qrCodes) {
-//                        Double latitude = qrCode.getDouble("latitude");
-//                        Double longitude = qrCode.getDouble("longitude");
-//                        if (latitude != null && longitude != null) {
-//                            LatLng location = new LatLng(latitude, longitude);
-//                            Marker marker = mMap.addMarker(new MarkerOptions()
-//                                    .position(location)
-//                                    .title(qrCode.getId())
-//                                    .icon(icon));  // Use the custom icon
-//                            marker.setTag(qrCode.toObject(QRCode.class)); // Set QRCode object as the marker's tag
-//                        }
-//                    }
-//                });
-
-        // Retrieve all QRCode documents
-        qrCodeRef.get().addOnSuccessListener(qrCodes -> {
+        // Retrieve all User documents that reference any QRCode document
+        userRef.get().addOnSuccessListener(users -> {
             Set<String> referencedQRCodeIds = new HashSet<>();
-            // Retrieve all User QR Code documents and add their referenced QR code IDs to the set
-            userRef.document(userId).collection("User QR Codes").get().addOnSuccessListener(userQrCodes -> {
-                for (QueryDocumentSnapshot userQrCode : userQrCodes) {
-                    Map<String, Object> qrCodeRefMap = (Map<String, Object>) userQrCode.getData().get("qrCodeRef");
-                    if (qrCodeRefMap != null) {
-                        String qrCodeId = (String) qrCodeRefMap.get("documentId");
+            for (QueryDocumentSnapshot user : users) {
+                CollectionReference userQRCodeRef = user.getReference().collection("User QR Codes");
+                userQRCodeRef.get().addOnSuccessListener(qrCodeRefs -> {
+                    for (QueryDocumentSnapshot qrCodeRef : qrCodeRefs) {
+                        String qrCodeId = qrCodeRef.getId();
                         referencedQRCodeIds.add(qrCodeId);
                     }
-                }
-                // Add markers for each QRCode that is still being referenced by at least one user
-                for (QueryDocumentSnapshot qrCode : qrCodes) {
-                    if (referencedQRCodeIds.contains(qrCode.getId())) {
-                        Double latitude = qrCode.getDouble("latitude");
-                        Double longitude = qrCode.getDouble("longitude");
-                        if (latitude != null && longitude != null) {
-                            LatLng location = new LatLng(latitude, longitude);
-                            Marker marker = mMap.addMarker(new MarkerOptions()
-                                    .position(location)
-                                    .title(qrCode.getId())
-                                    .icon(icon));  // Use the custom icon
-                            marker.setTag(qrCode.toObject(QRCode.class)); // Set QRCode object as the marker's tag
+                    // Add markers for each QRCode that is still being referenced by at least one user
+                    qrCodeRef.get().addOnSuccessListener(qrCodes -> {
+                        for (QueryDocumentSnapshot qrCode : qrCodes) {
+                            String qrCodeId = qrCode.getId();
+                            if (referencedQRCodeIds.contains(qrCodeId)) {
+                                Double latitude = qrCode.getDouble("latitude");
+                                Double longitude = qrCode.getDouble("longitude");
+                                if (latitude != null && longitude != null) {
+                                    LatLng location = new LatLng(latitude, longitude);
+                                    Marker marker = mMap.addMarker(new MarkerOptions()
+                                            .position(location)
+                                            .title(qrCodeId)
+                                            .icon(icon));  // Use the custom icon
+                                    marker.setTag(qrCode.toObject(QRCode.class)); // Set QRCode object as the marker's tag
+                                }
+                            }
                         }
-                    }
-                }
-            });
+                    });
+                });
+            }
         });
-
 
         // OnMarkerClickListener to show the QRCodeView dialog fragment when a marker is clicked
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
