@@ -61,6 +61,7 @@ public class ProfileFragment extends Fragment {
     private FirestoreRecyclerOptions<QRCode> options;
     private final String username;
     private final String displayName;
+    private FirebaseQueryAssistant firebaseQueryAssistant;
     private SharedPreferences prefs;
 
     /**
@@ -70,6 +71,7 @@ public class ProfileFragment extends Fragment {
      */
     public ProfileFragment(@NonNull FirebaseFirestore db, @NonNull String username, @NonNull String displayName) {
         this.db = db;
+        this.firebaseQueryAssistant = new FirebaseQueryAssistant(db);
         this.usersReference = db.collection("Users");
         this.qrCodeReference = db.collection("QRCodes");
         this.username = username;
@@ -116,7 +118,7 @@ public class ProfileFragment extends Fragment {
         }
 
         // If the user has at least one QR code, initialize RecyclerView
-        hasQRCodesCheck(username, new QueryCallback() {
+        firebaseQueryAssistant.hasQRCodesCheck(username, new QueryCallback() {
             public void queryCompleteCheck(boolean hasCodes) {
 
                 if (hasCodes) {
@@ -164,7 +166,7 @@ public class ProfileFragment extends Fragment {
                                                 .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                                                     @Override
                                                     public void onClick(DialogInterface dialogInterface, int i) {
-                                                        deleteQRCode(username, qrCodeID, new QueryCallback() {
+                                                        firebaseQueryAssistant.deleteQR(username, qrCodeID, new QueryCallback() {
                                                             @Override
                                                             public void queryCompleteCheck(boolean deleted) {
                                                                 assert deleted;
@@ -191,19 +193,6 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
-    /**
-     * Query database to check if user has any QR codes in their collection or not
-     *
-     * @param username Current user's username
-     * @param hasCodes Callback function
-     */
-    public void hasQRCodesCheck(@NonNull String username, final @NonNull QueryCallback hasCodes) {
-
-        usersReference.document(username).collection("User QR Codes")
-                .get()
-                .addOnSuccessListener(userQRCodes ->
-                        hasCodes.queryCompleteCheck(!userQRCodes.isEmpty()));
-    }
 
     /**
      * Query database to retrieve referenced QR Codes in the user's collection, then
@@ -213,7 +202,8 @@ public class ProfileFragment extends Fragment {
      * @param getUserData Callback for query
      * @sources Firestore documentation
      */
-    public void queryQRCodes(@NonNull String username, final @NonNull ProfileUserDataCallback getUserData) {
+    public void queryQRCodes(@NonNull String username, final @NonNull ProfileFragment.ProfileUserDataCallback getUserData) {
+
 
         ArrayList<DocumentReference> userQRCodesRef = new ArrayList<>();
         ArrayList<String> userPoints = new ArrayList<>();
@@ -242,38 +232,6 @@ public class ProfileFragment extends Fragment {
                                     Collections.sort(userPoints);
                                     getUserData.getUserData(userPoints);
                                 }
-                            });
-                });
-    }
-
-    /**
-     * Delete given QR Code from user's collection
-     *
-     * @param username User's username
-     * @param qrCodeID QR Code to delete
-     * @param deleted  Callback for query
-     * @sources Firestore documentation
-     */
-    public void deleteQRCode(@NonNull String username, @NonNull String qrCodeID, final @NonNull QueryCallback deleted) {
-
-        usersReference.document(username).collection("User QR Codes").document(qrCodeID)
-                .get()
-                .addOnSuccessListener(userQRSnapshot -> {
-                    DocumentReference documentReference = (DocumentReference) userQRSnapshot.get("Reference");
-                    assert documentReference != null;
-                    documentReference
-                            .get()
-                            .addOnSuccessListener(qrToDelete -> {
-
-                                // Subtract point value of that code from user's total points
-                                int points = qrToDelete.getLong("points").intValue();
-                                points = -points;
-                                usersReference.document(username).update("totalPoints", FieldValue.increment(points));
-
-                                // Delete code from user's collection
-                                usersReference.document(username).collection("User QR Codes").document(qrCodeID).delete();
-
-                                deleted.queryCompleteCheck(true);
                             });
                 });
     }

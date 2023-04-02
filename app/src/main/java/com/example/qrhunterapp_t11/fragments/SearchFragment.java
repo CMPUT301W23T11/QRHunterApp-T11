@@ -107,7 +107,6 @@ public class SearchFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
         prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
-
         Button deleteSearch = view.findViewById(R.id.close_id);
         leaderboardTextView = view.findViewById(R.id.leaderboard_textview);
         autoCompleteTextView = view.findViewById(R.id.search_id);
@@ -202,8 +201,8 @@ public class SearchFragment extends Fragment {
         // Setup spinners
         String[] leaderboardFilterChoices = new String[]{"Most Points", "Most Scans", "Top QR Code", "Top QR Code (Regional)"};
         Spinner leaderboardFilterSpinner = view.findViewById(R.id.leaderboard_filter_spinner);
-        ArrayAdapter<String> filterAdapter = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_spinner_item, leaderboardFilterChoices);
-        filterAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ArrayAdapter<String> filterAdapter = new ArrayAdapter<>(this.getContext(), R.layout.custom_spinner_item, leaderboardFilterChoices);
+        filterAdapter.setDropDownViewResource(R.layout.custom_dropdown_item);
         leaderboardFilterSpinner.setAdapter(filterAdapter);
         leaderboardFilterSpinner.setPrompt("Filter Leaderboard");
 
