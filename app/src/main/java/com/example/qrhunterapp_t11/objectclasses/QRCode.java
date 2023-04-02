@@ -147,35 +147,6 @@ public class QRCode {
     }
 
     /**
-     * Getter for QRCode Object's id attribute, used to define uniqueness of QRCode objects
-     * id is used as a key for the firebase database when accessing QRCodes.
-     * default value is the QRCode's hashkey, if location is added
-     * by player, location value is concatenated to create a unique id
-     *
-     * @return id - a string representing a unique instance of a QRCode
-     */
-    @NonNull
-    public String getID() {
-        return id;
-    }
-
-    /**
-     * Setter for QRCode Object's id attribute, used to define uniqueness of QRCode objects
-     * id is used as a key for the firebase database when accessing QRCodes.
-     * default value is the QRCode's hashkey, if location is added
-     * by player, location value is concatenated to create a unique id
-     *
-     * @param latitude  Double representing latitude of where QRCode was captured
-     * @param longitude Double representing longitude of where QRCode was captured
-     * @reference https://docs.oracle.com/javase/tutorial/java/data/converting.html
-     */
-    public void setID(@NonNull Double latitude, @NonNull Double longitude) {
-        String strLat = Double.toString(latitude);
-        String strLong = Double.toString(longitude);
-        this.id = this.hash + strLat + strLong;
-    }
-
-    /**
      * uniqueImage uses the 6 bits of a shortened hash function to determine which drawables will be used to make the unique image
      * Static to increase testability
      *
@@ -292,6 +263,35 @@ public class QRCode {
             }
         }
         return newName;
+    }
+
+    /**
+     * Getter for QRCode Object's id attribute, used to define uniqueness of QRCode objects
+     * id is used as a key for the firebase database when accessing QRCodes.
+     * default value is the QRCode's hashkey, if location is added
+     * by player, location value is concatenated to create a unique id
+     *
+     * @return id - a string representing a unique instance of a QRCode
+     */
+    @NonNull
+    public String getID() {
+        return id;
+    }
+
+    /**
+     * Setter for QRCode Object's id attribute, used to define uniqueness of QRCode objects
+     * id is used as a key for the firebase database when accessing QRCodes.
+     * default value is the QRCode's hashkey, if location is added
+     * by player, location value is concatenated to create a unique id
+     *
+     * @param latitude  Double representing latitude of where QRCode was captured
+     * @param longitude Double representing longitude of where QRCode was captured
+     * @reference https://docs.oracle.com/javase/tutorial/java/data/converting.html
+     */
+    public void setID(@NonNull Double latitude, @NonNull Double longitude) {
+        String strLat = Double.toString(latitude);
+        String strLong = Double.toString(longitude);
+        this.id = this.hash + strLat + strLong;
     }
 
     /**

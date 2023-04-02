@@ -7,6 +7,10 @@ import com.example.qrhunterapp_t11.objectclasses.Comment;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+/**
+ * This Test class is to verify the methods of the Comment object run as expected.
+ */
+
 public class CommentTest {
 
 
@@ -17,7 +21,7 @@ public class CommentTest {
     @Test
     public void testGetSetCommentString() {
         Comment comment = mockComment("Hello", "Epic Gamer", "user99");
-        Assertions.assertEquals( "Hello" , comment.getCommentString());
+        Assertions.assertEquals("Hello", comment.getCommentString());
 
         // test set empty string
         comment.setCommentString("");

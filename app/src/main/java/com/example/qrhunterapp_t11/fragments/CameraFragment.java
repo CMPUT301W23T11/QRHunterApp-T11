@@ -70,7 +70,13 @@ import nl.dionsegijn.konfetti.xml.KonfettiView;
  * @author Josh Lucas and Afra - methods for creating a new QR object
  */
 public class CameraFragment extends Fragment {
+    static final double MAX_RADIUS = 30; // Max distance from a qrlocation in meters
     private static final int permissionsRequestLocation = 100;
+    private static final String locationPrompt = "LocationPrompt";
+    private final FirebaseFirestore db;
+    private final CollectionReference qrCodesReference;
+    private final CollectionReference usersReference;
+    private final FirebaseQueryAssistant firebaseQueryAssistant;
     private ActivityResultLauncher<ScanOptions> barLauncher;
     private ActivityResultLauncher<Intent> photoLauncher;
     private QRCode qrCode;
@@ -79,13 +85,7 @@ public class CameraFragment extends Fragment {
     //private SharedPreferences prefs;
     private String currentUserDisplayName;
     private String currentUserUsername;
-    static final double MAX_RADIUS = 30; // Max distance from a qrlocation in meters
-    private final FirebaseFirestore db;
-    private final CollectionReference qrCodesReference;
-    private final CollectionReference usersReference;
-    private static final String locationPrompt = "LocationPrompt";
     private String qrCodeID;
-    private final FirebaseQueryAssistant firebaseQueryAssistant;
     private boolean showPoints = false;
     private QRCode savedQR = null;
 

@@ -3,9 +3,9 @@ package com.example.qrhunterapp_t11.fragments;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -13,13 +13,13 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.LinearLayoutCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.DialogFragment;
 import androidx.viewpager.widget.ViewPager;
@@ -51,6 +51,7 @@ import java.util.ArrayList;
  * <li><a href="https://icon-icons.com/icon/send-button/72565">by Icons.com for the send button</a></li>
  * <li><a href="https://cloud.google.com/firestore/docs/manage-data/add-data">for adding comment to db using arrayUnion</a></li>
  * <li><a href="https://www.svgbackgrounds.com/license/">for liquid_cheese_background</a></li>
+ * <li><a href="https://stackoverflow.com/a/48689870/14445107">How to create a typeface object</a></li>
  * </ul>
  * </pre>
  */
@@ -62,7 +63,6 @@ public class QRCodeView extends DialogFragment {
     private ArrayList<Comment> commentList;
     private CommentAdapter commentAdapter;
     private EditText commentEditText;
-    //private SharedPreferences prefs;
     private String qrCodeID;
     private int commentListCount;
     private TextView commentNumTextView;
@@ -246,9 +246,18 @@ public class QRCodeView extends DialogFragment {
             }
         });
 
+        // Spaghetti code to set title of alert dialog
+        TextView customTitle = new TextView(getContext());
+        customTitle.setTextSize(30);
+        customTitle.setTextColor(Color.rgb(39, 127, 80));
+        customTitle.setPadding(0, 30, 0, 0);
+        customTitle.setText("  " + qrCode.getName());
+        Typeface typeface = ResourcesCompat.getFont(getContext(), R.font.lato_black);
+        customTitle.setTypeface(typeface);
+
         return builder
                 .setView(view)
-                .setTitle(qrCode.getName())
+                .setCustomTitle(customTitle)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {

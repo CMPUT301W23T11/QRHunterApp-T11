@@ -22,14 +22,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginStart="348dp"
+            android:layout_marginTop="64dp"
             android:background="@color/background"
             android:contentDescription="Button that opens autocomplete search"
             android:src="@drawable/search_icon"
+            app:backgroundTint="@color/headers"
+            app:ensureMinTouchTargetSize="true"
+            app:fabCustomSize="60dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:backgroundTint="@color/headers" />
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
