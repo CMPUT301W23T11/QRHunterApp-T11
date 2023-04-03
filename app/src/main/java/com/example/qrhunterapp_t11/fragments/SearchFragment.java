@@ -340,7 +340,7 @@ public class SearchFragment extends Fragment {
                                 for (int i = 0; i < users.size(); i++) {
                                     String currentUserUsername = users.get(i).getUsername();
                                     if (currentUserUsername.equals(Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null))) {
-                                        userIndex = i + 1;
+                                        userIndex = (i + 1);
                                         userInLeaderboard = true;
                                     }
                                     db.collection(randomCollection).document(currentUserUsername).set(users.get(i));
@@ -523,14 +523,14 @@ public class SearchFragment extends Fragment {
                     // For each QR Code, record which users have it in their collection
                     if (!qrCodesAtPlace.isEmpty()) {
                         for (QueryDocumentSnapshot qrCode : qrCodesAtPlace) {
-                            ArrayList<String> qrCodes = (ArrayList) qrCode.get("inCollection");
+                            ArrayList<String> qrCodes = (ArrayList<String>) qrCode.get("inCollection");
+                            assert qrCodes != null;
                             for (String userWithQR : qrCodes) {
                                 usersReference.document(userWithQR)
                                         .get()
                                         .addOnSuccessListener(user -> {
                                             User userToAdd = user.toObject(User.class);
                                             QRCode qrCodeToAdd = qrCode.toObject(QRCode.class);
-                                            System.out.println(userToAdd.getUsername());
                                             usersPoints.put(userToAdd, qrCodeToAdd);
                                             setHashMap.setHashMap(usersPoints);
                                         });
