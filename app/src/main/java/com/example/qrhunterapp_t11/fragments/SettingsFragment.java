@@ -178,7 +178,7 @@ public class SettingsFragment extends Fragment {
             if (matcher.matches()) {
                 return true;
             } else {
-                emailEditText.setError("Invalid Email");
+                emailEditText.setError("Invalid email");
                 return false;
             }
         }

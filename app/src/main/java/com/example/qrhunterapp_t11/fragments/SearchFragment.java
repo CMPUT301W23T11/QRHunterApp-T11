@@ -305,7 +305,6 @@ public class SearchFragment extends Fragment {
                             if (!hashMap.isEmpty()) {
                                 ArrayList<String> users = new ArrayList<>();
                                 ArrayList<String> qrsPoints = new ArrayList<>();
-                                int index = 0;
 
                                 for (Map.Entry<String, String> mapElement : hashMap.entrySet()) {
                                     String user = mapElement.getKey();
@@ -314,16 +313,16 @@ public class SearchFragment extends Fragment {
                                     qrsPoints.add(qrPoints);
                                 }
 
-                                List<List<String>> chunks = new ArrayList<>();
+                                List<List<String>> userChunks = new ArrayList<>();
                                 for (int i = 0; i < users.size(); i += 10) {
                                     int end = Math.min(i + 10, users.size());
                                     List<String> sublist = users.subList(i, end);
-                                    chunks.add(sublist);
+                                    userChunks.add(sublist);
                                 }
-                                System.out.println(chunks);
+                                System.out.println(userChunks);
 
 
-                                Query query = usersReference.whereIn(FieldPath.documentId(), users);
+                                Query query = usersReference.whereIn(FieldPath.documentId(), userChunks);
                                 leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
                                         .setQuery(query, User.class)
                                         .build();
