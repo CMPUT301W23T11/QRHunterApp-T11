@@ -180,6 +180,9 @@ public class SearchFragment extends Fragment {
                                         trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
                                         trans.commit();
                                     }
+                                    else {
+                                        Toast.makeText(getContext(), "You cant search yourself!", Toast.LENGTH_SHORT).show();
+                                    }
 
                                 } else {  // If the user is not found
                                     Toast.makeText(getContext(), "User not found!", Toast.LENGTH_SHORT).show();

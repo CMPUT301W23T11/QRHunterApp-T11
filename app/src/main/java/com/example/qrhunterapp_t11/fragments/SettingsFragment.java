@@ -88,7 +88,12 @@ public class SettingsFragment extends Fragment {
                     if (!usernameExists) {
                         builder
                                 .setTitle("Confirm username change")
-                                .setNegativeButton("Cancel", null)
+                                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        usernameEditText.setText(Preference.getPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, null));
+                                    }
+                                })
                                 .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -123,7 +128,12 @@ public class SettingsFragment extends Fragment {
             if (validEmail(emailString)) {
                 emailBuilder
                         .setTitle("Confirm email change")
-                        .setNegativeButton("Cancel", null)
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                emailEditText.setText(Preference.getPrefsString(Preference.PREFS_CURRENT_USER_EMAIL, null));
+                            }
+                        })
                         .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
