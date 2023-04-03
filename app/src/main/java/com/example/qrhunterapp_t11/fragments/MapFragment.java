@@ -500,42 +500,44 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
      */
     private void findNearbyQRCodes(LatLng currentLocationLatLng, double radius, QueryCallbackWithArrayList nearbyCodes) {
 
-        Location currentLocationLocation = new Location("");
-        currentLocationLocation.setLatitude(currentLocationLatLng.latitude);
-        currentLocationLocation.setLongitude(currentLocationLatLng.longitude);
-        ArrayList<List<?>> nearbyQRCodes = new ArrayList<>();
+        if (mLocationPermissionGranted) {
+            Location currentLocationLocation = new Location("");
+            currentLocationLocation.setLatitude(currentLocationLatLng.latitude);
+            currentLocationLocation.setLongitude(currentLocationLatLng.longitude);
+            ArrayList<List<?>> nearbyQRCodes = new ArrayList<>();
 
-        // Get all QR Codes with location
-        qrCodesReference
-                .whereNotEqualTo("latitude", null)
-                .get()
-                .addOnSuccessListener(qrCodes -> {
+            // Get all QR Codes with location
+            qrCodesReference
+                    .whereNotEqualTo("latitude", null)
+                    .get()
+                    .addOnSuccessListener(qrCodes -> {
 
-                    // For each QR Code, create Location object
-                    for (QueryDocumentSnapshot qrCodeDocument : qrCodes) {
-                        Location qrCodeLocation = new Location("");
-                        qrCodeLocation.setLatitude(qrCodeDocument.getDouble("latitude"));
-                        qrCodeLocation.setLongitude(qrCodeDocument.getDouble("longitude"));
-                        double distance = currentLocationLocation.distanceTo(qrCodeLocation);
+                        // For each QR Code, create Location object
+                        for (QueryDocumentSnapshot qrCodeDocument : qrCodes) {
+                            Location qrCodeLocation = new Location("");
+                            qrCodeLocation.setLatitude(qrCodeDocument.getDouble("latitude"));
+                            qrCodeLocation.setLongitude(qrCodeDocument.getDouble("longitude"));
+                            double distance = currentLocationLocation.distanceTo(qrCodeLocation);
 
-                        // Check if within radius
-                        if (distance <= radius) {
-                            QRCode qrCode = qrCodeDocument.toObject(QRCode.class);
+                            // Check if within radius
+                            if (distance <= radius) {
+                                QRCode qrCode = qrCodeDocument.toObject(QRCode.class);
 
-                            List<Object> qrCodeDistance = new ArrayList<>();
-                            qrCodeDistance.add(qrCode);
+                                List<Object> qrCodeDistance = new ArrayList<>();
+                                qrCodeDistance.add(qrCode);
 
-                            // Convert from m back to km
-                            distance /= 1000;
-                            distance = Double.parseDouble(String.format("%.2f", distance));
+                                // Convert from m back to km
+                                distance /= 1000;
+                                distance = Double.parseDouble(String.format("%.2f", distance));
 
-                            qrCodeDistance.add(distance);
+                                qrCodeDistance.add(distance);
 
-                            nearbyQRCodes.add(qrCodeDistance);
-                            nearbyCodes.setArrayList(nearbyQRCodes);
+                                nearbyQRCodes.add(qrCodeDistance);
+                                nearbyCodes.setArrayList(nearbyQRCodes);
+                            }
                         }
-                    }
-                });
+                    });
+        }
     }
 
     /**
