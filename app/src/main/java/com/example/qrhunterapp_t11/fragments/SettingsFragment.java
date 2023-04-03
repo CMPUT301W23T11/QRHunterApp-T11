@@ -17,6 +17,7 @@ import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -229,12 +230,15 @@ public class SettingsFragment extends Fragment {
                                 .whereEqualTo("username", username)
                                 .whereNotEqualTo("displayName", newDisplayUsername)
                                 .get()
-                                .addOnSuccessListener(qrCodeToUpdate -> {
-                                    System.out.println("ooooooooooooooo" + qrCodeToUpdate.getDocuments());
+                                .addOnSuccessListener(commentedQRDocuments -> {
+                                    ArrayList<DocumentSnapshot> commentedQR;
+                                    commentedQR = (ArrayList) commentedQRDocuments.getDocuments();
+                                    for (DocumentSnapshot commented : commentedQR) {
+                                        commented.getReference().update(Preference.DATABASE_DISPLAY_NAME_FIELD, newDisplayUsername);
+                                    }
                                     queryCompleteCheck.queryCompleteCheck(true);
                                 });
                     }
                 });
-
     }
 }
