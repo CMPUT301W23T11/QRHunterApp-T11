@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/map_nearby_code_distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginEnd="16dp"
+        android:text="Distance"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/map_nearby_code_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/map_nearby_code_distance"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="8dp"
+        android:text="QR Code Name"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/map_nearby_code_points"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/map_nearby_code_distance"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="8dp"
+        android:text="Points"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/map_nearby_code_scans"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/map_nearby_code_name"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="8dp"
+        android:text="Number of Scans"
+        android:textSize="16sp" />
+
+</RelativeLayout>

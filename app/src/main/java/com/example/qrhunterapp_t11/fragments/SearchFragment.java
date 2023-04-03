@@ -39,8 +39,6 @@ import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.example.qrhunterapp_t11.objectclasses.User;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.TypeFilter;
@@ -61,10 +59,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -387,46 +383,6 @@ public class SearchFragment extends Fragment {
         }
 
         super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    private void findQRCodeNearby(double latitude, double longitude, double radius) {
-        // Define the bounds of the query
-        double lowerLat = latitude - (radius / 111.0);
-        double lowerLon = longitude - (radius / (111.0 * Math.cos(latitude)));
-        double upperLat = latitude + (radius / 111.0);
-        double upperLon = longitude + (radius / (111.0 * Math.cos(latitude)));
-
-        // Query the Firestore database for QR codes within the bounds of latitude
-        Query latQuery = qrCodesReference.whereGreaterThanOrEqualTo("latitude", lowerLat)
-                .whereLessThanOrEqualTo("latitude", upperLat);
-
-        // Query the Firestore database for QR codes within the bounds of longitude
-        Query lonQuery = qrCodesReference.whereGreaterThanOrEqualTo("longitude", lowerLon)
-                .whereLessThanOrEqualTo("longitude", upperLon);
-
-        // Combine the results of the two queries
-        Task<List<QuerySnapshot>> combinedResults = Tasks.whenAllSuccess(latQuery.get(), lonQuery.get());
-
-        // Process the combined results
-        combinedResults.addOnSuccessListener(querySnapshotsList -> {
-
-            Set<DocumentSnapshot> documents = new HashSet<>();
-
-            for (QuerySnapshot snapshot : querySnapshotsList) {
-                documents.addAll(snapshot.getDocuments());
-            }
-
-            for (DocumentSnapshot document : documents) {
-                double documentLat = document.getDouble("latitude");
-                double documentLon = document.getDouble("longitude");
-
-                // Check if the QR code is within the radius
-                if (Math.pow(documentLat - latitude, 2) + Math.pow(documentLon - longitude, 2) <= Math.pow(radius / 111.0, 2)) {
-                    String documentId = document.getId();
-                    Log.d(TAG, "Document ID: " + documentId);
-                }
-            }
-        });
     }
 
     /**
