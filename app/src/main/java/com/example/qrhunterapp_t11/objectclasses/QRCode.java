@@ -202,6 +202,7 @@ public class QRCode {
         faceList.add(mouthNumbers[hashBinary.charAt(4) - '0']);
         faceList.add(faceNumbers[hashBinary.charAt(5) - '0']);
         return faceList;
+
     }
 
     /**

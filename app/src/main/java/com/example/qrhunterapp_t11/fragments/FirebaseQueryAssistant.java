@@ -8,7 +8,9 @@ import androidx.annotation.Nullable;
 
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithQRCode;
+import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithUser;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
+import com.example.qrhunterapp_t11.objectclasses.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
@@ -29,6 +31,7 @@ public class FirebaseQueryAssistant {
     private final CollectionReference qrCodesReference;
     private final CollectionReference usersReference;
     private final FirebaseFirestore db;
+    private boolean foundMatchingUser;
 
 
     /**
@@ -133,22 +136,21 @@ public class FirebaseQueryAssistant {
      * @param qrInput  QR Code that is having its hash value checked
      * @param username User whose collection is being checked
      */
-
-    public void checkUserHasHash(@NonNull QRCode qrInput, @NonNull String username, final @NonNull QueryCallbackWithQRCode docExists) {
-
+    public void checkUserHasHash(@NonNull QRCode qrInput, @NonNull String username, final @NonNull QueryCallbackWithUser docExists) {
         usersReference.document(username)
                 .get()
                 .addOnSuccessListener(user -> {
                     if (user.exists()) {
                         ArrayList<String> userHashes = (ArrayList<String>) user.get("qrCodeHashes");
                         if (userHashes.contains(qrInput.getHash())) {
-                            docExists.queryCompleteCheckObject(true, qrInput);
+                            docExists.queryCompleteCheckUser(true, user.toObject(User.class), qrInput);
                         } else {
-                            docExists.queryCompleteCheckObject(false, null);
+                            docExists.queryCompleteCheckUser(false, null, null);
                         }
                     }
                 });
     }
+
 
     /**
      * Check if the given user has the given QR Code
@@ -162,9 +164,15 @@ public class FirebaseQueryAssistant {
         qrCodesReference.document(qrCodeID)
                 .get()
                 .addOnSuccessListener(qrCode -> {
+                    System.out.println("QR EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS111111111111");
                             if (qrCode.exists()) {
+                                System.out.println("QR EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
                                 ArrayList<String> users = (ArrayList<String>) qrCode.get("inCollection");
                                 userHasQRCode.queryCompleteCheck(users.contains(username));
+                            }
+                            else{
+                                System.out.println("QR NOT EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
+                                userHasQRCode.queryCompleteCheck(false);
                             }
                         }
                 );
@@ -218,13 +226,16 @@ public class FirebaseQueryAssistant {
         // Check if qrCode within location threshold already exists in db in QRCodes collection
         checkQRCodeExists(qrCode, radius, new QueryCallbackWithQRCode() {
             public void queryCompleteCheckObject(boolean qrExists, QRCode dbQR) {
+                System.out.println("HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE7");
 
                 // Check if reference to qrCode exists in db in Users collection
                 checkUserHasQR(qrCodeID, username, new QueryCallback() {
                     public void queryCompleteCheck(boolean qrRefExists) {
+                        System.out.println("qrrefexists:"+qrRefExists + " qrExists:" + qrExists);
 
                         // If qrCode does not exist, add it to QRCode collection
                         if (!qrExists) {
+                            System.out.println("HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE3");
                             qrCodesReference.document(qrCodeID).set(qrCode);
                             if (resizedImageUrl != null) {
                                 qrCodesReference.document(qrCodeID).update("photoList", FieldValue.arrayUnion(resizedImageUrl));
@@ -233,6 +244,7 @@ public class FirebaseQueryAssistant {
                         }
                         // If user does not already have this qrCode, add a reference to it, increment their total scans and points, add new photo to qrCode
                         if (!qrRefExists) {
+                            System.out.println("HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE4");
                             usersReference.document(username).update("qrCodeHashes", FieldValue.arrayUnion(qrCode.getHash()));
                             usersReference.document(username).update("qrCodeIDs", FieldValue.arrayUnion(qrCodeID));
                             usersReference.document(username).update("totalScans", FieldValue.increment(1));
@@ -243,6 +255,7 @@ public class FirebaseQueryAssistant {
                         }
                         // If user does not have this qrCode but it already exists in qrCode collection, increase its total scans
                         if ((qrExists) && (!qrRefExists)) {
+                            System.out.println("HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE5");
                             qrCodesReference.document(qrCodeID).update("numberOfScans", FieldValue.increment(1));
                         }
                         qrCodesReference.document(qrCodeID).update("inCollection", FieldValue.arrayUnion(username));
