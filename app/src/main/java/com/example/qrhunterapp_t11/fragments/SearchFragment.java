@@ -311,7 +311,6 @@ public class SearchFragment extends Fragment {
                                     qrsPoints.add(qrPoints);
                                 }
 
-                                System.out.println(users);
                                 List<List<String>> chunks = new ArrayList<>();
                                 for (int i = 0; i < users.size(); i += 10) {
                                     int end = Math.min(i + 10, users.size());

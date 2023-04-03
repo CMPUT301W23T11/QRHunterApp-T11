@@ -7,11 +7,11 @@
     android:padding="8dp">
 
     <TextView
-        android:layout_marginBottom="10dp"
-        android:text="Code Name"
+        android:id="@+id/map_nearby_code_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/map_nearby_code_name"
+        android:layout_marginBottom="10dp"
+        android:text="Code Name"
         android:textColor="#474646"
         android:textSize="17dp" />
 
