@@ -36,16 +36,13 @@ public class QRCodeAdapterMap extends BaseAdapter {
         TextView distanceTextView = nearbyCodeView.findViewById(R.id.map_nearby_code_distance);
         TextView qrCodeNameTextView = nearbyCodeView.findViewById(R.id.map_nearby_code_name);
         TextView pointsTextView = nearbyCodeView.findViewById(R.id.map_nearby_code_points);
-        TextView numberOfScansTextView = nearbyCodeView.findViewById(R.id.map_nearby_code_scans);
 
         String distanceString = distance + " km";
         String pointsString = qrCode.getPoints() + " points";
-        String scansString = qrCode.getNumberOfScans() + " scans";
 
         distanceTextView.setText(distanceString);
         qrCodeNameTextView.setText(qrCode.getName());
         pointsTextView.setText(pointsString);
-        numberOfScansTextView.setText(scansString);
 
         return nearbyCodeView;
     }

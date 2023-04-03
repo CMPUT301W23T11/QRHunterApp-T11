@@ -396,6 +396,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 String radiusString = radiusEditText.getText().toString();
                                 double radius = Double.parseDouble(radiusString);
+
                                 // Convert km to m
                                 radius *= 1000;
                                 findNearbyQRCodes(currentLocation, radius, new QueryCallbackWithArrayList() {
@@ -447,6 +448,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                                                 }
                                             });
 
+                                            // Close nearby QR Codes list
                                             nearbyQRCloseButton.setOnClickListener(new View.OnClickListener() {
                                                 @Override
                                                 public void onClick(View view) {
