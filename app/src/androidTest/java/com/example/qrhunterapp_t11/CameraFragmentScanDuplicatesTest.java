@@ -129,22 +129,27 @@ public class CameraFragmentScanDuplicatesTest {
     @Test
     public void takePhotoShareLocation() {
         String testId = "9a7cd5efda286fbcdd26f89e64a360c560208248b301ff49ad670cb5552790ff";
+        String testComment = "test" + rand.nextInt(1000000);
 
         // scan qr code the first time with null location
         solo.clickOnView(solo.getView(R.id.addFab));
         assertTrue(solo.waitForText("Points", 1, 10000)); // wait 7 sec for points prompt to appear
         assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
-        solo.clickOnView(solo.getView(android.R.id.button1));
-        solo.clickOnView(solo.getView(R.id.captureButton));
+        solo.clickOnView(solo.getView(android.R.id.button2));
+        //solo.clickOnView(solo.getView(R.id.captureButton));
         assertTrue(solo.waitForText("Share Geolocation", 1, 7000)); // wait 7 sec for location prompt to appear
         solo.clickOnView(solo.getView(android.R.id.button2));
         assertTrue(solo.waitForText("STATS", 1, 7000)); // confirm we're back on the profile page
         solo.clickOnText("Comments:");
-
-        View view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.qr_view, null);
-        TextView textView = view.findViewById(R.id.denominatorTV)
-        String denominator = textView.getText().toString();
-        System.out.println("DENOMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM" + denominator);
+        solo.sleep(1000);
+        //solo.scrollDown();
+        solo.
+        solo.scrollToBottom();
+        solo.enterText(0, testComment);
+        // View view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.qr_view, null);
+        //TextView textView = view.findViewById(R.id.denominatorTV);
+        //tring denominator = textView.getText().toString();
+        //System.out.println("DENOMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM" + denominator);
         solo.clickOnView(solo.getView(android.R.id.button1));
 
         firebaseQueryAssistant.checkDocExists(testId, qrReference, new QueryCallback() {
@@ -153,12 +158,12 @@ public class CameraFragmentScanDuplicatesTest {
             }
         });
 
-        //scan the qr code the second time with null location
+        //scan the same qr code the second time with null location
         solo.clickOnView(solo.getView(R.id.addFab));
         solo.clickOnView(solo.getView(android.R.id.button2));
         assertTrue(solo.waitForText("STATS", 1, 7000)); // confirm we're back on the profile page
         solo.clickOnText("Comments:");
-        assertTrue(solo.waitForText(denominator, 1, 7000)); // confirm the second photo has not been added
+        assertTrue(solo.waitForText(testComment, 1, 7000)); // confirm the second photo has not been added
 
         solo.clickOnView(solo.getView(R.id.addFab));
         assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
