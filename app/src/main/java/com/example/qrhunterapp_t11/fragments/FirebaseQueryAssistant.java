@@ -159,6 +159,7 @@ public class FirebaseQueryAssistant {
         qrCodesReference.document(qrCodeID)
                 .get()
                 .addOnSuccessListener(qrCode -> {
+                    System.out.println("QR EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS111111111111");
                             if (qrCode.exists()) {
                                 System.out.println("QR EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
                                 ArrayList<String> users = (ArrayList<String>) qrCode.get("inCollection");
