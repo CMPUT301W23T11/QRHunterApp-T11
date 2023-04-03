@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -89,7 +90,10 @@ public class ProfileTest {
         rule.launchActivity(intent);
         Activity activity = rule.getActivity();
 
-        User user = new User(testUsername, testUsername, 0, 0, 0, "No email");
+        ArrayList<String> qrCodeIDs = new ArrayList<>();
+        ArrayList<String> qrCodeHashes = new ArrayList<>();
+        ArrayList<String> commentedOn = new ArrayList<>();
+        User user = new User(testUsername, testUsername, 0, 0, 0, "", qrCodeIDs, qrCodeHashes, commentedOn);
         CollectionReference qrReference = db.collection("QRCodes");
         usersReference.document(testUsername).set(user);
 

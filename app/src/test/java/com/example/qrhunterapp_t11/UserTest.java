@@ -7,21 +7,26 @@ import com.example.qrhunterapp_t11.objectclasses.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+
 /**
  * This Test class is to verify the methods of the User object run as expected.
  */
 
 public class UserTest {
+    private final ArrayList<String> qrCodeIDs = new ArrayList<>();
+    private final ArrayList<String> qrCodeHashes = new ArrayList<>();
+    private final ArrayList<String> commentedOn = new ArrayList<>();
 
-    private User mockUser(@NonNull String displayName, @NonNull String username, int totalPoints, int totalScans, int topQRCode, @NonNull String email) {
-        return new User(displayName, username, totalPoints, totalScans, topQRCode, email);
+    private User mockUser(@NonNull String displayName, @NonNull String username, int totalPoints, int totalScans, int topQRCode, @NonNull String email, ArrayList<String> qrCodeIDs, ArrayList<String> qrCodeHashes, ArrayList<String> commentedOn) {
+        return new User(displayName, username, totalPoints, totalScans, topQRCode, email, qrCodeIDs, qrCodeHashes, commentedOn);
     }
 
     @Test
     public void testGetSetDisplayName() {
 
         // initial get
-        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com");
+        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com", qrCodeIDs, qrCodeHashes, commentedOn);
         Assertions.assertEquals("user99", user.getDisplayName());
 
         // set then get
@@ -46,7 +51,7 @@ public class UserTest {
     public void testGetSetUserName() {
 
         // initial get
-        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com");
+        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com", qrCodeIDs, qrCodeHashes, commentedOn);
         Assertions.assertEquals("user99", user.getUsername());
 
         // set then get
@@ -71,7 +76,7 @@ public class UserTest {
     public void testGetSetTotalPoints() {
 
         // initial get
-        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com");
+        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com", qrCodeIDs, qrCodeHashes, commentedOn);
         Assertions.assertEquals(10000, user.getTotalPoints());
 
         // case points = 0
@@ -88,7 +93,7 @@ public class UserTest {
     public void testGetSetTotalScans() {
 
         // initial get
-        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com");
+        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com", qrCodeIDs, qrCodeHashes, commentedOn);
         Assertions.assertEquals(30, user.getTotalScans());
 
         // case totalScans = 0
@@ -105,7 +110,7 @@ public class UserTest {
     public void testGetSetTopQRCode() {
 
         // initial get
-        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com");
+        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com", qrCodeIDs, qrCodeHashes, commentedOn);
         Assertions.assertEquals(23, user.getTopQRCode());
 
         // case TopPoints = 0
@@ -122,7 +127,7 @@ public class UserTest {
     public void testGetSetEmail() {
 
         // initial get
-        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com");
+        User user = mockUser("user99", "user99", 10000, 30, 23, "EpicGamer@gmail.com", qrCodeIDs, qrCodeHashes, commentedOn);
         Assertions.assertEquals("EpicGamer@gmail.com", user.getEmail());
 
         // case empty

@@ -225,7 +225,7 @@ public class FirebaseQueryAssistant {
      * @param radius          Maximum radius for two codes to be considered the same object (meters)
      * @sources <a href="https://firebase.google.com/docs/firestore/query-data/queries#java_6">Firestore documentation</a>
      */
-    public void addQR(@NonNull String username, @NonNull QRCode qrCode, String resizedImageUrl, @NonNull double radius) {
+    public void addQR(@NonNull String username, @NonNull QRCode qrCode, @Nullable String resizedImageUrl, double radius) {
         String qrCodeID = qrCode.getID();
 
         // Check if qrCode within location threshold already exists in db in QRCodes collection

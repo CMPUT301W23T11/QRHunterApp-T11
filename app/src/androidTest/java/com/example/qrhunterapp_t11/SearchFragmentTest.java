@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -71,7 +72,10 @@ public class SearchFragmentTest {
         rule.launchActivity(intent);
         Activity activity = rule.getActivity();
 
-        User user = new User(testUsername, testUsername, 0, 0, 0, "No email");
+        ArrayList<String> qrCodeIDs = new ArrayList<>();
+        ArrayList<String> qrCodeHashes = new ArrayList<>();
+        ArrayList<String> commentedOn = new ArrayList<>();
+        User user = new User(testUsername, testUsername, 0, 0, 0, "", qrCodeIDs, qrCodeHashes, commentedOn);
         usersReference.document(testUsername).set(user);
         solo = new Solo(InstrumentationRegistry.getInstrumentation(), activity);
     }

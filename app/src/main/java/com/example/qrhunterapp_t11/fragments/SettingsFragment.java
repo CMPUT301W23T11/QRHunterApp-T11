@@ -17,11 +17,7 @@ import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -47,10 +43,6 @@ public class SettingsFragment extends Fragment {
     private EditText emailEditText;
     private String usernameString;
     private String emailString;
-    // private static final String PREFS_CURRENT_USER_EMAIL = "currentUserEmail";
-    //private static final String PREFS_CURRENT_USER_DISPLAY_NAME = "currentUserDisplayName";
-    //private static final String DATABASE_DISPLAY_NAME_FIELD = "displayName";
-    //private SharedPreferences prefs;
 
     public SettingsFragment(@NonNull FirebaseFirestore db) {
         this.usersReference = db.collection("Users");
@@ -145,7 +137,6 @@ public class SettingsFragment extends Fragment {
                                     usersReference.document(user).update("email", null);
                                 }
 
-                                //prefs.edit().putString(PREFS_CURRENT_USER_EMAIL, emailString).commit();
                                 Preference.setPrefsString(Preference.PREFS_CURRENT_USER_EMAIL, emailString);
 
                             }
@@ -229,45 +220,20 @@ public class SettingsFragment extends Fragment {
      */
     public void updateUserComments(@NonNull String username, @NonNull String newDisplayUsername, final @NonNull QueryCallback queryCompleteCheck) {
 
-        ArrayList<DocumentReference> userCommentedListRef = new ArrayList<>();
-
-        // Retrieve DocumentReferences in the user's QR code collection and store them in an array
-        usersReference.document(username).collection("User QR Codes")
+        usersReference.document(username)
                 .get()
-                .addOnSuccessListener(documentReferences -> {
-                    for (QueryDocumentSnapshot reference : documentReferences) {
-
-                        DocumentReference documentReference = (DocumentReference) reference.get("Reference");
-                        userCommentedListRef.add(documentReference);
-                    }
-                    if (!userCommentedListRef.isEmpty()) {
-
-                        // Retrieve matching QR Code data from the QRCodes collection using DocumentReferences
-                        qrCodesReference
-                                .whereIn(FieldPath.documentId(), userCommentedListRef)
+                .addOnSuccessListener(user -> {
+                    ArrayList<String> qrCodesCommentedOn = (ArrayList<String>) user.get("commentedOn");
+                    for (String qrCodeCommentedOn : qrCodesCommentedOn) {
+                        qrCodesReference.document(qrCodeCommentedOn).collection("commentList")
+                                .whereEqualTo("username", username)
+                                .whereNotEqualTo("displayName", newDisplayUsername)
                                 .get()
-                                .addOnSuccessListener(referencedQRDocuments -> {
-                                    for (QueryDocumentSnapshot referencedQR : referencedQRDocuments) {
-
-                                        // Get collection reference to specific commentList to check
-                                        CollectionReference commentList = referencedQR.getReference().collection("commentList");
-
-                                        // Find exactly which comments need to be updated and update them
-                                        commentList
-                                                .whereEqualTo("username", username)
-                                                .whereNotEqualTo(Preference.DATABASE_DISPLAY_NAME_FIELD, newDisplayUsername) // Filter out documents that don't need updating
-                                                .get()
-                                                .addOnSuccessListener(commentedQRDocuments -> {
-                                                    ArrayList<DocumentSnapshot> commentedQR;
-                                                    commentedQR = (ArrayList) commentedQRDocuments.getDocuments();
-                                                    for (DocumentSnapshot commented : commentedQR) {
-                                                        commented.getReference().update(Preference.DATABASE_DISPLAY_NAME_FIELD, newDisplayUsername);
-                                                    }
-                                                    queryCompleteCheck.queryCompleteCheck(true);
-                                                });
-                                    }
+                                .addOnSuccessListener(qrCodeToUpdate -> {
+                                    System.out.println(qrCodeToUpdate.getDocuments());
                                 });
                     }
                 });
+
     }
 }
