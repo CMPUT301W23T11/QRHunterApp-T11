@@ -97,7 +97,6 @@ public class CameraFragment extends Fragment {
         this.firebaseQueryAssistant = new FirebaseQueryAssistant(db);
         this.qrCodesReference = db.collection("QRCodes");
         this.usersReference = db.collection("Users");
-        //user = Preference.getPrefsString("currentUserUsername", null);
     }
 
     /**
@@ -407,6 +406,7 @@ public class CameraFragment extends Fragment {
         //prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
         currentUserDisplayName = Preference.getPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, null);
         currentUserUsername = Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null);
+        user = null;
         resizedImageUrl = null; // for some reason resizedImageUrl appears to persist between scans; if you add a QR with a photo, and then immediately add a QR
         // without a photo, the second QR will re-use the the photo from the first QR code. Clearing resizedImageUrl here appears to fix this.
 
