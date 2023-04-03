@@ -228,7 +228,6 @@ public class SettingsFragment extends Fragment {
                     for (String qrCodeCommentedOn : qrCodesCommentedOn) {
                         qrCodesReference.document(qrCodeCommentedOn).collection("commentList")
                                 .whereEqualTo("username", username)
-                                .whereNotEqualTo("displayName", newDisplayUsername)
                                 .get()
                                 .addOnSuccessListener(commentedQRDocuments -> {
                                     ArrayList<DocumentSnapshot> commentedQR;

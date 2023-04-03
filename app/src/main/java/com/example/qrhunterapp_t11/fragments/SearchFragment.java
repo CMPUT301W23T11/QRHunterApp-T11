@@ -498,17 +498,12 @@ public class SearchFragment extends Fragment {
                     // For each QR Code, record which users have it in their collection
                     if (!qrCodesAtPlace.isEmpty()) {
                         for (QueryDocumentSnapshot qrCode : qrCodesAtPlace) {
-                            qrCodesReference.document(qrCode.getId()).collection("In Collection")
-                                    .get()
-                                    .addOnSuccessListener(usersWithQR -> {
-                                        if (!usersWithQR.isEmpty()) {
-                                            for (QueryDocumentSnapshot userWithQR : usersWithQR) {
-
-                                                usersPoints.put(userWithQR.get("username").toString(), qrCode.get("points").toString());
-                                                setHashMap.setHashMap(usersPoints);
-                                            }
-                                        }
-                                    });
+                            ArrayList<String> qrCodes = (ArrayList) qrCode.get("inCollection");
+                            for (String userWithQR : qrCodes) {
+                                usersPoints.put(userWithQR, qrCode.get("points").toString());
+                                System.out.println(usersPoints);
+                                setHashMap.setHashMap(usersPoints);
+                            }
                         }
                     } else {
                         setHashMap.setHashMap(usersPoints);

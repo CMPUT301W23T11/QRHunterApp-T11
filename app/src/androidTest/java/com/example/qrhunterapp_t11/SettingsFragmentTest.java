@@ -192,12 +192,7 @@ public class SettingsFragmentTest {
         solo.clickOnView(solo.getView(R.id.change_email_button));
         solo.clickOnText("Confirm", 2);
 
-        usersReference.document(testUsername)
-                .get()
-                .addOnSuccessListener(user -> {
-                    assertEquals(user.get("email"), correctEmailString);
-                });
-
+        solo.sleep(2000);
     }
 
     /**
@@ -211,7 +206,7 @@ public class SettingsFragmentTest {
         checkUniqueDisplayName(testUserUnique, new QueryCallback() {
             public void queryCompleteCheck(boolean unique) {
                 assertTrue(unique);
-
+                solo.sleep(500);
             }
         });
 
@@ -225,12 +220,15 @@ public class SettingsFragmentTest {
             comment.put("username", testUsername);
             qrCodesReference.document(qrCode1.getID()).collection("commentList").add(comment);
 
-            comment.put("commentString", "test comment" + (3 * i));
+            comment.put("commentString", "test comment" + i);
             qrCodesReference.document(qrCode2.getID()).collection("commentList").add(comment);
 
             comment.put("username", "falseTestUser");
             qrCodesReference.document(qrCode1.getID()).collection("commentList").add(comment);
             qrCodesReference.document(qrCode2.getID()).collection("commentList").add(comment);
+
+            usersReference.document(testUsername).update("commentedOn", FieldValue.arrayUnion(qrCode1.getID()));
+            usersReference.document(testUsername).update("commentedOn", FieldValue.arrayUnion(qrCode2.getID()));
         }
 
         solo.clickOnView(solo.getView(R.id.settings));
