@@ -335,10 +335,13 @@ public class SearchFragment extends Fragment {
                                     qrsPoints.add(hashMap.get(user));
                                 }
 
-                                randomCollection = "UsersRegional" + rand.nextInt(1000000);
+                                randomCollection = "UsersRegional" + rand.nextInt(10000);
                                 for (int i = 0; i < hashMap.size(); i++) {
                                     String currentUserUsername = users.get(i).getUsername();
                                     usernames.add(currentUserUsername);
+
+                                    System.out.println(users.get(i).getUsername());
+                                    System.out.println(qrsPoints.get(i).getPoints());
 
                                     db.collection(randomCollection).document(currentUserUsername).set(users.get(i));
                                     db.collection(randomCollection).document(currentUserUsername).update("topQRRegional", qrsPoints.get(i).getPoints());
@@ -557,6 +560,14 @@ public class SearchFragment extends Fragment {
                             tasks.add(userTask.continueWith(user -> {
                                 User userToAdd = user.getResult().toObject(User.class);
                                 QRCode qrCodeToAdd = qrCode.toObject(QRCode.class);
+
+                                if (usersPoints.get(userToAdd) == null) {
+                                    usersPoints.put(userToAdd, qrCodeToAdd);
+                                } else {
+                                    if (usersPoints.get(userToAdd).getPoints() < qrCodeToAdd.getPoints()) {
+                                        usersPoints.put(userToAdd, qrCodeToAdd);
+                                    }
+                                }
                                 usersPoints.put(userToAdd, qrCodeToAdd);
                                 return null;
                             }));
