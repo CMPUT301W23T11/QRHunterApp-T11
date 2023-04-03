@@ -60,7 +60,6 @@ public class ProfileFragment extends Fragment {
     private QRCodeAdapter adapter;
     private RecyclerView qrCodeRecyclerView;
     private FirestoreRecyclerOptions<QRCode> options;
-    //private SharedPreferences prefs;
 
     /**
      * Constructor for profile fragment.
@@ -75,7 +74,6 @@ public class ProfileFragment extends Fragment {
         this.username = username;
         this.displayName = displayName;
     }
-
 
     /**
      * Inflates the layout for the camera fragment.
@@ -94,11 +92,8 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        //prefs = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
-
         TextView displayNameTextView = view.findViewById(R.id.profile_name);
         displayNameTextView.setText(displayName);
-
         Button backButton = view.findViewById(R.id.profile_back_button);
 
         // Makes a back button visible if not the current user

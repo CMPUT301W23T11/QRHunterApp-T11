@@ -179,7 +179,6 @@ public class ProfileTest {
     @Test
     public void checkCommentAdd() {
         // Asserts that the current activity is the MainActivity. Otherwise, show Wrong Activity
-        System.out.println("EJSGFBKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
 
         // Check that current user exists

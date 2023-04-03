@@ -49,7 +49,6 @@ public class CameraFragmentTest {
     private final Random rand = new Random();
     private final String testUsername = "testUser" + rand.nextInt(1000000);
     private Solo solo;
-    private boolean docExists;
     private SharedPreferences prefs;
     @Rule
     public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {

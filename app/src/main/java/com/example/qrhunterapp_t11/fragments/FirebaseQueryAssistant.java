@@ -8,6 +8,8 @@ import androidx.annotation.Nullable;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithQRCode;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldPath;
@@ -31,6 +33,11 @@ public class FirebaseQueryAssistant {
     private final FirebaseFirestore db;
 
 
+    /**
+     * Constructor takes the db as argument
+     *
+     * @param db
+     */
     public FirebaseQueryAssistant(@NonNull FirebaseFirestore db) {
         this.db = db;
         this.qrCodesReference = db.collection("QRCodes");
@@ -325,7 +332,6 @@ public class FirebaseQueryAssistant {
                             .get()
                             .addOnSuccessListener(qrToDelete -> {
 
-
                                 // Subtract point value of that code from user's total points
                                 int points = qrToDelete.getLong("points").intValue();
                                 points = -points;
@@ -342,6 +348,13 @@ public class FirebaseQueryAssistant {
                 });
     }
 
+    /**
+     * Helper function to check if a QR code document exists
+     *
+     * @param docToCheck document that should be checked for
+     * @param cr         CollectionReference to the collection being accessed
+     * @reference <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
+     */
     public void checkDocExists(String docToCheck, CollectionReference cr, final QueryCallback docExists) {
         DocumentReference docRef = cr.document(docToCheck);
         docRef.get().addOnSuccessListener(result -> {
@@ -355,6 +368,31 @@ public class FirebaseQueryAssistant {
             }
 
         });
+    }
+
+
+    /**
+     * Helper function to delete the test QR code document
+     *
+     * @param docToDelete document that should be deleted
+     * @param cr          CollectionReference to the collection being accessed
+     * @reference <a href="https://firebase.google.com/docs/firestore/manage-data/delete-data">used without major modification</a>
+     */
+    public void deleteDoc(String docToDelete, CollectionReference cr) {
+        cr.document(docToDelete)
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("DeleteDocument", "DocumentSnapshot successfully deleted!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("DeleteDocument", "Error deleting document", e);
+                    }
+                });
     }
 
 
