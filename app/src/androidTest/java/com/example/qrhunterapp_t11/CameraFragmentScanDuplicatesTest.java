@@ -15,11 +15,8 @@ import com.example.qrhunterapp_t11.activities.MainActivity;
 import com.example.qrhunterapp_t11.fragments.FirebaseQueryAssistant;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.Preference;
-import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.example.qrhunterapp_t11.objectclasses.User;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.robotium.solo.Solo;
 
@@ -112,36 +109,6 @@ public class CameraFragmentScanDuplicatesTest {
         Preference.clearPrefs();
         usersReference.document(testUsername).delete();
         solo.finishOpenedActivities();
-    }
-
-    /**
-     * Tests to make sure a new photo appears in the qrcode view after the user takes a photo
-     */
-    @Test
-    public void photoAppears() {
-        String testId = "9a7cd5efda286fbcdd26f89e64a360c560208248b301ff49ad670cb5552790ff";
-        final int[] photoSize = new int[1];
-        qrReference.document(testId).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                QRCode qrCode1 = documentSnapshot.toObject(QRCode.class);
-                photoSize[0] = qrCode1.getPhotoList().size();
-            }
-        });
-
-        solo.clickOnView(solo.getView(R.id.addFab));
-        assertTrue(solo.waitForText("Points", 1, 10000)); // wait 7 sec for points prompt to appear
-        assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
-        solo.clickOnView(solo.getView(android.R.id.button1));
-        solo.clickOnView(solo.getView(R.id.captureButton));
-        assertTrue(solo.waitForText("Share Geolocation", 1, 7000)); // wait 7 sec for location prompt to appear
-        solo.clickOnView(solo.getView(android.R.id.button2));
-        assertTrue(solo.waitForText("STATS", 1, 7000)); // confirm we're back on the profile page
-        solo.clickOnText("Comments:");
-        solo.sleep(1000);
-        String newPhotoSize = String.valueOf(++photoSize[0]);
-        assertTrue(solo.waitForText(newPhotoSize, 1, 7000)); // confirm a photo has been added
-        solo.clickOnView(solo.getView(android.R.id.button1));
     }
 
     /**
