@@ -20,7 +20,8 @@ import io.reactivex.rxjava3.annotations.NonNull;
 /**
  * Adapter class for RecyclerView that holds user's collection of QR Codes
  *
- * @author Afra, Sarah
+ * @author Afra
+ * @author Sarah
  * @sources <pre>
  * <ul>
  * <li><a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/firestore/readme/">Firestore documentation</a></li>

@@ -2,8 +2,11 @@ package com.example.qrhunterapp_t11.fragments;
 
 import static android.app.Activity.RESULT_OK;
 
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -13,10 +16,18 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -27,6 +38,8 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.qrhunterapp_t11.R;
+import com.example.qrhunterapp_t11.adapters.QRCodeAdapterMap;
+import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithArrayList;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -58,6 +71,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -76,16 +90,22 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
     public static final int permissionsRequestAccessCoarseLocation = 9004;
     public static final int AUTOCOMPLETE_REQUEST_CODE = 1;
     private static final String TAG = "MapFragment";
-    private final CollectionReference qrCodeRef;
-    private final CollectionReference userRef;
+    private final CollectionReference qrCodesReference;
+    private final CollectionReference usersReference;
     private GoogleMap mMap;
     private boolean mLocationPermissionGranted = false;
     private FloatingActionButton searchButton;
+    private LatLng currentLocation;
+    private QRCodeAdapterMap qrCodeAdapterMap;
+    private ListView nearbyQRListView;
+    private Button nearbyQRCloseButton;
+    private RelativeLayout nearbyQRRelativeLayout;
+    private FloatingActionButton nearbyCodesButton;
     private RectangularBounds rectangularBounds;
 
     public MapFragment(@NonNull FirebaseFirestore db) {
-        this.qrCodeRef = db.collection("QRCodes");
-        this.userRef = db.collection("Users");
+        this.qrCodesReference = db.collection("QRCodes");
+        this.usersReference = db.collection("Users");
     }
 
     /**
@@ -125,6 +145,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         Places.initialize(getActivity().getApplicationContext(), getResources().getString(R.string.google_map_api_key));
 
         searchButton = view.findViewById(R.id.map_search_button);
+        nearbyCodesButton = view.findViewById(R.id.map_nearby_codes_button);
+        nearbyQRListView = view.findViewById(R.id.nearby_codes_listview);
+        nearbyQRRelativeLayout = view.findViewById(R.id.nearby_codes_relative_layout);
+        nearbyQRCloseButton = view.findViewById(R.id.close_nearby_button);
 
         return view;
     }
@@ -284,7 +308,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                             public void onSuccess(Location location) {
                                 if (location != null) {
                                     // Create LatLng object with the current location
-                                    LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                                    currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
                                     rectangularBounds = RectangularBounds.newInstance(currentLocation, currentLocation);
                                     // Create CameraUpdate object and move the camera to the current location
                                     CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(currentLocation, 15);
@@ -308,7 +332,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(bitmap);
 
         // Retrieve all User documents that reference any QRCode document
-        userRef.get().addOnSuccessListener(users -> {
+        usersReference.get().addOnSuccessListener(users -> {
             Set<String> referencedQRCodeIds = new HashSet<>();
             for (QueryDocumentSnapshot user : users) {
                 CollectionReference userQRCodeRef = user.getReference().collection("User QR Codes");
@@ -318,7 +342,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                         referencedQRCodeIds.add(qrCodeId);
                     }
                     // Add markers for each QRCode that is still being referenced by at least one user
-                    qrCodeRef.get().addOnSuccessListener(qrCodes -> {
+                    qrCodesReference.get().addOnSuccessListener(qrCodes -> {
                         for (QueryDocumentSnapshot qrCode : qrCodes) {
                             String qrCodeId = qrCode.getId();
                             if (referencedQRCodeIds.contains(qrCodeId)) {
@@ -351,6 +375,96 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
             }
         });
 
+        // Show nearby codes when user clicks on button
+        nearbyCodesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                final EditText radiusEditText = new EditText(getActivity().getApplicationContext());
+                radiusEditText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+                InputFilter[] filterArray = new InputFilter[1];
+                filterArray[0] = new InputFilter.LengthFilter(5);
+                radiusEditText.setFilters(filterArray);
+
+                builder
+                        .setTitle("Nearby QR Codes")
+                        .setMessage("Enter a radius (km)")
+                        .setView(radiusEditText)
+                        .setNegativeButton("Cancel", null)
+                        .setPositiveButton("Set", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                String radiusString = radiusEditText.getText().toString();
+                                double radius = Double.parseDouble(radiusString);
+
+                                // Convert km to m
+                                radius *= 1000;
+                                findNearbyQRCodes(currentLocation, radius, new QueryCallbackWithArrayList() {
+                                    @SuppressLint("ClickableViewAccessibility")
+                                    @Override
+                                    public void setArrayList(@NonNull ArrayList<List<?>> arrayList) {
+                                        if (arrayList.isEmpty()) {
+                                            builder
+                                                    .setMessage("No QR Codes found within " + radiusString + " km.")
+                                                    .setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                                            dialogInterface.dismiss();
+                                                        }
+                                                    })
+                                                    .create();
+                                            builder.show();
+                                        } else {
+                                            qrCodeAdapterMap = new QRCodeAdapterMap(getActivity().getApplicationContext(), arrayList);
+                                            nearbyQRListView.setAdapter(qrCodeAdapterMap);
+
+                                            nearbyQRRelativeLayout.setVisibility(View.VISIBLE);
+                                            nearbyQRListView.setOnTouchListener(new ListView.OnTouchListener() {
+                                                @Override
+                                                public boolean onTouch(View v, MotionEvent event) {
+                                                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                                                        v.getParent().requestDisallowInterceptTouchEvent(true);
+                                                    } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                                                        v.getParent().requestDisallowInterceptTouchEvent(false);
+                                                    }
+
+                                                    v.onTouchEvent(event);
+                                                    return true;
+                                                }
+                                            });
+
+                                            // If user clicks on QR Code in list, take them to its map marker
+                                            nearbyQRListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                                @Override
+                                                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                                                    int index = (int) adapterView.getItemAtPosition(i);
+                                                    QRCode qrcode = (QRCode) arrayList.get(index).get(0);
+
+                                                    LatLng qrCodeLocation = new LatLng(qrcode.getLatitude(), qrcode.getLongitude());
+
+                                                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(qrCodeLocation, 15);
+                                                    mMap.animateCamera(cameraUpdate);
+                                                }
+                                            });
+
+                                            // Close nearby QR Codes list
+                                            nearbyQRCloseButton.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View view) {
+                                                    nearbyQRRelativeLayout.setVisibility(View.GONE);
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+                            }
+                        })
+                        .create();
+                builder.show();
+            }
+        });
+
         // Launch autocomplete when user clicks on search
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -376,6 +490,52 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
+    }
+
+    /**
+     * Gets all QR Codes within a given radius of the current user
+     *
+     * @param currentLocationLatLng Current user's location
+     * @param radius                Some radius in metres
+     */
+    private void findNearbyQRCodes(LatLng currentLocationLatLng, double radius, QueryCallbackWithArrayList nearbyCodes) {
+
+        Location currentLocationLocation = new Location("");
+        currentLocationLocation.setLatitude(currentLocationLatLng.latitude);
+        currentLocationLocation.setLongitude(currentLocationLatLng.longitude);
+        ArrayList<List<?>> nearbyQRCodes = new ArrayList<>();
+
+        // Get all QR Codes with location
+        qrCodesReference
+                .whereNotEqualTo("latitude", null)
+                .get()
+                .addOnSuccessListener(qrCodes -> {
+
+                    // For each QR Code, create Location object
+                    for (QueryDocumentSnapshot qrCodeDocument : qrCodes) {
+                        Location qrCodeLocation = new Location("");
+                        qrCodeLocation.setLatitude(qrCodeDocument.getDouble("latitude"));
+                        qrCodeLocation.setLongitude(qrCodeDocument.getDouble("longitude"));
+                        double distance = currentLocationLocation.distanceTo(qrCodeLocation);
+
+                        // Check if within radius
+                        if (distance <= radius) {
+                            QRCode qrCode = qrCodeDocument.toObject(QRCode.class);
+
+                            List<Object> qrCodeDistance = new ArrayList<>();
+                            qrCodeDistance.add(qrCode);
+
+                            // Convert from m back to km
+                            distance /= 1000;
+                            distance = Double.parseDouble(String.format("%.2f", distance));
+
+                            qrCodeDistance.add(distance);
+
+                            nearbyQRCodes.add(qrCodeDistance);
+                            nearbyCodes.setArrayList(nearbyQRCodes);
+                        }
+                    }
+                });
     }
 
     /**

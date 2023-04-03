@@ -25,13 +25,75 @@
             android:layout_marginStart="348dp"
             android:layout_marginTop="64dp"
             android:background="@color/background"
+            android:backgroundTint="#5645CF13"
             android:contentDescription="Button that opens autocomplete search"
             android:src="@drawable/search_icon"
             app:backgroundTint="@color/headers"
+            app:elevation="0dp"
             app:ensureMinTouchTargetSize="true"
             app:fabCustomSize="60dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:pressedTranslationZ="0dp" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/map_nearby_codes_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginStart="348dp"
+            android:layout_marginTop="136dp"
+            android:background="@color/background"
+            android:contentDescription="Button that opens nearby codes"
+            android:src="@drawable/ic_google_maps"
+            app:backgroundTint="@color/headers"
+            app:elevation="0dp"
+            app:ensureMinTouchTargetSize="true"
+            app:fabCustomSize="60dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:pressedTranslationZ="0dp" />
+
+        <RelativeLayout
+            android:id="@+id/nearby_codes_relative_layout"
+            android:layout_width="200dp"
+            android:layout_height="300dp"
+            android:layout_marginStart="4dp"
+            android:background="@color/off_green_box"
+            android:padding="8dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.148">
+
+            <TextView
+                android:id="@+id/nearby_codes_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:text="Nearby QR Codes"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/close_nearby_button"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_marginStart="22dp"
+                android:layout_toEndOf="@+id/nearby_codes_textview"
+                android:background="@drawable/close_icon" />
+
+            <ListView
+                android:id="@+id/nearby_codes_listview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/nearby_codes_textview"
+                android:layout_marginTop="8dp"
+                android:divider="@null"
+                android:dividerHeight="0dp" />
+
+        </RelativeLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
