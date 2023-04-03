@@ -39,6 +39,8 @@ import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.example.qrhunterapp_t11.objectclasses.User;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.TypeFilter;
@@ -334,7 +336,7 @@ public class SearchFragment extends Fragment {
                                 }
 
                                 randomCollection = "UsersRegional" + rand.nextInt(1000000);
-                                for (int i = 0; i < users.size(); i++) {
+                                for (int i = 0; i < hashMap.size(); i++) {
                                     String currentUserUsername = users.get(i).getUsername();
                                     usernames.add(currentUserUsername);
 
@@ -346,6 +348,14 @@ public class SearchFragment extends Fragment {
                                 leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
                                         .setQuery(query, User.class)
                                         .build();
+                                query
+                                        .get()
+                                        .addOnSuccessListener(stuf -> {
+                                            for (QueryDocumentSnapshot thin : stuf) {
+                                                System.out.println(thin.get("topQRRegional"));
+                                            }
+                                        });
+                                System.out.println(randomCollection);
 
                                 if (usernames.contains(Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null))) {
                                     userInLeaderboard = true;
@@ -537,26 +547,25 @@ public class SearchFragment extends Fragment {
                 .whereEqualTo(qrCodeField, placeName)
                 .orderBy("points", Query.Direction.ASCENDING)
                 .get()
-                .addOnSuccessListener(qrCodesAtPlace -> {
-                    // For each QR Code, record which users have it in their collection
-                    if (!qrCodesAtPlace.isEmpty()) {
-                        for (QueryDocumentSnapshot qrCode : qrCodesAtPlace) {
-                            ArrayList<String> qrCodes = (ArrayList<String>) qrCode.get("inCollection");
-                            assert qrCodes != null;
-                            for (String userWithQR : qrCodes) {
-                                usersReference.document(userWithQR)
-                                        .get()
-                                        .addOnSuccessListener(user -> {
-                                            User userToAdd = user.toObject(User.class);
-                                            QRCode qrCodeToAdd = qrCode.toObject(QRCode.class);
-                                            usersPoints.put(userToAdd, qrCodeToAdd);
-                                            setHashMap.setHashMap(usersPoints);
-                                        });
-                            }
+                .continueWithTask(qrCodesTask -> {
+                    ArrayList<Task<Void>> tasks = new ArrayList<>();
+                    for (QueryDocumentSnapshot qrCode : qrCodesTask.getResult()) {
+                        ArrayList<String> qrCodes = (ArrayList<String>) qrCode.get("inCollection");
+                        assert qrCodes != null;
+                        for (String userWithQR : qrCodes) {
+                            Task<DocumentSnapshot> userTask = usersReference.document(userWithQR).get();
+                            tasks.add(userTask.continueWith(user -> {
+                                User userToAdd = user.getResult().toObject(User.class);
+                                QRCode qrCodeToAdd = qrCode.toObject(QRCode.class);
+                                usersPoints.put(userToAdd, qrCodeToAdd);
+                                return null;
+                            }));
                         }
-                    } else {
-                        setHashMap.setHashMap(usersPoints);
                     }
+                    return Tasks.whenAll(tasks);
+                })
+                .addOnSuccessListener(aVoid -> {
+                    setHashMap.setHashMap(usersPoints);
                 });
     }
 }
