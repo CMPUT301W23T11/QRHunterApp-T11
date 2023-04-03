@@ -231,6 +231,7 @@ public class SettingsFragment extends Fragment {
                                 .get()
                                 .addOnSuccessListener(qrCodeToUpdate -> {
                                     System.out.println("ooooooooooooooo" + qrCodeToUpdate.getDocuments());
+                                    queryCompleteCheck.queryCompleteCheck(true);
                                 });
                     }
                 });
