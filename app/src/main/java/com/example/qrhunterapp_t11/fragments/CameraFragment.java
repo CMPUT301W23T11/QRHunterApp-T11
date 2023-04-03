@@ -31,7 +31,6 @@ import androidx.fragment.app.FragmentTransaction;
 import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.activities.CaptureAct;
 import com.example.qrhunterapp_t11.activities.TakePhotoActivity;
-import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithQRCode;
 import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
@@ -86,7 +85,6 @@ public class CameraFragment extends Fragment {
     private String currentUserDisplayName;
     private String currentUserUsername;
     private QRCode savedQR = null;
-
 
 
     public CameraFragment(@NonNull FirebaseFirestore db) {
@@ -434,7 +432,6 @@ public class CameraFragment extends Fragment {
                 firebaseQueryAssistant.checkUserHasHash(qrCode, currentUserUsername, new QueryCallbackWithQRCode() {
                     @Override
                     public void queryCompleteCheckObject(boolean hashExists, QRCode qr) {
-
                         // If user already has this qRCode, alert user that they cannot get the points for the same code again
                         if (hashExists) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -468,7 +465,7 @@ public class CameraFragment extends Fragment {
                             String scored = qrCode.getPoints() + " Points";
                             scoredTV.setText(scored);
                             final AlertDialog alertDialog = builder.create();
-                            alertDialog.show(); // create and display the dialog
+                            alertDialog.show(); // Create and display the dialog
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                                 Objects.requireNonNull(alertDialog.getWindow()).setDimAmount(0);
                             }
@@ -520,12 +517,7 @@ public class CameraFragment extends Fragment {
         // If the user is updating their scanned qrCode's old location
         if ((savedQR != null) && (addNewlyScannedQR)) {
             // Delete the old qrCode reference from the user's collection
-            firebaseQueryAssistant.deleteQR(currentUserUsername, savedQR.getID(), new QueryCallback() {
-                @Override
-                public void queryCompleteCheck(boolean queryComplete) {
-                    assert queryComplete;
-                }
-            });
+            firebaseQueryAssistant.deleteQR(currentUserUsername, savedQR.getID());
         }
         // Executes if the newly scanned QR Code should be added to the database
         if (addNewlyScannedQR) {

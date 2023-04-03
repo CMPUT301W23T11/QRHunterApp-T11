@@ -25,9 +25,7 @@ import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -159,15 +157,11 @@ public class ProfileFragment extends Fragment {
                                                 .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                                                     @Override
                                                     public void onClick(DialogInterface dialogInterface, int i) {
-                                                        firebaseQueryAssistant.deleteQR(username, qrCodeID, new QueryCallback() {
-                                                            @Override
-                                                            public void queryCompleteCheck(boolean deleted) {
-                                                                assert deleted;
-                                                                FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-                                                                trans.replace(R.id.main_screen, new ProfileFragment(db, username, displayName));
-                                                                trans.commit();
-                                                            }
-                                                        });
+                                                        firebaseQueryAssistant.deleteQR(username, qrCodeID);
+
+                                                        FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+                                                        trans.replace(R.id.main_screen, new ProfileFragment(db, username, displayName));
+                                                        trans.commit();
                                                     }
                                                 })
                                                 .create();
@@ -195,37 +189,26 @@ public class ProfileFragment extends Fragment {
      * @param getUserData Callback for query
      * @sources Firestore documentation
      */
-    public void queryQRCodes(@NonNull String username, final @NonNull ProfileFragment.ProfileUserDataCallback getUserData) {
+    public void queryQRCodes(@NonNull String username, final @NonNull ProfileUserDataCallback getUserData) {
 
-
-        ArrayList<DocumentReference> userQRCodesRef = new ArrayList<>();
         ArrayList<String> userPoints = new ArrayList<>();
 
-        // Retrieve DocumentReferences in the user's QR code collection and store them in an array
-        usersReference.document(username).collection("User QR Codes")
+        Query query = qrCodeReference.whereArrayContains("inCollection", username);
+        options = new FirestoreRecyclerOptions.Builder<QRCode>()
+                .setQuery(query, QRCode.class)
+                .build();
+
+        query
                 .get()
-                .addOnSuccessListener(documentReferences -> {
-                    for (QueryDocumentSnapshot qrReference : documentReferences) {
+                .addOnSuccessListener(qrCodes -> {
+                    for (QueryDocumentSnapshot qrCode : qrCodes) {
+                        String qrCodePoints = qrCode.get("points").toString();
 
-                        DocumentReference documentReference = (DocumentReference) qrReference.get("Reference");
-                        userQRCodesRef.add(documentReference);
+                        userPoints.add(qrCodePoints);
+                        Collections.sort(userPoints);
+
+                        getUserData.getUserData(userPoints);
                     }
-
-                    // Retrieve QR Code data from the QRCodes collection using DocumentReferences
-                    Query query = qrCodeReference.whereIn(FieldPath.documentId(), userQRCodesRef);
-                    query
-                            .get()
-                            .addOnSuccessListener(referencedQRDocuments -> {
-                                for (QueryDocumentSnapshot referencedQR : referencedQRDocuments) {
-                                    String qrCodePoints = referencedQR.get("points").toString();
-                                    options = new FirestoreRecyclerOptions.Builder<QRCode>()
-                                            .setQuery(query, QRCode.class)
-                                            .build();
-                                    userPoints.add(qrCodePoints);
-                                    Collections.sort(userPoints);
-                                    getUserData.getUserData(userPoints);
-                                }
-                            });
                 });
     }
 
