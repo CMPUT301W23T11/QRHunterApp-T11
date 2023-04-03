@@ -230,7 +230,7 @@ public class SettingsFragment extends Fragment {
                                 .whereNotEqualTo("displayName", newDisplayUsername)
                                 .get()
                                 .addOnSuccessListener(qrCodeToUpdate -> {
-                                    System.out.println(qrCodeToUpdate.getDocuments());
+                                    System.out.println("ooooooooooooooo" + qrCodeToUpdate.getDocuments());
                                 });
                     }
                 });

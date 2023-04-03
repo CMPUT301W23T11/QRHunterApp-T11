@@ -120,7 +120,6 @@ public class FirebaseQueryAssistant {
         usersReference.document(username)
                 .get()
                 .addOnSuccessListener(user -> {
-                    System.out.println(username);
                     if (user.exists()) {
                         ArrayList<String> userQRHashes = (ArrayList<String>) user.get("qrCodeHashes");
                         hasCodes.queryCompleteCheck(!userQRHashes.isEmpty());
@@ -178,8 +177,10 @@ public class FirebaseQueryAssistant {
         qrCodesReference.document(qrCodeID)
                 .get()
                 .addOnSuccessListener(qrCode -> {
-                            ArrayList<String> users = (ArrayList<String>) qrCode.get("inCollection");
-                            userHasQRCode.queryCompleteCheck(users.contains(username));
+                            if (qrCode.exists()) {
+                                ArrayList<String> users = (ArrayList<String>) qrCode.get("inCollection");
+                                userHasQRCode.queryCompleteCheck(users.contains(username));
+                            }
                         }
                 );
     }
