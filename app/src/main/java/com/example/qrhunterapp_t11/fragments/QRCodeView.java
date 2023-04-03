@@ -201,6 +201,7 @@ public class QRCodeView extends DialogFragment {
                                 commentEditText.getText().clear();
 
                                 qrCodesReference.document(qrCodeID).collection("commentList").add(comment);
+                                usersReference.document(currentUser).update("commentedOn", qrCodeID);
 
                                 // Increment comment count
                                 commentListCount++;

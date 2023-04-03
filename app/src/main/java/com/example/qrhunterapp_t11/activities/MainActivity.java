@@ -74,8 +74,9 @@ public class MainActivity extends AppCompatActivity {
 
                     ArrayList<String> qrCodeIDs = new ArrayList<>();
                     ArrayList<String> qrCodeHashes = new ArrayList<>();
+                    ArrayList<String> commentedOn = new ArrayList<>();
 
-                    User user = new User(username, username, 0, 0, 0, "", qrCodeIDs, qrCodeHashes);
+                    User user = new User(username, username, 0, 0, 0, "", qrCodeIDs, qrCodeHashes, commentedOn);
                     usersReference.document(username).set(user);
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null), Preference.getPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, null))).commit();
 

@@ -7,9 +7,6 @@ import static org.junit.Assert.assertFalse;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.TextView;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
@@ -17,26 +14,21 @@ import androidx.test.rule.ActivityTestRule;
 import com.example.qrhunterapp_t11.activities.MainActivity;
 import com.example.qrhunterapp_t11.fragments.FirebaseQueryAssistant;
 import com.example.qrhunterapp_t11.interfaces.QueryCallback;
-import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithQRCode;
 import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.example.qrhunterapp_t11.objectclasses.User;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.robotium.solo.Solo;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 /**
@@ -102,7 +94,11 @@ public class CameraFragmentScanDuplicatesTest {
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         rule.launchActivity(intent);
         Activity activity = rule.getActivity();
-        User user = new User(testUsername, testUsername, 0, 0, 0, "No email");
+
+        ArrayList<String> qrCodeIDs = new ArrayList<>();
+        ArrayList<String> qrCodeHashes = new ArrayList<>();
+        ArrayList<String> commentedOn = new ArrayList<>();
+        User user = new User(testUsername, testUsername, 0, 0, 0, "", qrCodeIDs, qrCodeHashes, commentedOn);
         usersReference.document(testUsername).set(user);
         solo = new Solo(InstrumentationRegistry.getInstrumentation(), activity);
 
