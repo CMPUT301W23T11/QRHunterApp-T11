@@ -93,7 +93,7 @@ public class QRCodeAdapter extends FirestoreRecyclerAdapter<QRCode, QRCodeAdapte
      * @param setNumComments Callback function
      */
     public void numCommentsCheck(@NonNull String qrCodeID, final @NonNull QRCodeNumCommentsCallback setNumComments) {
-
+        System.out.println("oooooooooooooooooooooooooooooooo" + qrCodeID);
         db.collection("QRCodes").document(qrCodeID).collection("commentList")
                 .get()
                 .addOnSuccessListener(qrCodeCommentList ->

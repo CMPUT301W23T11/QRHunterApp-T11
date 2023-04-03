@@ -7,7 +7,7 @@ import android.content.SharedPreferences;
  * Singleton class for SharedPreferences
  *
  * @author Sarah
- *  @sources <a href="https://stackoverflow.com/questions/19612993/writing-singleton-class-to-manage-android-sharedpreferences"> Answer by Magesh Pandian</a></li>
+ * @sources <a href="https://stackoverflow.com/questions/19612993/writing-singleton-class-to-manage-android-sharedpreferences"> Answer by Magesh Pandian</a></li>
  */
 public class Preference {
     public static final String PREFS_CURRENT_USER = "currentUserUsername";

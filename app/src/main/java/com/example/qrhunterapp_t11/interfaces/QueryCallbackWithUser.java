@@ -1,18 +1,13 @@
 package com.example.qrhunterapp_t11.interfaces;
 
-import androidx.annotation.NonNull;
-
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.example.qrhunterapp_t11.objectclasses.User;
-
-import java.util.HashMap;
 
 /**
  * Callback for querying the database
  *
- * @author Afra
+ * @author Sarah
  */
-public interface QueryCallbackWithHashMap {
-    void setHashMap(@NonNull HashMap<User, QRCode> hashMap);
+public interface QueryCallbackWithUser {
+    void queryCompleteCheckUser(boolean queryComplete, User user, QRCode qrCode);
 }
-

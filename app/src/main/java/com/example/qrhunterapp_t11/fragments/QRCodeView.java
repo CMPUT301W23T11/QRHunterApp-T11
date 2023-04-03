@@ -33,6 +33,7 @@ import com.example.qrhunterapp_t11.objectclasses.Comment;
 import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -201,6 +202,7 @@ public class QRCodeView extends DialogFragment {
                                 commentEditText.getText().clear();
 
                                 qrCodesReference.document(qrCodeID).collection("commentList").add(comment);
+                                usersReference.document(currentUser).update("commentedOn", FieldValue.arrayUnion(qrCodeID));
 
                                 // Increment comment count
                                 commentListCount++;

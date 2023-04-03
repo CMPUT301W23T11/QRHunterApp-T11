@@ -43,7 +43,6 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
-            android:saveEnabled="false"
             android:layout_weight="1"
             android:autofillHints="username"
             android:fontFamily="@font/lato"
@@ -51,6 +50,7 @@
             android:imeOptions="actionDone"
             android:inputType="textPersonName"
             android:maxLength="16"
+            android:saveEnabled="false"
             android:text="@string/edittext_username" />
 
         <Button
@@ -90,13 +90,13 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
-            android:saveEnabled="false"
             android:layout_weight="1"
             android:autofillHints="emailAddress"
             android:fontFamily="@font/lato"
             android:hint="@string/edittext_email"
             android:imeOptions="actionDone"
             android:inputType="textEmailAddress"
+            android:saveEnabled="false"
             android:text="@string/edittext_email" />
 
         <Button

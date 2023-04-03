@@ -22,6 +22,7 @@ public class QRCode {
     private ArrayList<String> faceList;
     private ArrayList<String> photoList;
 
+    private ArrayList<String> inCollection;
     private String country;
     private String adminArea;
     private String subAdminArea;
@@ -60,6 +61,7 @@ public class QRCode {
         this.subLocality = null;
         this.postalCode = null;
         this.postalCodePrefix = null;
+        this.inCollection = new ArrayList<>();
     }
 
     /**
@@ -200,6 +202,7 @@ public class QRCode {
         faceList.add(mouthNumbers[hashBinary.charAt(4) - '0']);
         faceList.add(faceNumbers[hashBinary.charAt(5) - '0']);
         return faceList;
+
     }
 
     /**
@@ -443,6 +446,14 @@ public class QRCode {
 
     public void setPostalCodePrefix(String postalCodePrefix) {
         this.postalCodePrefix = postalCodePrefix;
+    }
+
+    public ArrayList<String> getInCollection() {
+        return inCollection;
+    }
+
+    public void setInCollection(ArrayList<String> inCollection) {
+        this.inCollection = inCollection;
     }
 
 

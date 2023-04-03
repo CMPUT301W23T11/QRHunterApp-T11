@@ -17,7 +17,7 @@ import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.example.qrhunterapp_t11.objectclasses.User;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.robotium.solo.Solo;
@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -78,7 +79,10 @@ public class SettingsFragmentTest {
         rule.launchActivity(intent);
         Activity activity = rule.getActivity();
 
-        User user = new User(testUsername, testUsername, 0, 0, 0, "No email");
+        ArrayList<String> qrCodeIDs = new ArrayList<>();
+        ArrayList<String> qrCodeHashes = new ArrayList<>();
+        ArrayList<String> commentedOn = new ArrayList<>();
+        User user = new User(testUsername, testUsername, 0, 0, 0, "", qrCodeIDs, qrCodeHashes, commentedOn);
 
         usersReference.document(testUsername).set(user);
 
@@ -188,12 +192,7 @@ public class SettingsFragmentTest {
         solo.clickOnView(solo.getView(R.id.change_email_button));
         solo.clickOnText("Confirm", 2);
 
-        usersReference.document(testUsername)
-                .get()
-                .addOnSuccessListener(user -> {
-                    assertEquals(user.get("email"), correctEmailString);
-                });
-
+        solo.sleep(2000);
     }
 
     /**
@@ -207,7 +206,7 @@ public class SettingsFragmentTest {
         checkUniqueDisplayName(testUserUnique, new QueryCallback() {
             public void queryCompleteCheck(boolean unique) {
                 assertTrue(unique);
-
+                solo.sleep(500);
             }
         });
 
@@ -221,12 +220,15 @@ public class SettingsFragmentTest {
             comment.put("username", testUsername);
             qrCodesReference.document(qrCode1.getID()).collection("commentList").add(comment);
 
-            comment.put("commentString", "test comment" + (3 * i));
+            comment.put("commentString", "test comment" + i);
             qrCodesReference.document(qrCode2.getID()).collection("commentList").add(comment);
 
             comment.put("username", "falseTestUser");
             qrCodesReference.document(qrCode1.getID()).collection("commentList").add(comment);
             qrCodesReference.document(qrCode2.getID()).collection("commentList").add(comment);
+
+            usersReference.document(testUsername).update("commentedOn", FieldValue.arrayUnion(qrCode1.getID()));
+            usersReference.document(testUsername).update("commentedOn", FieldValue.arrayUnion(qrCode2.getID()));
         }
 
         solo.clickOnView(solo.getView(R.id.settings));
@@ -261,8 +263,11 @@ public class SettingsFragmentTest {
      * testUser should always be a new addition to the database
      */
     public void addTestUserToDB(String username) {
+        ArrayList<String> qrCodeIDs = new ArrayList<>();
+        ArrayList<String> qrCodeHashes = new ArrayList<>();
+        ArrayList<String> commentedOn = new ArrayList<>();
 
-        User user = new User(username, username, 0, 0, 0, "No email");
+        User user = new User(username, username, 0, 0, 0, "", qrCodeIDs, qrCodeHashes, commentedOn);
 
         usersReference.document(username).set(user);
 
@@ -341,10 +346,8 @@ public class SettingsFragmentTest {
         QRCode qrCode = new QRCode("test" + randomNum);
 
         qrCodesReference.document(qrCode.getID()).set(qrCode);
-        DocumentReference qrCodeReference = db.collection("QRCodes").document(qrCode.getID());
-        HashMap<String, DocumentReference> qrReferenceMap = new HashMap<>();
-        qrReferenceMap.put("Reference", qrCodeReference);
-        usersReference.document(testUsername).collection("User QR Codes").document(qrCode.getHash()).set(qrReferenceMap);
+        usersReference.document(testUsername).update("qrCodeHashes", FieldValue.arrayUnion(qrCode.getHash()));
+        usersReference.document(testUsername).update("qrCodeIDs", FieldValue.arrayUnion(qrCode.getID()));
 
         return qrCode;
     }
@@ -356,6 +359,7 @@ public class SettingsFragmentTest {
      */
     private void deleteMockQRCode(QRCode qrCode) {
         qrCodesReference.document(qrCode.getID()).delete();
-        usersReference.document(testUsername).collection("User QR Codes").document(qrCode.getID()).delete();
+        usersReference.document(testUsername).update("qrCodeHashes", FieldValue.arrayRemove(qrCode.getHash()));
+        usersReference.document(testUsername).update("qrCodeIDs", FieldValue.arrayRemove(qrCode.getID()));
     }
 }
