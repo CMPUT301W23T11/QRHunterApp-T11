@@ -136,33 +136,18 @@ public class FirebaseQueryAssistant {
 
     public void checkUserHasHash(@NonNull QRCode qrInput, @NonNull String username, final @NonNull QueryCallbackWithQRCode docExists) {
 
-        qrCodesReference
-                .whereEqualTo("hash", qrInput.getHash())
+        usersReference.document(username)
                 .get()
-                .addOnSuccessListener(matchingQRCodes -> {
-                    if (matchingQRCodes.isEmpty()) {
-                        docExists.queryCompleteCheckObject(false, null);
-                        return;
-                    } else {
-                        for (QueryDocumentSnapshot qrCodeDocument : matchingQRCodes) {
-                            qrCodesReference.document(qrCodeDocument.getId()).collection("In Collection")
-                                    .whereEqualTo("username", username)
-                                    .get()
-                                    .addOnSuccessListener(matchingUsers -> {
-                                        if (!matchingUsers.isEmpty()) {
-                                            QRCode qrCode = qrCodeDocument.toObject(QRCode.class);
-                                            docExists.queryCompleteCheckObject(true, qrCode);
-                                            return;
-                                        } else {
-                                            docExists.queryCompleteCheckObject(false, null);
-                                            return;
-                                        }
-                                    });
-                            break;
+                .addOnSuccessListener(user -> {
+                    if (user.exists()) {
+                        ArrayList<String> userHashes = (ArrayList<String>) user.get("qrCodeHashes");
+                        if (userHashes.contains(qrInput.getHash())) {
+                            docExists.queryCompleteCheckObject(true, qrInput);
+                        } else {
+                            docExists.queryCompleteCheckObject(false, null);
                         }
                     }
                 });
-
     }
 
     /**
