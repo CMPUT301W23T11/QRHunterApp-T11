@@ -190,8 +190,6 @@ public class FirebaseQueryAssistant {
                         dbQR = document.toObject(QRCode.class);      // rebuilds a QRCode object from db information
                         isSame = qrCodesWithinRadius(qrCode, dbQR, MAX_RADIUS);
                         if (isSame) {                             // locations within threshold, treat as same qr, break from loop
-                            String qrCodeID = dbQR.getID();
-                            //queryCompleteCheck.queryCompleteCheck(true);
                             Log.d("QRExist", "locations close enough, count as equal object");
                             break;
                         }
