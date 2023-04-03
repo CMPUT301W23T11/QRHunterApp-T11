@@ -1,5 +1,6 @@
 package com.example.qrhunterapp_t11.fragments;
 
+import android.location.Location;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -44,10 +45,7 @@ public class FirebaseQueryAssistant {
     }
 
     /**
-     * This function calculates the distance between two locations on earth (input
-     * via decimal latitude longitude coordinates) using the Haversine formula;
-     * if the distance between the two points is less than the input threshold,
-     * returns true, else false
+     * This function calculates the distance between two QRCode locations
      * <p>
      * In the context of a freshly scanned QRCode, if the hash function of the new code
      * matches the hash of a QRCode already in the db, this function determines if they should
@@ -56,64 +54,43 @@ public class FirebaseQueryAssistant {
      * no new document will be inserted (user profile will reference pre-existing QRCode), otherwise
      * a new entry will be created
      *
-     * @param qr          QRCode -
-     * @param dbQR        QRCode -
+     * @param qrCode1     First QRCode
+     * @param qrCode2     Second QRCode
      * @param givenRadius Double - the maximum distance allowed between the two points IN METERS
      * @return true if distance shorter than uniqueness threshold, else false if 2 separate instances
-     * @sources <pre>
-     * <ul>
-     * <li><a href="https://www.trekview.org/blog/2021/reading-decimal-gps-coordinates-like-a-computer/">How to read lat/long</a></li>
-     * <li><a href="https://en.wikipedia.org/wiki/Haversine_formula">How to calculate distance between to locations on earth using lat/long</a></li>
-     * <li><a href="https://linuxhint.com/import-math-in-java/">How use Math library</a></li>
-     * <li><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Math.html">cos, sin, arcsin</a></li>
-     * <li><a href="https://www.movable-type.co.uk/scripts/latlong.html"> Verified test cases w/ this calculator</a></li>
-     * </ul>
-     * </pre>
+     * @sources <a href="https://developer.android.com/reference/android/location/Location">Getting distance between locations</a>
      */
 
-    public static boolean isSameLocation(@Nullable QRCode qr, @Nullable QRCode dbQR, double givenRadius) {
+    public static boolean isSameLocation(@Nullable QRCode qrCode1, @Nullable QRCode qrCode2, double givenRadius) {
 
-        // input validation
-        // hashes are same, no location data for either, treat as same QRCode object
-        if ((qr.getLatitude() == null) && (qr.getLongitude() == null) && (dbQR.getLatitude() == null) && (dbQR.getLongitude() == null)) {
+        // Input validation
+
+        // Hashes are same, no location data for either, treat as same QRCode object
+        if ((qrCode1.getLatitude() == null) && (qrCode2.getLatitude() == null)) {
             return true;
             // at least one of the qrs is null but not both, treat as separate objects
-        } else if ((qr.getLatitude() == null) || (qr.getLongitude() == null) || (dbQR.getLatitude() == null) || (dbQR.getLongitude() == null)) {
+        } else if ((qrCode1.getLatitude() == null) || (qrCode2.getLatitude() == null)) {
             return false;
         }
-        double lat1 = qr.getLatitude();
-        double lng1 = qr.getLongitude();
-        double lat2 = dbQR.getLatitude();
-        double lng2 = dbQR.getLongitude();
+        double lat1 = qrCode1.getLatitude();
+        double lng1 = qrCode1.getLongitude();
+        double lat2 = qrCode2.getLatitude();
+        double lng2 = qrCode2.getLongitude();
+
+        Location qrCode1Location = new Location("");
+        Location qrCode2Location = new Location("");
+
+        qrCode1Location.setLatitude(lat1);
+        qrCode1Location.setLongitude(lng1);
+        qrCode2Location.setLatitude(lat2);
+        qrCode2Location.setLongitude(lng2);
 
         System.out.printf("lat1 %.20f\n", lat1);
         System.out.printf("lng2 %.20f\n", lng1);
         System.out.printf("lat2 %.20f\n", lat2);
         System.out.printf("lng2 %.20f\n", lng2);
 
-        // convert degrees to radians
-        // phi = latitude, lambda = longitude
-        double phi1 = (lat1 * Math.PI) / 180.0;
-        double lambda1 = (lng1 * Math.PI) / 180.0;
-
-        double phi2 = (lat2 * Math.PI) / 180.0;
-        double lambda2 = (lng2 * Math.PI) / 180.0;
-
-        // Calculate haversine(theta), the central angle between both locations relative to earth's center
-        // Haversine(theta) = sin^2((phi2-phi1)/2)+cos(phi1)cos(phi2)sin^2((lambda2-lambda1)/2)
-        double haversine = (Math.pow(Math.sin((phi2 - phi1) / 2), 2) + Math.cos(phi1) * Math.cos(phi2) * (Math.pow(Math.sin((lambda2 - lambda1) / 2), 2)));
-
-        // Calculate distance between both points using haversine
-        // 6371.0 is the Earth's radius in kilometers
-        // Distance = 2r*arcsin(sqr(haversine(theta)))
-        double distance = (2 * 6371.0) * (Math.asin(Math.sqrt(haversine)));
-
-        //System.out.printf("%f\n", haversine);
-        System.out.printf("%.20f\n", distance);
-
-        //convert distance to meters and compare with maxDistance
-        distance *= 1000;
-        System.out.printf("distance in meters: %.20f\n", distance);
+        double distance = qrCode1Location.distanceTo(qrCode2Location);
 
         if (distance <= givenRadius) {
             System.out.printf("Same\n");
@@ -237,7 +214,7 @@ public class FirebaseQueryAssistant {
      * @param qrCodeExists Query callback
      * @sources <a href="https://firebase.google.com/docs/firestore/query-data/queries#java_6">Firestore documentation</a>
      */
-    public void checkQRCodeExists(QRCode qrCode, double MAX_RADIUS, final @NonNull QueryCallbackWithQRCode qrCodeExists) {
+    public void checkQRCodeExists(@NonNull QRCode qrCode, double MAX_RADIUS, final @NonNull QueryCallbackWithQRCode qrCodeExists) {
         String hashValue = qrCode.getHash();
 
         qrCodesReference
