@@ -5,9 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
@@ -38,7 +36,6 @@ public class ToolbarTest {
     private final CollectionReference usersReference = db.collection("Users");
     private final Random rand = new Random();
     private final String testUsername = "testUser" + rand.nextInt(1000000);
-    private Solo solo;
     @Rule
     public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
 
@@ -62,6 +59,7 @@ public class ToolbarTest {
             assertEquals(testUsername, displayName);
         }
     };
+    private Solo solo;
 
     /**
      * Runs before all tests and creates solo instance.

@@ -1,16 +1,19 @@
 package com.example.qrhunterapp_t11;
 
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
+
 import android.app.Activity;
+import android.content.Intent;
+
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
-import android.content.Intent;
+
 import com.example.qrhunterapp_t11.activities.MainActivity;
 import com.example.qrhunterapp_t11.objectclasses.Preference;
-import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.example.qrhunterapp_t11.objectclasses.User;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.robotium.solo.Solo;
 
@@ -19,25 +22,19 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-
-import java.util.HashMap;
 import java.util.Random;
 
 /**
  * Test class for SearchFragment; leaderboard and clicking on user's profiles.
- *
+ * <p>
  * author: Aidan Lynch, adapted parts of afra's SettingFragmentTest
  */
-public class SearchFragmentTest{
-    private Solo solo;
+public class SearchFragmentTest {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");
     private final CollectionReference qrCodesReference = db.collection("QRCodes");
     private final Random rand = new Random();
     private final String testUsername = "testUser" + rand.nextInt(1000000);
-
     @Rule
     public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class, true, true) {
         // Set SharedPreferences to initialize a new user before the activity is launched
@@ -60,9 +57,11 @@ public class SearchFragmentTest{
             assertEquals(testUsername, displayName);
         }
     };
+    private Solo solo;
 
     /**
      * Runs before all tests and creates solo instance.
+     *
      * @throws Exception
      */
 
@@ -88,7 +87,7 @@ public class SearchFragmentTest{
         solo.clickOnText("Most Scans"); // select option in spinner
         assertTrue(solo.waitForText("Scans", 1, 5000)); // confirm we've switched to "Most Scans"
         solo.clickOnText("Most Scans"); // click on spinner
-        solo.clickOnText("Top QR Code", 2,true);
+        solo.clickOnText("Top QR Code", 2, true);
         assertTrue(solo.waitForText("Top Code", 1, 5000)); // confirm we've switched to "Top QR Code"
         // clicking on "Top QR Code (Regional) is bugged
     }
@@ -130,7 +129,7 @@ public class SearchFragmentTest{
     public void playerInLeaderboard() {
         solo.clickOnView(solo.getView(R.id.search));
         assertTrue(solo.waitForText("Leaderboard", 1, 5000)); // confirm we're on leaderboard page
-        assertTrue(solo.searchText(testUsername, 0,true)); // doesn't look like it's scrolling, but it is
+        assertTrue(solo.searchText(testUsername, 0, true)); // doesn't look like it's scrolling, but it is
     }
 
     /**
