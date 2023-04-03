@@ -130,137 +130,22 @@ public class FirebaseQueryAssistant {
                 });
     }
 
-    //public void checkUserHasHash(@NonNull QRCode qrInput, @NonNull String username, final @NonNull QueryCallbackWithUser docExists) {
-    //    String qrHash = qrInput.getHash();
-    //    usersReference.document(username).get().addOnSuccessListener(matchingUser -> {
-    //        ArrayList<String> userHashes;
-    //        User user;
-    //        user = matchingUser.toObject(User.class);
-     //       userHashes = user.getHashes();
-
-            //qrCodesReference.whereEqualTo("hash", qrInput.getHash()).get().addOnSuccessListener(match)
-
-
-      //      docExists.queryCompleteCheckUser(true, user, qrInput);
-      //  });
-
-
-
-
-
-
-
-
-
-    /**
-     * Helper function to check if a user has a QR Code in their collection with the same hash as qr param
-     *
-     * @param qrInput  QR Code that is having its hash value checked
-     * @param username User whose collection is being checked
-     */
-
-    public void checkUserHasHash(@NonNull QRCode qrInput, @NonNull String username, final @NonNull QueryCallbackWithQRCode docExists) {
-
-        qrCodesReference
-                .whereEqualTo("hash", qrInput.getHash())
-                .get()
-                .addOnSuccessListener(matchingQRCodes -> {
-<<<<<<< HEAD
-
-                        for (QueryDocumentSnapshot qrCodeDocument : matchingQRCodes) {
-                            if(foundMatchingUser == false){
-
-                                qrCodeDocument.getReference().get().addOnSuccessListener(qrCodeDocSnapshot -> {
-                                    qrCodeDocSnapshot.getReference().collection("In Collection")
-                                            .whereEqualTo("username", username)
-                                            .get()
-                                            .addOnSuccessListener(matchingUsers -> {
-                                                foundMatchingUser = true;
-
-                                                if (!matchingUsers.isEmpty()) {
-                                                    QRCode qrCode = qrCodeDocSnapshot.toObject(QRCode.class);
-                                                    docExists.queryCompleteCheckObject(true, qrCode);
-                                                    System.out.println("HERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRREEEEEEEEEE444444444444444444444444444444444444444444");
-
-                                                } else {
-                                                    docExists.queryCompleteCheckObject(false, null);
-                                                    System.out.println("HERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRREEEEEEEEEE55555555555555555555555555555555");
-                                                }
-                                            });
-
-                            });
-                            }
-=======
-                    if (matchingQRCodes.isEmpty()) {
-                        docExists.queryCompleteCheckObject(false, null);
-                        return;
-                    } else {
-                        for (QueryDocumentSnapshot qrCodeDocument : matchingQRCodes) {
-                            qrCodesReference.document(qrCodeDocument.getId()).collection("In Collection")
-                                    .whereEqualTo("username", username)
-                                    .get()
-                                    .addOnSuccessListener(matchingUsers -> {
-                                        if (!matchingUsers.isEmpty()) {
-                                            QRCode qrCode = qrCodeDocument.toObject(QRCode.class);
-                                            docExists.queryCompleteCheckObject(true, qrCode);
-                                            return;
-                                        } else {
-                                            docExists.queryCompleteCheckObject(false, null);
-                                            return;
-                                        }
-                                    });
-                            break;
->>>>>>> afa680117370c2b0c4b29941bf7d5e1b6b237689
-                        }
-
-
-                });
-    }
-
-    public void checkForMatchingUsers(DocumentReference qrCodeDocRef, String username, QueryCallbackWithQRCode docExists) {
+    public void checkUserHasHash(@NonNull QRCode qrInput, @NonNull String username, final @NonNull QueryCallbackWithUser docExists) {
+        String qrHash = qrInput.getHash();
+        usersReference.document(username).get().addOnSuccessListener(matchingUser -> {
+            ArrayList<String> userHashes;
+            User user;
+            user = matchingUser.toObject(User.class);
+            //userHashes = user.getHashes();
+            // qrCodesReference.whereEqualTo("hash", qrInput.getHash()).get().addOnSuccessListener(ma)
+            docExists.queryCompleteCheckUser(true, user, qrInput);
+        });
 
     }
 
 
 
 
-
-
-<<<<<<< HEAD
-
-        // Retrieve DocumentReferences in the user's QR code collection and store them in an array
-//        usersReference.document(username).collection("User QR Codes")
-//                .get()
-//                .addOnSuccessListener(documentReferences -> {
-//                    for (QueryDocumentSnapshot reference : documentReferences) {
-//
-//                        DocumentReference documentReference = (DocumentReference) reference.get("Reference");
-//                        listOfUsersReferencedCodes.add(documentReference);
-//                    }
-//                    if (!listOfUsersReferencedCodes.isEmpty()) {
-//                        // Retrieve matching QR Code data from the QRCodes collection using DocumentReferences
-//                        qrCodesReference.whereIn(FieldPath.documentId(), listOfUsersReferencedCodes)
-//                                .get()
-//                                .addOnSuccessListener(referencedQRDocuments -> {
-//                                    boolean hashExists = false;
-//                                    QRCode qrOutput = null;
-//
-//                                    for (QueryDocumentSnapshot referencedQR : referencedQRDocuments) {
-//                                        if (referencedQR.get("hash").equals(qrInput.getHash())) {
-//                                            qrOutput = referencedQR.toObject(QRCode.class);
-//                                            hashExists = true;
-//                                        }
-//                                    }
-//                                    docExists.queryCompleteCheckObject(hashExists, qrOutput);
-//                                });
-//                    } else {
-//                        docExists.queryCompleteCheckObject(false, null);
-//                    }
-//                });
-
-=======
-    }
->>>>>>> afa680117370c2b0c4b29941bf7d5e1b6b237689
 
     /**
      * Check if the given user has the given QR Code

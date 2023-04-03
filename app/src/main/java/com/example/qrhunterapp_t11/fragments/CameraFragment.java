@@ -31,9 +31,12 @@ import androidx.fragment.app.FragmentTransaction;
 import com.example.qrhunterapp_t11.R;
 import com.example.qrhunterapp_t11.activities.CaptureAct;
 import com.example.qrhunterapp_t11.activities.TakePhotoActivity;
+import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithQRCode;
+import com.example.qrhunterapp_t11.interfaces.QueryCallbackWithUser;
 import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
+import com.example.qrhunterapp_t11.objectclasses.User;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -44,6 +47,7 @@ import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -85,6 +89,8 @@ public class CameraFragment extends Fragment {
     private String currentUserDisplayName;
     private String currentUserUsername;
     private QRCode savedQR = null;
+
+    private User user;
 
 
     public CameraFragment(@NonNull FirebaseFirestore db) {
@@ -429,9 +435,10 @@ public class CameraFragment extends Fragment {
                 qrCode = new QRCode(resultString);
 
                 //Check if the user already has a QR Code object with this hash value in their collection
-                firebaseQueryAssistant.checkUserHasHash(qrCode, currentUserUsername, new QueryCallbackWithQRCode() {
+                firebaseQueryAssistant.checkUserHasHash(qrCode, currentUserUsername, new QueryCallbackWithUser() {
                     @Override
-                    public void queryCompleteCheckObject(boolean hashExists, QRCode qr) {
+                    public void queryCompleteCheckUser(boolean hashExists, User theUser, QRCode qr) {
+                        user = theUser;
                         // If user already has this qRCode, alert user that they cannot get the points for the same code again
                         if (hashExists) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -493,36 +500,53 @@ public class CameraFragment extends Fragment {
      * Helper function to add QRCode object to QRCodes and Users collections
      */
     private void addQRCode() {
-        float[] results = new float[1];
-        boolean addNewlyScannedQR = true;
+        ArrayList<String> hashes = user.getQrCodeHashes();
+        ArrayList<String> ids = user.getQrCodeIDs();
+        int index = hashes.indexOf(qrCode.getHash());
+        String qrId = ids.get(index);
 
-        // If a user is updating the location reference of a QR Code they already scanned before
-        if (savedQR != null) {
-
-            // If new version is scanned without location do nothing
-            if (qrCode.getLatitude() == null) {
+        qrCodesReference.document(qrId).get().addOnSuccessListener(qr -> {
+            QRCode savedQR;
+            if(qr.exists()){
+                savedQR = qr.toObject(QRCode.class);
+            }
+            else{
                 savedQR = null;
-                addNewlyScannedQR = false;
-                // If the user's new location is the same as the old QR Code's location do nothing
-            } else if ((savedQR.getLatitude() != null) && (qrCode.getLatitude() != null)) {
+            }
 
-                android.location.Location.distanceBetween(qrCode.getLatitude(), qrCode.getLongitude(), savedQR.getLatitude(), savedQR.getLongitude(), results);
-                if (results[0] < MAX_RADIUS) {
+            float[] results = new float[1];
+            boolean addNewlyScannedQR = true;
+
+            // If a user is updating the location reference of a QR Code they already scanned before
+            if (savedQR != null) {
+
+                // If new version is scanned without location do nothing
+                if (qrCode.getLatitude() == null) {
                     savedQR = null;
                     addNewlyScannedQR = false;
+                    // If the user's new location is the same as the old QR Code's location do nothing
+                } else if ((savedQR.getLatitude() != null) && (qrCode.getLatitude() != null)) {
+
+                    android.location.Location.distanceBetween(qrCode.getLatitude(), qrCode.getLongitude(), savedQR.getLatitude(), savedQR.getLongitude(), results);
+                    if (results[0] < MAX_RADIUS) {
+                        savedQR = null;
+                        addNewlyScannedQR = false;
+                    }
                 }
             }
-        }
 
-        // If the user is updating their scanned qrCode's old location
-        if ((savedQR != null) && (addNewlyScannedQR)) {
-            // Delete the old qrCode reference from the user's collection
-            firebaseQueryAssistant.deleteQR(currentUserUsername, savedQR.getID());
-        }
-        // Executes if the newly scanned QR Code should be added to the database
-        if (addNewlyScannedQR) {
-            firebaseQueryAssistant.addQR(currentUserUsername, qrCode, resizedImageUrl, MAX_RADIUS);
-        }
+            // If the user is updating their scanned qrCode's old location
+            if ((savedQR != null) && (addNewlyScannedQR)) {
+                // Delete the old qrCode reference from the user's collection
+                firebaseQueryAssistant.deleteQR(currentUserUsername, savedQR.getID());
+            }
+            // Executes if the newly scanned QR Code should be added to the database
+            if (addNewlyScannedQR) {
+                firebaseQueryAssistant.addQR(currentUserUsername, qrCode, resizedImageUrl, MAX_RADIUS);
+            }
+
+        });
+
     }
 
     /**
