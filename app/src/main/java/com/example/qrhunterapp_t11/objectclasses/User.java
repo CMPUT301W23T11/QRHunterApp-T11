@@ -2,6 +2,8 @@ package com.example.qrhunterapp_t11.objectclasses;
 
 import androidx.annotation.NonNull;
 
+import java.util.ArrayList;
+
 /**
  * Class that defines a user
  *
@@ -16,6 +18,9 @@ public class User {
     private int topQRCode;
     private String email;
 
+    private ArrayList hashes;
+    private ArrayList ids;
+
     public User() {
     }
 
@@ -26,6 +31,8 @@ public class User {
         this.totalScans = totalScans;
         this.topQRCode = topQRCode;
         this.email = email;
+        this.hashes = new ArrayList<>();
+        this.ids = new ArrayList<>();
     }
 
     @NonNull
@@ -77,5 +84,13 @@ public class User {
 
     public void setEmail(@NonNull String email) {
         this.email = email;
+    }
+
+    public ArrayList getHashes() {
+        return hashes;
+    }
+
+    public ArrayList getIds() {
+        return ids;
     }
 }

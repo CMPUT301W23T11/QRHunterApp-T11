@@ -444,6 +444,7 @@ public class CameraFragment extends Fragment {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     savedQR = qr;
+                                    System.out.println("HERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRREEEEEEEEEE111111111111111111111");
                                     promptForPhoto();
                                 }
                             });
@@ -480,6 +481,7 @@ public class CameraFragment extends Fragment {
                                 public void run() {
                                     alertDialog.dismiss();
                                     timer.cancel();
+                                    System.out.println("HERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRREEEEEEEEEE222222222222222222222222222222222222");
                                     promptForPhoto(); // prompt the user for a photo of the QR object or location once the score dialog disappears
                                 }
                             }, 7000); // set a timer to automatically close the dialog after 7 seconds
