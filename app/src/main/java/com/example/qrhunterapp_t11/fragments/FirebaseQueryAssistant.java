@@ -73,9 +73,6 @@ public class FirebaseQueryAssistant {
      */
 
     public static boolean isSameLocation(@Nullable QRCode qr, @Nullable QRCode dbQR, double givenRadius) {
-        //TODO INPUT VALIDATION:
-        // some coordinates shouldn't make sense, iirc long can't have larger magnitude than +-180?
-        // and +-90 for lat?
 
         // input validation
         // hashes are same, no location data for either, treat as same QRCode object
@@ -94,15 +91,6 @@ public class FirebaseQueryAssistant {
         System.out.printf("lng2 %.20f\n", lng1);
         System.out.printf("lat2 %.20f\n", lat2);
         System.out.printf("lng2 %.20f\n", lng2);
-
-        //COORDINATES HARDCODED FOR TESTING
-        //double maxDistance = 30;    // in meters
-        //double lat1 = 38.8977;
-        //double lng1 = -77.0365;
-
-        // latitude & longitude of second QRCode
-        //double lat2 = 48.8584;
-        //double lng2 = 2.2945;
 
         // convert degrees to radians
         // phi = latitude, lambda = longitude
