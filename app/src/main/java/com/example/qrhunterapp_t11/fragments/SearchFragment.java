@@ -47,7 +47,6 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
@@ -313,16 +312,11 @@ public class SearchFragment extends Fragment {
                                     qrsPoints.add(qrPoints);
                                 }
 
-                                List<List<String>> userChunks = new ArrayList<>();
-                                for (int i = 0; i < users.size(); i += 10) {
-                                    int end = Math.min(i + 10, users.size());
-                                    List<String> sublist = users.subList(i, end);
-                                    userChunks.add(sublist);
+                                for (int i = 0; i < users.size(); i++) {
+                                    db.collection("Users").document(users.get(i)).update("topQRRegional", qrsPoints.get(i));
                                 }
-                                System.out.println(userChunks);
 
-
-                                Query query = usersReference.whereIn(FieldPath.documentId(), userChunks);
+                                Query query = usersReference.whereNotEqualTo("topQRRegional", null).orderBy("topQRRegional", Query.Direction.DESCENDING);
                                 leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
                                         .setQuery(query, User.class)
                                         .build();
