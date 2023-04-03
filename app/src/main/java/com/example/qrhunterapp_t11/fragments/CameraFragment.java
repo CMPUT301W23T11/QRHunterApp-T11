@@ -88,7 +88,6 @@ public class CameraFragment extends Fragment {
     private QRCode savedQR = null;
 
 
-
     public CameraFragment(@NonNull FirebaseFirestore db) {
         this.db = db;
         this.firebaseQueryAssistant = new FirebaseQueryAssistant(db);
@@ -434,7 +433,6 @@ public class CameraFragment extends Fragment {
                 firebaseQueryAssistant.checkUserHasHash(qrCode, currentUserUsername, new QueryCallbackWithQRCode() {
                     @Override
                     public void queryCompleteCheckObject(boolean hashExists, QRCode qr) {
-
                         // If user already has this qRCode, alert user that they cannot get the points for the same code again
                         if (hashExists) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -467,7 +465,7 @@ public class CameraFragment extends Fragment {
                             String scored = qrCode.getPoints() + " Points";
                             scoredTV.setText(scored);
                             final AlertDialog alertDialog = builder.create();
-                            alertDialog.show(); // create and display the dialog
+                            alertDialog.show(); // Create and display the dialog
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                                 Objects.requireNonNull(alertDialog.getWindow()).setDimAmount(0);
                             }

@@ -21,6 +21,8 @@ import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
+
 /**
  * Main app activity. Default startup screen is the player profile.
  * Users can click on the toolbar at the bottom to switch to other parts of the app.
@@ -69,7 +71,11 @@ public class MainActivity extends AppCompatActivity {
                     Preference.setPrefsString(Preference.PREFS_CURRENT_USER, username);
                     Preference.setPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, username);
                     Preference.setPrefsBool("loggedIn", true);
-                    User user = new User(username, username, 0, 0, 0, "No email");
+
+                    ArrayList<String> qrCodeIDs = new ArrayList<>();
+                    ArrayList<String> qrCodeHashes = new ArrayList<>();
+
+                    User user = new User(username, username, 0, 0, 0, "", qrCodeIDs, qrCodeHashes);
                     usersReference.document(username).set(user);
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null), Preference.getPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, null))).commit();
 
