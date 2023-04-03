@@ -317,7 +317,6 @@ public class QRCodeTest {
     }
 
 
-
     @Test
     public void testGetSetSubAdminArea() {
         // test initial state
@@ -393,7 +392,6 @@ public class QRCodeTest {
     }
 
 
-
     @Test
     public void testGetSetPostalCode() {
         // test initial state
@@ -416,30 +414,30 @@ public class QRCodeTest {
         qrCode.setPostalCode("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0");
         Assertions.assertEquals("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0", qrCode.getPostalCode());
 
-      }
+    }
 
-     @Test
+    @Test
     public void testSetPostalCodePrefix() {
-         // test initial state
-         QRCode qrCode = mockQRCode("BFG5DGW54\n");
-         Assertions.assertEquals(null, qrCode.getPostalCodePrefix());
+        // test initial state
+        QRCode qrCode = mockQRCode("BFG5DGW54\n");
+        Assertions.assertEquals(null, qrCode.getPostalCodePrefix());
 
-         // test empty string
-         qrCode.setPostalCodePrefix("");
-         Assertions.assertEquals("", qrCode.getPostalCodePrefix());
+        // test empty string
+        qrCode.setPostalCodePrefix("");
+        Assertions.assertEquals("", qrCode.getPostalCodePrefix());
 
-         // case realistic
-         qrCode.setPostalCodePrefix("T6W");
-         Assertions.assertEquals("T6W", qrCode.getPostalCodePrefix());
+        // case realistic
+        qrCode.setPostalCodePrefix("T6W");
+        Assertions.assertEquals("T6W", qrCode.getPostalCodePrefix());
 
-         // case set emojis
-         qrCode.setPostalCodePrefix("😭😭😭😭😭😭😭😭😭😭😭");
-         Assertions.assertEquals("😭😭😭😭😭😭😭😭😭😭😭", qrCode.getPostalCodePrefix());
+        // case set emojis
+        qrCode.setPostalCodePrefix("😭😭😭😭😭😭😭😭😭😭😭");
+        Assertions.assertEquals("😭😭😭😭😭😭😭😭😭😭😭", qrCode.getPostalCodePrefix());
 
-         // case long string w/ symbols
-         qrCode.setPostalCodePrefix("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0");
-         Assertions.assertEquals("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0", qrCode.getPostalCodePrefix());
+        // case long string w/ symbols
+        qrCode.setPostalCodePrefix("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0");
+        Assertions.assertEquals("aerguiahlerighluiaehrguihaleirughliuaehrguihILUAIUHLIUSHLDUIHALIUHFLUIEHRFLIUWEHLFhiuhraewgfhaelrighnlaierhngliuaehgluaeirg./.'')((@*()(#*&*(-0", qrCode.getPostalCodePrefix());
 
-     }
+    }
 
 }

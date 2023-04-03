@@ -4,20 +4,23 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
 import androidx.annotation.NonNull;
 import androidx.viewpager.widget.PagerAdapter;
+
 import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
 
 /**
  * Adapter for the photos stored in the QRCodeView dialogue viewPager
  *
  * @author Sarah Thomson
- *  @sources <pre>
- *  <ul>
- *  <li><a href="https://www.youtube.com/watch?v=tM7rwJoK-18">by Coding in Flow</a></li>
- *  <li><a href="https://www.youtube.com/watch?v=Rfp4GZmZjUU">by EDMT Dev</a></li>
- *  </pre>
+ * @sources <pre>
+ * <ul>
+ * <li><a href="https://www.youtube.com/watch?v=tM7rwJoK-18">by Coding in Flow</a></li>
+ * <li><a href="https://www.youtube.com/watch?v=Rfp4GZmZjUU">by EDMT Dev</a></li>
+ * </pre>
  */
 public class PhotoAdapter extends PagerAdapter {
     private final Context context;
@@ -58,7 +61,7 @@ public class PhotoAdapter extends PagerAdapter {
      * Instantiates an item
      *
      * @param container The containing View in which the page will be shown.
-     * @param position The page position to be instantiated.
+     * @param position  The page position to be instantiated.
      * @return imageView
      */
     @NonNull
@@ -76,9 +79,9 @@ public class PhotoAdapter extends PagerAdapter {
      * Destroys an item
      *
      * @param container The containing View from which the page will be removed.
-     * @param position The page position to be removed.
-     * @param object The same object that was returned by
-     * {@link #instantiateItem(View, int)}.
+     * @param position  The page position to be removed.
+     * @param object    The same object that was returned by
+     *                  {@link #instantiateItem(View, int)}.
      */
     @Override
     public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {

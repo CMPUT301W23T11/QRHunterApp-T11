@@ -39,28 +39,24 @@ import java.util.Random;
  * Test the following situations:
  * 0. User's qrCode photo appears on the qrCode view in their account
  * 1. User has QR code in collection with NULL LOCATION:
- *      1.1 They scan the same qrcode and refuse to update location
- *      1.2 They scan the same qrcode and update location with a null location (no change)
- *      1.3 They scan the same qrcode and update location with a non null location (change) ****
+ * 1.1 They scan the same qrcode and refuse to update location
+ * 1.2 They scan the same qrcode and update location with a null location (no change)
+ * 1.3 They scan the same qrcode and update location with a non null location (change) ****
  * 2. User has QR code in collection with NONNULL LOCATION:
- *      2.1 They scan the same qrcode and refuse to update location
- *      2.2 They scan the same qrcode and update location with a null location (no change)
- *      2.3 They scan the same qrcode and update location with a non null location that is the same location as the original (within 30m) (no change)
+ * 2.1 They scan the same qrcode and refuse to update location
+ * 2.2 They scan the same qrcode and update location with a null location (no change)
+ * 2.3 They scan the same qrcode and update location with a non null location that is the same location as the original (within 30m) (no change)
  *
- *      @author Sarah - for tests
- *      @author Aidan - for some code from his CameraFragment tests
- *      @author Afra - set up querying information from the database, setUp(), tearDown(), ActivityTestRule initialization.
-**/
+ * @author Sarah - for tests
+ * @author Aidan - for some code from his CameraFragment tests
+ * @author Afra - set up querying information from the database, setUp(), tearDown(), ActivityTestRule initialization.
+ **/
 
 public class CameraFragmentScanDuplicatesTest {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference usersReference = db.collection("Users");
     private final Random rand = new Random();
     private final String testUsername = "testUser" + rand.nextInt(1000000);
-    private final FirebaseQueryAssistant firebaseQueryAssistant = new FirebaseQueryAssistant(db);
-    private final CollectionReference qrReference = db.collection("QRCodes");
-    private Solo solo;
-
     @Rule
     public ActivityTestRule<MainActivity> rule = new ActivityTestRule<MainActivity>(MainActivity.class) {
 
@@ -84,6 +80,9 @@ public class CameraFragmentScanDuplicatesTest {
             assertEquals(testUsername, displayName);
         }
     };
+    private final FirebaseQueryAssistant firebaseQueryAssistant = new FirebaseQueryAssistant(db);
+    private final CollectionReference qrReference = db.collection("QRCodes");
+    private Solo solo;
     private String name;
 
     /**
@@ -324,7 +323,6 @@ public class CameraFragmentScanDuplicatesTest {
     }
 
 
-
     /**
      * Tests the following:
      * User has QR code in collection with LOCATION:
@@ -416,7 +414,6 @@ public class CameraFragmentScanDuplicatesTest {
         firebaseQueryAssistant.deleteDoc(testId, qrReference);
 
     }
-
 
 
 }

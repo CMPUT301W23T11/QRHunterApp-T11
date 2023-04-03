@@ -178,8 +178,7 @@ public class SearchFragment extends Fragment {
                                         FragmentTransaction trans = getParentFragmentManager().beginTransaction();
                                         trans.replace(R.id.main_screen, new ProfileFragment(db, user.getDisplayName(), user.getUsername()));
                                         trans.commit();
-                                    }
-                                    else {
+                                    } else {
                                         Toast.makeText(getContext(), "You cant search yourself!", Toast.LENGTH_SHORT).show();
                                     }
 

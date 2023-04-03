@@ -164,16 +164,15 @@ public class FirebaseQueryAssistant {
         qrCodesReference.document(qrCodeID)
                 .get()
                 .addOnSuccessListener(qrCode -> {
-                    System.out.println("QR EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS111111111111");
-                            if (qrCode.exists()) {
-                                System.out.println("QR EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
-                                ArrayList<String> users = (ArrayList<String>) qrCode.get("inCollection");
-                                userHasQRCode.queryCompleteCheck(users.contains(username));
-                            }
-                            else{
-                                System.out.println("QR NOT EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
-                                userHasQRCode.queryCompleteCheck(false);
-                            }
+                            System.out.println("QR EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS111111111111");
+                    if (qrCode.exists()) {
+                        System.out.println("QR EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
+                        ArrayList<String> users = (ArrayList<String>) qrCode.get("inCollection");
+                        userHasQRCode.queryCompleteCheck(users.contains(username));
+                    } else {
+                        System.out.println("QR NOT EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
+                        userHasQRCode.queryCompleteCheck(false);
+                    }
                         }
                 );
     }
@@ -231,7 +230,7 @@ public class FirebaseQueryAssistant {
                 // Check if reference to qrCode exists in db in Users collection
                 checkUserHasQR(qrCodeID, username, new QueryCallback() {
                     public void queryCompleteCheck(boolean qrRefExists) {
-                        System.out.println("qrrefexists:"+qrRefExists + " qrExists:" + qrExists);
+                        System.out.println("qrrefexists:" + qrRefExists + " qrExists:" + qrExists);
 
                         // If qrCode does not exist, add it to QRCode collection
                         if (!qrExists) {
