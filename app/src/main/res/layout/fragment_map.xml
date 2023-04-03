@@ -82,7 +82,7 @@
             <ListView
                 android:id="@+id/nearby_codes_listview"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_below="@id/nearby_codes_textview"
                 android:layout_marginTop="8dp"
                 android:divider="@null"

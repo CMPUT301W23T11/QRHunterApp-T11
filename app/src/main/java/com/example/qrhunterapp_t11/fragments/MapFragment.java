@@ -396,6 +396,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 String radiusString = radiusEditText.getText().toString();
                                 double radius = Double.parseDouble(radiusString);
+                                // Convert km to m
                                 radius *= 1000;
                                 findNearbyQRCodes(currentLocation, radius, new QueryCallbackWithArrayList() {
                                     @SuppressLint("ClickableViewAccessibility")
@@ -430,10 +431,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                                                     return true;
                                                 }
                                             });
+
+                                            // If user clicks on QR Code in list, take them to its map marker
                                             nearbyQRListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                                                 @Override
                                                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                                    System.out.println(adapterView.getItemAtPosition(i));
+
+                                                    int index = (int) adapterView.getItemAtPosition(i);
+                                                    QRCode qrcode = (QRCode) arrayList.get(index).get(0);
+
+                                                    LatLng qrCodeLocation = new LatLng(qrcode.getLatitude(), qrcode.getLongitude());
+
+                                                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(qrCodeLocation, 15);
+                                                    mMap.animateCamera(cameraUpdate);
                                                 }
                                             });
 
@@ -443,8 +453,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
                                                     nearbyQRRelativeLayout.setVisibility(View.GONE);
                                                 }
                                             });
-
-                                            System.out.println(arrayList);
                                         }
                                     }
                                 });
@@ -495,25 +503,27 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnMapsS
         currentLocationLocation.setLongitude(currentLocationLatLng.longitude);
         ArrayList<List<?>> nearbyQRCodes = new ArrayList<>();
 
-        // Process the combined results
+        // Get all QR Codes with location
         qrCodesReference
                 .whereNotEqualTo("latitude", null)
                 .get()
                 .addOnSuccessListener(qrCodes -> {
 
+                    // For each QR Code, create Location object
                     for (QueryDocumentSnapshot qrCodeDocument : qrCodes) {
                         Location qrCodeLocation = new Location("");
                         qrCodeLocation.setLatitude(qrCodeDocument.getDouble("latitude"));
                         qrCodeLocation.setLongitude(qrCodeDocument.getDouble("longitude"));
                         double distance = currentLocationLocation.distanceTo(qrCodeLocation);
 
+                        // Check if within radius
                         if (distance <= radius) {
                             QRCode qrCode = qrCodeDocument.toObject(QRCode.class);
 
                             List<Object> qrCodeDistance = new ArrayList<>();
                             qrCodeDistance.add(qrCode);
 
-                            // Convert from meters back to kilometers
+                            // Convert from m back to km
                             distance /= 1000;
                             distance = Double.parseDouble(String.format("%.2f", distance));
 
