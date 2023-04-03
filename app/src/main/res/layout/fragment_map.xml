@@ -54,6 +54,7 @@
             android:layout_width="200dp"
             android:layout_height="300dp"
             android:layout_marginStart="4dp"
+            android:background="@color/off_green_box"
             android:padding="8dp"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
