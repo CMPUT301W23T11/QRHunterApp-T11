@@ -60,6 +60,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 
 /**
@@ -90,7 +91,8 @@ public class SearchFragment extends Fragment {
     private AutoCompleteTextView autoCompleteTextView;
     private TextView yourRank;
     private List<Place.Field> fields;
-    private QRCode usersTopCodeRegional;
+    private final Random rand = new Random();
+    private String randomCollection = null;
     private Spinner leaderboardFilterSpinner;
 
     public SearchFragment(@NonNull FirebaseFirestore db) {
@@ -215,6 +217,15 @@ public class SearchFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 String leaderboardFilterChoice = leaderboardFilterSpinner.getSelectedItem().toString();
+                if (randomCollection != null) {
+                    cleanUpRegionalCollections(new QueryCallback() {
+                        @Override
+                        public void queryCompleteCheck(boolean queryComplete) {
+                            assert queryComplete;
+                        }
+                    });
+                }
+
                 yourRank = view.findViewById(R.id.your_ranking_textview);
                 TextView filterHeader = view.findViewById(R.id.filter_header);
                 switch (leaderboardFilterChoice) {
@@ -275,6 +286,17 @@ public class SearchFragment extends Fragment {
         return view;
     }
 
+    public void cleanUpRegionalCollections(@NonNull QueryCallback queryComplete) {
+        db.collection(randomCollection)
+                .get()
+                .addOnSuccessListener(documents -> {
+                    for (QueryDocumentSnapshot document : documents) {
+                        db.collection(randomCollection).document(document.getId()).delete();
+                    }
+                    queryComplete.queryCompleteCheck(true);
+                });
+    }
+
     /**
      * Handles the result of the region search
      *
@@ -298,32 +320,42 @@ public class SearchFragment extends Fragment {
                 if (placeName != null) {
                     filterQueryRegional(placeName, placeType, new QueryCallbackWithHashMap() {
                         @Override
-                        public void setHashMap(@NonNull HashMap<String, String> hashMap) {
+                        public void setHashMap(@NonNull HashMap<User, QRCode> hashMap) {
 
                             if (!hashMap.isEmpty()) {
-                                ArrayList<String> users = new ArrayList<>();
-                                ArrayList<String> qrsPoints = new ArrayList<>();
+                                boolean userInLeaderboard = false;
+                                int userIndex = 0;
+                                ArrayList<User> users = new ArrayList<>();
+                                ArrayList<QRCode> qrsPoints = new ArrayList<>();
 
-                                for (Map.Entry<String, String> mapElement : hashMap.entrySet()) {
-                                    String user = mapElement.getKey();
+                                for (Map.Entry<User, QRCode> mapElement : hashMap.entrySet()) {
+                                    User user = mapElement.getKey();
                                     users.add(user);
-                                    String qrPoints = mapElement.getValue();
-                                    qrsPoints.add(qrPoints);
+                                    QRCode qrCode = mapElement.getValue();
+                                    qrsPoints.add(qrCode);
                                 }
+
+                                randomCollection = "UsersRegional" + rand.nextInt(1000000);
 
                                 for (int i = 0; i < users.size(); i++) {
-                                    db.collection("Users").document(users.get(i)).update("topQRRegional", qrsPoints.get(i));
+                                    String currentUserUsername = users.get(i).getUsername();
+                                    if (currentUserUsername.equals(Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null))) {
+                                        userIndex = i + 1;
+                                        userInLeaderboard = true;
+                                    }
+                                    db.collection(randomCollection).document(currentUserUsername).set(users.get(i));
+                                    db.collection(randomCollection).document(currentUserUsername).update("topQRRegional", qrsPoints.get(i).getPoints());
                                 }
 
-                                Query query = usersReference.whereNotEqualTo("topQRRegional", null).orderBy("topQRRegional", Query.Direction.DESCENDING);
+                                Query query = db.collection(randomCollection).orderBy("topQRRegional", Query.Direction.DESCENDING);
                                 leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
                                         .setQuery(query, User.class)
                                         .build();
 
                                 // Set user's rank if they are on the leaderboard
                                 String yourRankString;
-                                if (users.contains(Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null))) {
-                                    yourRankString = "Your Rank: " + (users.indexOf(Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null)));
+                                if (userInLeaderboard) {
+                                    yourRankString = "Your Rank: " + userIndex;
                                 } else {
                                     yourRankString = "Your Rank: N/A";
                                 }
@@ -479,7 +511,7 @@ public class SearchFragment extends Fragment {
         }
 
         // Contains users and their top scoring QR Code within the selected region
-        HashMap<String, String> usersPoints = new HashMap<>();
+        HashMap<User, QRCode> usersPoints = new HashMap<>();
 
         assert qrCodeField != null;
         // Get all QR Codes within selected region
@@ -493,9 +525,15 @@ public class SearchFragment extends Fragment {
                         for (QueryDocumentSnapshot qrCode : qrCodesAtPlace) {
                             ArrayList<String> qrCodes = (ArrayList) qrCode.get("inCollection");
                             for (String userWithQR : qrCodes) {
-                                usersPoints.put(userWithQR, qrCode.get("points").toString());
-                                System.out.println(usersPoints);
-                                setHashMap.setHashMap(usersPoints);
+                                usersReference.document(userWithQR)
+                                        .get()
+                                        .addOnSuccessListener(user -> {
+                                            User userToAdd = user.toObject(User.class);
+                                            QRCode qrCodeToAdd = qrCode.toObject(QRCode.class);
+                                            System.out.println(userToAdd.getUsername());
+                                            usersPoints.put(userToAdd, qrCodeToAdd);
+                                            setHashMap.setHashMap(usersPoints);
+                                        });
                             }
                         }
                     } else {
