@@ -22,7 +22,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginStart="348dp"
             android:layout_marginTop="64dp"
             android:background="@color/background"
             android:backgroundTint="#5645CF13"
@@ -32,7 +31,7 @@
             app:elevation="0dp"
             app:ensureMinTouchTargetSize="true"
             app:fabCustomSize="60dp"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:pressedTranslationZ="0dp" />
 
@@ -41,16 +40,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginStart="348dp"
             android:layout_marginTop="136dp"
             android:background="@color/background"
+            android:backgroundTint="#5645CF13"
             android:contentDescription="Button that opens nearby codes"
             android:src="@drawable/ic_google_maps"
             app:backgroundTint="@color/headers"
             app:elevation="0dp"
             app:ensureMinTouchTargetSize="true"
             app:fabCustomSize="60dp"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:pressedTranslationZ="0dp" />
 

@@ -164,6 +164,7 @@ public class FirebaseQueryAssistant {
     public void checkUserHasHash(@NonNull QRCode qrInput, @NonNull String username, final @NonNull QueryCallbackWithQRCode docExists) {
         ArrayList<DocumentReference> listOfUsersReferencedCodes = new ArrayList<DocumentReference>();
 
+
         // Retrieve DocumentReferences in the user's QR code collection and store them in an array
         usersReference.document(username).collection("User QR Codes")
                 .get()
