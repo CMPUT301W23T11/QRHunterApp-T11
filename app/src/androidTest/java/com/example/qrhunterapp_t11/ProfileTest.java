@@ -58,10 +58,6 @@ public class ProfileTest {
             String username;
             String displayName;
 
-            //prefs.edit().clear().commit();
-            //prefs.edit().putBoolean("loggedIn", true).commit();
-            //prefs.edit().putString("currentUserUsername", testUsername).commit();
-            //prefs.edit().putString("currentUserDisplayName", testUsername).commit();
             Preference.init(getApplicationContext());
             Preference.clearPrefs();
             Preference.setPrefsBool("loggedIn", true);
@@ -104,14 +100,12 @@ public class ProfileTest {
 
         qrReference.document(qrCode.getID()).set(qrCode);
 
-        //qrUserReference.document(qrCode.getID()).set(qrCode);
         Map<String, Object> qrCodeRef = new HashMap<>();
         qrCodeRef.put("Reference", qrReference.document(qrCode.getID()));
 
         usersReference.document(testUsername).collection("User QR Codes").document(qrCode.getID()).set(qrCodeRef);
         usersReference.document(testUsername).update("totalScans", FieldValue.increment(1));
         usersReference.document(testUsername).update("totalPoints", FieldValue.increment(qrCode.getPoints()));
-        System.out.println("\n\n\n\n\n\n" + qrCode.getID());
 
         // check if new QrCode was added as User reference
         checkDocExists(qrCode.getID(), usersReference.document(testUsername).collection("User QR Codes"), new QueryCallback() {
@@ -185,7 +179,6 @@ public class ProfileTest {
     @Test
     public void checkCommentAdd() {
         // Asserts that the current activity is the MainActivity. Otherwise, show Wrong Activity
-        System.out.println("EJSGFBKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
 
         // Check that current user exists

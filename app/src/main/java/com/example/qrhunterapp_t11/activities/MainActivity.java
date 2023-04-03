@@ -44,9 +44,6 @@ public class MainActivity extends AppCompatActivity {
     private final MapFragment mapFragment = new MapFragment(db);
     private final SearchFragment searchFragment = new SearchFragment(db);
     private int numUsers;
-    //private static final String PREFS_CURRENT_USER = "currentUserUsername";
-    // private static final String PREFS_CURRENT_USER_DISPLAY_NAME = "currentUserDisplayName";
-    //private SharedPreferences prefs;
 
     /**
      * Called after the activity launches and sets the activity content to the provided layout resource
@@ -61,9 +58,7 @@ public class MainActivity extends AppCompatActivity {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         Preference.init(getApplicationContext());
-        //prefs = this.getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         // If the user is logging in for the first time, create a new user
         if (!Preference.getPrefsBool("loggedIn", false)) {
@@ -71,17 +66,10 @@ public class MainActivity extends AppCompatActivity {
                 public void setNumUsers(int numUsers) {
 
                     String username = "user" + (numUsers + 1);
-
                     Preference.setPrefsString(Preference.PREFS_CURRENT_USER, username);
                     Preference.setPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, username);
                     Preference.setPrefsBool("loggedIn", true);
-
-                    //prefs.edit().putString(PREFS_CURRENT_USER, username).commit();
-                    //prefs.edit().putString(PREFS_CURRENT_USER_DISPLAY_NAME, username).commit();
-                    //prefs.edit().putBoolean("loggedIn", true).commit();
-
                     User user = new User(username, username, 0, 0, 0, "No email");
-
                     usersReference.document(username).set(user);
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null), Preference.getPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, null))).commit();
 
@@ -89,7 +77,6 @@ public class MainActivity extends AppCompatActivity {
             });
         } else {
             getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null), Preference.getPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, null))).commit();
-
         }
 
         BottomNavigationView bottomToolbar = findViewById(R.id.bottomToolbar);
