@@ -18,8 +18,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Assistant class for common queries to the firestore database
@@ -174,10 +172,12 @@ public class FirebaseQueryAssistant {
      * @sources <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
      */
     public void checkUserHasQR(@NonNull String qrCodeID, @NonNull String username, final @NonNull QueryCallback userHasQRCode) {
-        usersReference.document(username).collection("User QR Codes").document(qrCodeID)
+        qrCodesReference.document(qrCodeID)
                 .get()
-                .addOnSuccessListener(userQRCode ->
-                        userHasQRCode.queryCompleteCheck(userQRCode.exists())
+                .addOnSuccessListener(qrCode -> {
+                            ArrayList<String> users = (ArrayList<String>) qrCode.get("inCollection");
+                            userHasQRCode.queryCompleteCheck(users.contains(username));
+                        }
                 );
     }
 
@@ -228,12 +228,9 @@ public class FirebaseQueryAssistant {
     public void addQR(@NonNull String username, @NonNull QRCode qrCode, String resizedImageUrl, @NonNull double radius) {
         String qrCodeID = qrCode.getID();
 
-        Map<String, Object> qrCodeRef = new HashMap<>();
-
         // Check if qrCode within location threshold already exists in db in QRCodes collection
         checkQRCodeExists(qrCode, radius, new QueryCallbackWithQRCode() {
             public void queryCompleteCheckObject(boolean qrExists, QRCode dbQR) {
-                qrCodeRef.put("Reference", qrCodesReference.document(qrCodeID));
 
                 // Check if reference to qrCode exists in db in Users collection
                 checkUserHasQR(qrCodeID, username, new QueryCallback() {
