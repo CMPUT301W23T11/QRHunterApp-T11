@@ -61,7 +61,7 @@ public class FirebaseQueryAssistant {
      * @sources <a href="https://developer.android.com/reference/android/location/Location">Getting distance between locations</a>
      */
 
-    public static boolean isSameLocation(@Nullable QRCode qrCode1, @Nullable QRCode qrCode2, double givenRadius) {
+    public static boolean qrCodesWithinRadius(@Nullable QRCode qrCode1, @Nullable QRCode qrCode2, double givenRadius) {
 
         // Input validation
 
@@ -84,11 +84,6 @@ public class FirebaseQueryAssistant {
         qrCode1Location.setLongitude(lng1);
         qrCode2Location.setLatitude(lat2);
         qrCode2Location.setLongitude(lng2);
-
-        System.out.printf("lat1 %.20f\n", lat1);
-        System.out.printf("lng2 %.20f\n", lng1);
-        System.out.printf("lat2 %.20f\n", lat2);
-        System.out.printf("lng2 %.20f\n", lng2);
 
         double distance = qrCode1Location.distanceTo(qrCode2Location);
 
@@ -227,7 +222,7 @@ public class FirebaseQueryAssistant {
                     for (QueryDocumentSnapshot document : matchingQRCodes) {
                         Log.d("QRExist", document.getId() + " => " + document.getData());
                         dbQR = document.toObject(QRCode.class);      // rebuilds a QRCode object from db information
-                        isSame = isSameLocation(qrCode, dbQR, MAX_RADIUS);
+                        isSame = qrCodesWithinRadius(qrCode, dbQR, MAX_RADIUS);
                         if (isSame) {                             // locations within threshold, treat as same qr, break from loop
                             String qrCodeID = dbQR.getID();
                             //queryCompleteCheck.queryCompleteCheck(true);
