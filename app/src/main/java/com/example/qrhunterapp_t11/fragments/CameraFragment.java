@@ -68,6 +68,7 @@ import nl.dionsegijn.konfetti.xml.KonfettiView;
  * @author Aidan Lynch - methods related to QR scanning, photo-taking and main camera fragment screen logic.
  * @author Daniel Guo - methods related to geolocation and obtaining permissions for location.
  * @author Josh Lucas and Afra - methods for creating a new QR object
+ * @author Sarah Thomson - Adding a new qrCode to db and checking if that hash already exists in the db after it is scanned.
  */
 public class CameraFragment extends Fragment {
     static final double MAX_RADIUS = 30; // Max distance from a qrlocation in meters
@@ -82,12 +83,10 @@ public class CameraFragment extends Fragment {
     private QRCode qrCode;
     private String imageUrl = null;
     private String resizedImageUrl;
-    //private SharedPreferences prefs;
     private String currentUserDisplayName;
     private String currentUserUsername;
-    private String qrCodeID;
-    private boolean showPoints = false;
     private QRCode savedQR = null;
+
 
 
     public CameraFragment(@NonNull FirebaseFirestore db) {
@@ -384,8 +383,9 @@ public class CameraFragment extends Fragment {
     }
 
     /**
-     * Called when fragment is being initialized. Creates a dialog that displays the score of the scanned QR code. The dialog disappears automatically
-     * after a few seconds.
+     * Called when fragment is being initialized. Creates a dialog that displays the score of the scanned QR code. The dialog disappears automatically after a few seconds.
+     * Or, if the user already has a QR code with the same hash, give user a choice to update its location.
+     * Location will only be updated if it is originally null, or if the newly scanned QR code is far enough away from the old one to be considered a new object.
      *
      * @param savedInstanceState If the fragment is being re-created from a previous saved state, this is the state.
      * @sources <pre>
@@ -434,10 +434,9 @@ public class CameraFragment extends Fragment {
                 firebaseQueryAssistant.checkUserHasHash(qrCode, currentUserUsername, new QueryCallbackWithQRCode() {
                     @Override
                     public void queryCompleteCheckObject(boolean hashExists, QRCode qr) {
+
                         // If user already has this qRCode, alert user that they cannot get the points for the same code again
                         if (hashExists) {
-
-                            showPoints = false;
                             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                             builder.setTitle("You scanned the same QR twice!");
                             builder.setMessage("No points have been added to your account.\n\n Update the location of this QR?\n");
@@ -457,7 +456,7 @@ public class CameraFragment extends Fragment {
                             AlertDialog alert = builder.create();
                             alert.show();
                         } else {
-                            System.out.println("HERE2");
+
                             // If the user does not already have the scanned qRCode in their collection, show points and the ask to take a photo...
                             // Create custom dialog to display QR score
                             LayoutInflater inflater = getActivity().getLayoutInflater();
