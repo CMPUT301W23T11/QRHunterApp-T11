@@ -97,23 +97,103 @@ public class SettingsFragmentTest {
     }
 
     /**
-     * Test behaviour when attempting to change to a taken username
+     * Test behaviour when attempting to change to a blank or taken username
      */
     @Test
-    public void testUsernameChangeNotUnique() {
+    public void testUsernameInvalid() {
         String testUserDupe = "testUserDupe";
         addTestUserToDB(testUserDupe);
 
         solo.clickOnView(solo.getView(R.id.settings));
+
+        solo.clickOnView(solo.getView(R.id.username_edit_edittext));
+        solo.clearEditText(0);
+        solo.enterText(0, "");
+        solo.clickOnView(solo.getView(R.id.change_username_button));
+        EditText usernameEditText = solo.getEditText(0);
+        assertEquals("Field cannot be blank", usernameEditText.getError());
+
         solo.clickOnView(solo.getView(R.id.username_edit_edittext));
         solo.clearEditText(0);
         solo.enterText(0, testUserDupe);
         solo.clickOnView(solo.getView(R.id.change_username_button));
-
-        EditText usernameEditText = solo.getEditText(0);
+        usernameEditText = solo.getEditText(0);
         assertEquals("Username is not unique", usernameEditText.getError());
 
         usersReference.document(testUserDupe).delete();
+    }
+
+    /**
+     * Test behaviour when attempting to change email
+     */
+    @Test
+    public void testEmailChange() {
+
+        solo.clickOnView(solo.getView(R.id.settings));
+        solo.clickOnView(solo.getView(R.id.email_edit_edittext));
+
+        // Random string
+        solo.clearEditText(1);
+        solo.enterText(1, "randomText");
+        solo.clickOnView(solo.getView(R.id.change_email_button));
+        EditText emailEditText = solo.getEditText(1);
+        assertEquals("Invalid email", emailEditText.getError());
+
+        // Just email domain with @
+        solo.clearEditText(1);
+        solo.enterText(1, "@gmail.com");
+        solo.clickOnView(solo.getView(R.id.change_email_button));
+        emailEditText = solo.getEditText(1);
+        assertEquals("Invalid email", emailEditText.getError());
+
+        // Random string with @ symbol
+        solo.clearEditText(1);
+        solo.enterText(1, "randomText@");
+        solo.clickOnView(solo.getView(R.id.change_email_button));
+        emailEditText = solo.getEditText(1);
+        assertEquals("Invalid email", emailEditText.getError());
+
+        // Random string with @ symbol and partial domain
+        solo.clearEditText(1);
+        solo.enterText(1, "randomText@gmail");
+        solo.clickOnView(solo.getView(R.id.change_email_button));
+        emailEditText = solo.getEditText(1);
+        assertEquals("Invalid email", emailEditText.getError());
+
+        // Random string with @ symbol and partial domain with dot
+        solo.clearEditText(1);
+        solo.enterText(1, "randomtext@gmail.");
+        solo.clickOnView(solo.getView(R.id.change_email_button));
+        emailEditText = solo.getEditText(1);
+        assertEquals("Invalid email", emailEditText.getError());
+
+        // Backwards order
+        solo.clearEditText(1);
+        solo.enterText(1, "@gmail.comrandomText");
+        solo.clickOnView(solo.getView(R.id.change_email_button));
+        emailEditText = solo.getEditText(1);
+        assertEquals("Invalid email", emailEditText.getError());
+
+        // Correct email but with space
+        solo.clearEditText(1);
+        solo.enterText(1, "random Text@gmail.com");
+        solo.clickOnView(solo.getView(R.id.change_email_button));
+        emailEditText = solo.getEditText(1);
+        assertEquals("Invalid email", emailEditText.getError());
+
+        // Correct email
+        String correctEmailString = "randomText@gmail.com";
+        solo.clearEditText(1);
+        solo.enterText(1, correctEmailString);
+        solo.clickOnView(solo.getView(R.id.change_email_button));
+        solo.clickOnText("Confirm", 2);
+
+        usersReference.document(testUsername)
+                .get()
+                .addOnSuccessListener(user -> {
+                    assertEquals(user.get("email"), correctEmailString);
+                });
+
     }
 
     /**
@@ -204,7 +284,7 @@ public class SettingsFragmentTest {
      * Checks if the given displayName was correctly changed
      */
     public void checkDisplayNameChanged(QRCode qrCode1, QRCode qrCode2, final QueryCallback queryComplete) {
-        usersReference.document(Preference.getPrefsString("currentUserUsername", null))
+        usersReference.document(testUsername)
                 .get()
                 .addOnSuccessListener(user -> {
                     assertEquals(user.get("displayName"), Preference.getPrefsString("currentUserDisplayName", null));
@@ -234,6 +314,20 @@ public class SettingsFragmentTest {
                                             queryComplete.queryCompleteCheck(true);
                                         });
                             });
+                });
+    }
+
+    /**
+     * Checks if the given email was correctly changed
+     */
+    public void checkEmailChanged(String email, final QueryCallback queryComplete) {
+        System.out.println(testUsername);
+        System.out.println(Preference.getPrefsString("currentUserUsername", null));
+        usersReference.document(testUsername)
+                .get()
+                .addOnSuccessListener(user -> {
+                    assertEquals(user.get("email"), email);
+                    queryComplete.queryCompleteCheck(true);
                 });
     }
 
