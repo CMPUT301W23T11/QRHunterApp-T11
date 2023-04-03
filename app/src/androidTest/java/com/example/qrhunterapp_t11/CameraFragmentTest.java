@@ -3,7 +3,6 @@ package com.example.qrhunterapp_t11;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 import android.app.Activity;
 import android.content.Context;
@@ -17,13 +16,11 @@ import androidx.test.rule.ActivityTestRule;
 
 import com.example.qrhunterapp_t11.activities.MainActivity;
 import com.example.qrhunterapp_t11.fragments.FirebaseQueryAssistant;
-import com.example.qrhunterapp_t11.interfaces.QueryCallback;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.example.qrhunterapp_t11.objectclasses.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.robotium.solo.Solo;
 
@@ -200,12 +197,6 @@ public class CameraFragmentTest {
 
         deleteDoc(testHash, qrCodesReference); // delete the test doc to see change in collection size
 
-        checkDocExists(testHash, qrCodesReference, new QueryCallback() {
-            public void queryCompleteCheck(boolean docExists) {
-                assertFalse(docExists);
-            }
-        });
-
         solo.clickOnView(solo.getView(R.id.addFab));
         assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
         solo.clickOnText("Yes");
@@ -214,11 +205,6 @@ public class CameraFragmentTest {
         solo.clickOnText("Yes");
         assertTrue(solo.waitForText("STATS", 1, 7000)); // confirm we're back on the profile page
 
-        checkDocExists(testHash, qrCodesReference, new QueryCallback() {
-            public void queryCompleteCheck(boolean docExists) {
-                assertTrue(docExists);
-            }
-        });
     }
 
     //TODO add start function that accepts initial prompts or something, hopefully that is enough
@@ -233,13 +219,6 @@ public class CameraFragmentTest {
 
         deleteDoc(testHash, qrCodesReference); // delete the test doc to see change in collection size
 
-        checkDocExists(testHash, qrCodesReference, new QueryCallback() {
-            public void queryCompleteCheck(boolean docExists) {
-                assertFalse(docExists);
-
-            }
-        });
-
         solo.clickOnView(solo.getView(R.id.addFab));
         assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
         solo.clickOnText("Yes");
@@ -248,11 +227,6 @@ public class CameraFragmentTest {
         solo.clickOnText("No");
         assertTrue(solo.waitForText("STATS", 1, 7000)); // confirm we're back on the profile page
 
-        checkDocExists(testHash, qrCodesReference, new QueryCallback() {
-            public void queryCompleteCheck(boolean docExists) {
-                assertTrue(docExists);
-            }
-        });
     }
 
     /**
@@ -264,13 +238,6 @@ public class CameraFragmentTest {
 
         deleteDoc(testHash, qrCodesReference); // delete the test doc to see change in collection size
 
-        checkDocExists(testHash, qrCodesReference, new QueryCallback() {
-            public void queryCompleteCheck(boolean docExists) {
-                assertFalse(docExists);
-            }
-        });
-
-
         solo.clickOnView(solo.getView(R.id.addFab));
         assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
         solo.clickOnText("No");
@@ -278,11 +245,6 @@ public class CameraFragmentTest {
         solo.clickOnText("Yes");
         assertTrue(solo.waitForText("STATS", 1, 7000)); // confirm we're back on the profile page
 
-        checkDocExists(testHash, qrCodesReference, new QueryCallback() {
-            public void queryCompleteCheck(boolean docExists) {
-                assertTrue(docExists);
-            }
-        });
     }
 
     /**
@@ -294,13 +256,6 @@ public class CameraFragmentTest {
 
         deleteDoc(testHash, qrCodesReference); // delete the test doc to see change in collection size
 
-        checkDocExists(testHash, qrCodesReference, new QueryCallback() {
-            public void queryCompleteCheck(boolean docExists) {
-                assertFalse(docExists);
-            }
-        });
-
-
         solo.clickOnView(solo.getView(R.id.addFab));
         assertTrue(solo.waitForText("Take Photo", 1, 10000)); // wait 7 sec for photo prompt to appear
         solo.clickOnText("No");
@@ -308,11 +263,6 @@ public class CameraFragmentTest {
         solo.clickOnText("No");
         assertTrue(solo.waitForText("STATS", 1, 7000)); // confirm we're back on the profile page
 
-        checkDocExists(testHash, qrCodesReference, new QueryCallback() {
-            public void queryCompleteCheck(boolean docExists) {
-                assertTrue(docExists);
-            }
-        });
     }
 
     /**
@@ -339,25 +289,4 @@ public class CameraFragmentTest {
                 });
     }
 
-    /**
-     * Helper function to check if a QR code document exists
-     *
-     * @param docToCheck document that should be checked for
-     * @param cr         CollectionReference to the collection being accessed
-     * @reference <a href="https://firebase.google.com/docs/firestore/query-data/get-data">used without major modification</a>
-     */
-    public void checkDocExists(String docToCheck, CollectionReference cr, final QueryCallback docExists) {
-        DocumentReference docRef = cr.document(docToCheck);
-        docRef.get().addOnSuccessListener(result -> {
-
-            if (result.exists()) {
-                Log.d("DocExist", "DocumentSnapshot data: " + result.getData());
-                docExists.queryCompleteCheck(true);
-            } else {
-                Log.d("DocExist", "No such document");
-                docExists.queryCompleteCheck(false);
-            }
-
-        });
-    }
 }

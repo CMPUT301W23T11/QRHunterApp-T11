@@ -352,7 +352,7 @@ public class SearchFragment extends Fragment {
                                         .get()
                                         .addOnSuccessListener(stuf -> {
                                             for (QueryDocumentSnapshot thin : stuf) {
-                                                System.out.println(thin.get("topQRRegional"));
+                                                System.out.println("topQRRegional " + thin.get("topQRRegional"));
                                             }
                                         });
                                 System.out.println(randomCollection);
