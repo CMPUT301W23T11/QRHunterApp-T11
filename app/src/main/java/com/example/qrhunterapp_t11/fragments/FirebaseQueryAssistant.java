@@ -273,10 +273,9 @@ public class FirebaseQueryAssistant {
      *
      * @param username User's username
      * @param qrCodeID QR Code to delete
-     * @param deleted  Callback for query
      * @sources Firestore documentation
      */
-    public void deleteQR(@NonNull String username, @NonNull String qrCodeID, final @NonNull QueryCallback deleted) {
+    public void deleteQR(@NonNull String username, @NonNull String qrCodeID) {
 
         usersReference.document(username).update("qrCodeIDs", FieldValue.arrayRemove(qrCodeID));
         usersReference.document(username).update("qrCodeHashes", FieldValue.arrayRemove(qrCodeID.substring(0, 64)));

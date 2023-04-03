@@ -157,15 +157,11 @@ public class ProfileFragment extends Fragment {
                                                 .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                                                     @Override
                                                     public void onClick(DialogInterface dialogInterface, int i) {
-                                                        firebaseQueryAssistant.deleteQR(username, qrCodeID, new QueryCallback() {
-                                                            @Override
-                                                            public void queryCompleteCheck(boolean deleted) {
-                                                                assert deleted;
-                                                                FragmentTransaction trans = getParentFragmentManager().beginTransaction();
-                                                                trans.replace(R.id.main_screen, new ProfileFragment(db, username, displayName));
-                                                                trans.commit();
-                                                            }
-                                                        });
+                                                        firebaseQueryAssistant.deleteQR(username, qrCodeID);
+
+                                                        FragmentTransaction trans = getParentFragmentManager().beginTransaction();
+                                                        trans.replace(R.id.main_screen, new ProfileFragment(db, username, displayName));
+                                                        trans.commit();
                                                     }
                                                 })
                                                 .create();
