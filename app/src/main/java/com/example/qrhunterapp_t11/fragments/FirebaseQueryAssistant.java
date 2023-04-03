@@ -120,8 +120,11 @@ public class FirebaseQueryAssistant {
         usersReference.document(username)
                 .get()
                 .addOnSuccessListener(user -> {
-                    ArrayList<String> userQRHashes = (ArrayList<String>) user.get("qrCodeHashes");
-                    hasCodes.queryCompleteCheck(!userQRHashes.isEmpty());
+                    System.out.println(username);
+                    if (user.exists()) {
+                        ArrayList<String> userQRHashes = (ArrayList<String>) user.get("qrCodeHashes");
+                        hasCodes.queryCompleteCheck(!userQRHashes.isEmpty());
+                    }
                 });
     }
 
