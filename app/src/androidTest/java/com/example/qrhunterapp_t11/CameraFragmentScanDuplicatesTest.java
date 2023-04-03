@@ -40,7 +40,9 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * Link to qrCode being used in this test: https://en.wikipedia.org/wiki/QR_code
+ * -------------------------IMPORTANT-------------------------
+ * Link to qrCode being used in this test: https://en.wikipedia.org/wiki/QR_code THIS IS THE QRCODE THAT MUST BE SCANNED IN EACH TEST (easiest to add to the wall in the virtual scene)
+ * -----------------------------------------------------------
  * Some manual testing required: tester must accept permissions and scan the provided qr Code
  * Test the following situations:
  * 0. User's qrCode photo appears on the qrCode view in their account
@@ -122,7 +124,7 @@ public class CameraFragmentScanDuplicatesTest {
      */
     @Test
     public void photoAppears() {
-        String testId = "8227ad036b504e39fe29393ce170908be2b1ea636554488fa86de5d9d6cd2c32";
+        String testId = "9a7cd5efda286fbcdd26f89e64a360c560208248b301ff49ad670cb5552790ff";
         final int[] photoSize = new int[1];
         qrReference.document(testId).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
@@ -154,7 +156,7 @@ public class CameraFragmentScanDuplicatesTest {
      */
     @Test
     public void nullLocationNoUpdateLocation() {
-        String testId = "8227ad036b504e39fe29393ce170908be2b1ea636554488fa86de5d9d6cd2c32";
+        String testId = "9a7cd5efda286fbcdd26f89e64a360c560208248b301ff49ad670cb5552790ff";
         String testComment = "test" + rand.nextInt(1000000);
 
         // scan qr code the first time with null location
@@ -200,7 +202,7 @@ public class CameraFragmentScanDuplicatesTest {
     @Test
     public void nullLocationUpdateLocationWithNull() {
 
-        String testId = "8227ad036b504e39fe29393ce170908be2b1ea636554488fa86de5d9d6cd2c32";
+        String testId = "9a7cd5efda286fbcdd26f89e64a360c560208248b301ff49ad670cb5552790ff";
         String testComment = "test" + rand.nextInt(1000000);
 
         // scan qr code the first time with null location
@@ -245,7 +247,7 @@ public class CameraFragmentScanDuplicatesTest {
     @Test
     public void nullLocationUpdateLocationWithLocation() {
 
-        String testId = "8227ad036b504e39fe29393ce170908be2b1ea636554488fa86de5d9d6cd2c32";
+        String testId = "9a7cd5efda286fbcdd26f89e64a360c560208248b301ff49ad670cb5552790ff";
         String testComment = "test" + rand.nextInt(1000000);
         solo.clickOnView(solo.getView(R.id.map)); // Go to map to avoid emulator bug with not allowing location data
         solo.sleep(5000);
@@ -293,7 +295,7 @@ public class CameraFragmentScanDuplicatesTest {
      */
     @Test
     public void LocationNoUpdateLocation() {
-        String testId = "8227ad036b504e39fe29393ce170908be2b1ea636554488fa86de5d9d6cd2c32";
+        String testId = "9a7cd5efda286fbcdd26f89e64a360c560208248b301ff49ad670cb5552790ff";
         String testComment = "test" + rand.nextInt(1000000);
 
         // scan qr code the first time with null location
@@ -335,7 +337,7 @@ public class CameraFragmentScanDuplicatesTest {
     @Test
     public void LocationUpdateLocationWithNull() {
 
-        String testId = "8227ad036b504e39fe29393ce170908be2b1ea636554488fa86de5d9d6cd2c32";
+        String testId = "9a7cd5efda286fbcdd26f89e64a360c560208248b301ff49ad670cb5552790ff";
         String testComment = "test" + rand.nextInt(1000000);
 
         // scan qr code the first time with null location
@@ -379,7 +381,7 @@ public class CameraFragmentScanDuplicatesTest {
     @Test
     public void LocationUpdateNoUpdateLocation() {
 
-        String testId = "8227ad036b504e39fe29393ce170908be2b1ea636554488fa86de5d9d6cd2c32";
+        String testId = "9a7cd5efda286fbcdd26f89e64a360c560208248b301ff49ad670cb5552790ff";
         String testComment = "test" + rand.nextInt(1000000);
         solo.clickOnView(solo.getView(R.id.map)); // Go to map to avoid emulator bug with not allowing location data
         solo.sleep(5000);

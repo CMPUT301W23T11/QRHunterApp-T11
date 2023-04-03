@@ -70,6 +70,7 @@ public class QRCodeView extends DialogFragment {
     private QRCodeAdapter adapter;
     private String currentUser;
     private FirebaseQueryAssistant firebaseQueryAssistant;
+    private PhotoAdapter photoAdapter;
 
     /**
      * Empty constructor
@@ -101,7 +102,7 @@ public class QRCodeView extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        PhotoAdapter photoAdapter;
+
 
         //prefs = this.getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
         currentUser = Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null);
