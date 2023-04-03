@@ -59,7 +59,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 
@@ -327,22 +326,18 @@ public class SearchFragment extends Fragment {
                                 int userIndex = 0;
                                 ArrayList<User> users = new ArrayList<>();
                                 ArrayList<QRCode> qrsPoints = new ArrayList<>();
+                                ArrayList<String> usernames = new ArrayList<>();
 
-                                for (Map.Entry<User, QRCode> mapElement : hashMap.entrySet()) {
-                                    User user = mapElement.getKey();
+                                for (User user : hashMap.keySet()) {
                                     users.add(user);
-                                    QRCode qrCode = mapElement.getValue();
-                                    qrsPoints.add(qrCode);
+                                    qrsPoints.add(hashMap.get(user));
                                 }
 
                                 randomCollection = "UsersRegional" + rand.nextInt(1000000);
-
                                 for (int i = 0; i < users.size(); i++) {
                                     String currentUserUsername = users.get(i).getUsername();
-                                    if (currentUserUsername.equals(Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null))) {
-                                        userIndex = (i + 1);
-                                        userInLeaderboard = true;
-                                    }
+                                    usernames.add(currentUserUsername);
+
                                     db.collection(randomCollection).document(currentUserUsername).set(users.get(i));
                                     db.collection(randomCollection).document(currentUserUsername).update("topQRRegional", qrsPoints.get(i).getPoints());
                                 }
@@ -351,6 +346,11 @@ public class SearchFragment extends Fragment {
                                 leaderboardOptions = new FirestoreRecyclerOptions.Builder<User>()
                                         .setQuery(query, User.class)
                                         .build();
+
+                                if (usernames.contains(Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null))) {
+                                    userInLeaderboard = true;
+                                    userIndex = (usernames.indexOf(Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null)) + 1);
+                                }
 
                                 // Set user's rank if they are on the leaderboard
                                 String yourRankString;
@@ -420,6 +420,24 @@ public class SearchFragment extends Fragment {
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    /**
+     * Delete random collection
+     */
+    @Override
+    public void onDetach() {
+
+        super.onDetach();
+
+        if (randomCollection != null) {
+            cleanUpRegionalCollections(new QueryCallback() {
+                @Override
+                public void queryCompleteCheck(boolean queryComplete) {
+                    assert queryComplete;
+                }
+            });
+        }
     }
 
     /**
