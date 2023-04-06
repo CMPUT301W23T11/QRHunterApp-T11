@@ -22,10 +22,12 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -162,6 +164,57 @@ public class MainActivity extends AppCompatActivity {
      */
     public void populateApp() {
 
+        ArrayList<QRCode> qrCodes = new ArrayList<>();
+
+        // Set number of QR Codes to add to db
+        for (int i = 0; i < 10; i++) {
+            // Set maximum distance away from centre of region for cluster
+            int randomClusterBounds = new Random().nextInt(60) - 30;
+
+            // For U of A region
+//            double latitude = Double.parseDouble("53.5" + (265 + randomClusterBounds));
+//            double longitude = Double.parseDouble("-113.5" + (258 + randomClusterBounds));
+
+            // For Googleplex region
+            double latitude = Double.parseDouble("37.4" + (221 + randomClusterBounds));
+            double longitude = Double.parseDouble("-122.0" + (841 + randomClusterBounds));
+
+            QRCode qrCode = new QRCode("randomshit" + ((randomClusterBounds + 1) * i) + "hopefullyrandomenough" + (randomClusterBounds * 100));
+
+            Geocoder geocoder = new Geocoder(this.getApplicationContext(), Locale.getDefault());
+            List<Address> addresses;
+
+            try {
+                addresses = geocoder.getFromLocation(latitude, longitude, 1);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            // Set some of the QR Code's data
+            qrCode.setID(latitude, longitude);
+            qrCode.setLatitude(latitude);
+            qrCode.setLongitude(longitude);
+            ArrayList<String> inCollection = new ArrayList<>();
+            qrCode.setInCollection(inCollection);
+
+            if (!addresses.isEmpty()) {
+                qrCode.setCountry(addresses.get(0).getCountryName());
+                qrCode.setAdminArea(addresses.get(0).getAdminArea());
+                qrCode.setSubAdminArea(addresses.get(0).getSubAdminArea());
+                qrCode.setLocality(addresses.get(0).getLocality());
+                qrCode.setSubLocality(addresses.get(0).getSubLocality());
+
+                String postalCode = addresses.get(0).getPostalCode();
+                qrCode.setPostalCode(postalCode);
+                // Convert code to prefix (For most countries this is just the first three digits)
+                qrCode.setPostalCodePrefix(postalCode.substring(0, 3));
+            }
+
+            // Add QR Code to DB and local array
+            db.collection("QRCodes").document(qrCode.getID()).set(qrCode);
+            qrCodes.add(qrCode);
+        }
+
         // Set number of users to add, be careful when setting values here
         for (int i = 3; i < 5; i++) {
 
@@ -176,64 +229,25 @@ public class MainActivity extends AppCompatActivity {
             ArrayList<String> qrCodeIDs = new ArrayList<>();
             ArrayList<String> commentedOn = new ArrayList<>();
 
-            int rangeQRCodesPerUser = new Random().nextInt(15);
+            // Add a random number of QR Codes from the array to the user's collection
+            int rangeQRCodesForUser = new Random().nextInt(qrCodes.size());
+            Collections.shuffle(qrCodes);
+            for (int j = 0; j < rangeQRCodesForUser; j++) {
 
-            for (int j = 0; j < rangeQRCodesPerUser; j++) {
-
-                // Set maximum distance away from centre of region for cluster
-                int randomClusterBounds = new Random().nextInt(60) - 30;
-
-                // For U of A region
-//                double latitude = Double.parseDouble("53.5" + (265 + randomClusterBounds));
-//                double longitude = Double.parseDouble("-113.5" + (258 + randomClusterBounds));
-
-                // For Googleplex region
-                double latitude = Double.parseDouble("37.4" + (221 + randomClusterBounds));
-                double longitude = Double.parseDouble("-122.0" + (841 + randomClusterBounds));
-
-                QRCode qrCode = new QRCode("randomshit" + ((j + 1) * i) + "hopefullyrandomenough" + (rangeQRCodesPerUser * 100));
-
-                Geocoder geocoder = new Geocoder(this.getApplicationContext(), Locale.getDefault());
-                List<Address> addresses;
-
-                try {
-                    addresses = geocoder.getFromLocation(latitude, longitude, 1);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-                // Set some of the QR Code's data
-                qrCode.setID(latitude, longitude);
-                qrCode.setLatitude(latitude);
-                qrCode.setLongitude(longitude);
-                ArrayList<String> inCollection = new ArrayList<>();
-                inCollection.add(username);
-                qrCode.setInCollection(inCollection);
-
-                if (!addresses.isEmpty()) {
-                    qrCode.setCountry(addresses.get(0).getCountryName());
-                    qrCode.setAdminArea(addresses.get(0).getAdminArea());
-                    qrCode.setSubAdminArea(addresses.get(0).getSubAdminArea());
-                    qrCode.setLocality(addresses.get(0).getLocality());
-                    qrCode.setSubLocality(addresses.get(0).getSubLocality());
-
-                    String postalCode = addresses.get(0).getPostalCode();
-                    qrCode.setPostalCode(postalCode);
-                    // Convert code to prefix (For most countries this is just the first three digits)
-                    qrCode.setPostalCodePrefix(postalCode.substring(0, 3));
-                }
+                QRCode currentQRCode = qrCodes.get(j);
+                int currentQRCodePoints = currentQRCode.getPoints();
 
                 // Increment user's stats/collection
-                totalPoints += qrCode.getPoints();
+                totalPoints += currentQRCodePoints;
                 totalScans += 1;
-                if (qrCode.getPoints() > topQRCode) {
-                    topQRCode = qrCode.getPoints();
+                if (currentQRCodePoints > topQRCode) {
+                    topQRCode = currentQRCodePoints;
                 }
-                qrCodeHashes.add(qrCode.getHash());
-                qrCodeIDs.add(qrCode.getID());
+                qrCodeHashes.add(currentQRCode.getHash());
+                qrCodeIDs.add(currentQRCode.getID());
 
-                // Add QR Code to DB
-                db.collection("QRCodes").document(qrCode.getID()).set(qrCode);
+                // Update qrCode document's inCollection field
+                db.collection("QRCodes").document(currentQRCode.getID()).update("inCollection", FieldValue.arrayUnion(username));
             }
 
             User user = new User(displayName, username, totalPoints, totalScans, topQRCode, email, qrCodeIDs, qrCodeHashes, commentedOn);
