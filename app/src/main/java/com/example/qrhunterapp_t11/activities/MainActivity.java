@@ -1,5 +1,7 @@
 package com.example.qrhunterapp_t11.activities;
 
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -14,6 +16,7 @@ import com.example.qrhunterapp_t11.fragments.ProfileFragment;
 import com.example.qrhunterapp_t11.fragments.SearchFragment;
 import com.example.qrhunterapp_t11.fragments.SettingsFragment;
 import com.example.qrhunterapp_t11.objectclasses.Preference;
+import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.example.qrhunterapp_t11.objectclasses.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -21,7 +24,11 @@ import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
 
 /**
  * Main app activity. Default startup screen is the player profile.
@@ -83,6 +90,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         } else {
+
+            populateApp();
+
             getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null), Preference.getPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, null))).commit();
         }
 
@@ -145,6 +155,86 @@ public class MainActivity extends AppCompatActivity {
                     numUsers = (int) snapshot.getCount();
                     setNumUsers.setNumUsers(numUsers);
                 });
+    }
+
+    /**
+     * Helper function to populate a small cluster of area in the app
+     */
+    public void populateApp() {
+        for (int i = 3; i < 5; i++) {
+            String username = "user" + i;
+            String displayName = username;
+            int totalPoints = 0;
+            int totalScans = 0;
+            int topQRCode = 0;
+            String email = "";
+            ArrayList<String> qrCodeHashes = new ArrayList<>();
+            ArrayList<String> qrCodeIDs = new ArrayList<>();
+            ArrayList<String> commentedOn = new ArrayList<>();
+
+            int rangeQRCodesPerUser = new Random().nextInt(15);
+
+            for (int j = 0; j < rangeQRCodesPerUser; j++) {
+
+                // Set maximum distance away from centre of region for cluster
+                int randomClusterBounds = new Random().nextInt(60) - 30;
+
+                // For U of A region
+                double latitude = Double.parseDouble("53.5" + (265 + randomClusterBounds));
+                double longitude = Double.parseDouble("-113.5" + (258 + randomClusterBounds));
+
+                // For Googleplex region
+//            double latitude = Double.parseDouble("37.4" + (221 + randomClusterBounds));
+//            double longitude = Double.parseDouble("-122.0" + (841 + randomClusterBounds));
+
+                QRCode qrCode = new QRCode("randomshit" + (rangeQRCodesPerUser * i) + "hopefullyrandomenough" + (rangeQRCodesPerUser * 100));
+
+                Geocoder geocoder = new Geocoder(this.getApplicationContext(), Locale.getDefault());
+                List<Address> addresses;
+
+                try {
+                    // Get more data about the QR Code's location based on latitude and longitude
+                    addresses = geocoder.getFromLocation(latitude, longitude, 1);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                // Set some of the QR Code's data
+                qrCode.setID(latitude, longitude);
+                qrCode.setLatitude(latitude);
+                qrCode.setLongitude(longitude);
+                ArrayList<String> inCollection = new ArrayList<>();
+                inCollection.add(username);
+                qrCode.setInCollection(inCollection);
+
+                if (!addresses.isEmpty()) {
+                    qrCode.setCountry(addresses.get(0).getCountryName());
+                    qrCode.setAdminArea(addresses.get(0).getAdminArea());
+                    qrCode.setSubAdminArea(addresses.get(0).getSubAdminArea());
+                    qrCode.setLocality(addresses.get(0).getLocality());
+                    qrCode.setSubLocality(addresses.get(0).getSubLocality());
+
+                    String postalCode = addresses.get(0).getPostalCode();
+                    qrCode.setPostalCode(postalCode);
+                    // Convert code to prefix (For most countries this is just the first three digits)
+                    qrCode.setPostalCodePrefix(postalCode.substring(0, 3));
+                }
+
+                // Increment user's stats/collection
+                totalPoints += qrCode.getPoints();
+                totalScans += 1;
+                topQRCode = totalPoints;
+                qrCodeHashes.add(qrCode.getHash());
+                qrCodeIDs.add(qrCode.getID());
+
+                // Add QR Code to DB
+                db.collection("QRCodes").document(qrCode.getID()).set(qrCode);
+            }
+
+            User user = new User(displayName, username, totalPoints, totalScans, topQRCode, email, qrCodeIDs, qrCodeHashes, commentedOn);
+
+            usersReference.document(username).set(user);
+        }
     }
 
     /**
