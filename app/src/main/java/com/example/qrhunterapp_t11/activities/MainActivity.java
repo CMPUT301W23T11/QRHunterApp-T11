@@ -165,25 +165,27 @@ public class MainActivity extends AppCompatActivity {
     public void populateApp() {
 
         ArrayList<QRCode> qrCodes = new ArrayList<>();
+        int numQRCodesToAddToDB = 10;
 
         // Set number of QR Codes to add to db
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < numQRCodesToAddToDB; i++) {
+
             // Set maximum distance away from centre of region for cluster
-            int randomClusterBounds = new Random().nextInt(60) - 30;
+            int randomClusterBoundsLat = new Random().nextInt(100) - 50;
+            int randomClusterBoundsLong = new Random().nextInt(100) - 50;
 
             // For U of A region
-//            double latitude = Double.parseDouble("53.5" + (265 + randomClusterBounds));
-//            double longitude = Double.parseDouble("-113.5" + (258 + randomClusterBounds));
+//            double latitude = Double.parseDouble("53.5" + (265 + randomClusterBoundsLat));
+//            double longitude = Double.parseDouble("-113.5" + (258 + randomClusterBoundsLong));
 
             // For Googleplex region
-            double latitude = Double.parseDouble("37.4" + (221 + randomClusterBounds));
-            double longitude = Double.parseDouble("-122.0" + (841 + randomClusterBounds));
+            double latitude = Double.parseDouble("37.4" + (221 + randomClusterBoundsLat));
+            double longitude = Double.parseDouble("-122.0" + (841 + randomClusterBoundsLong));
 
-            QRCode qrCode = new QRCode("randomshit" + ((randomClusterBounds + 1) * i) + "hopefullyrandomenough" + (randomClusterBounds * 100));
+            QRCode qrCode = new QRCode("randomshit" + (randomClusterBoundsLat * i) + "hopefullyrandomenough" + (randomClusterBoundsLong * (i + 1)));
 
             Geocoder geocoder = new Geocoder(this.getApplicationContext(), Locale.getDefault());
             List<Address> addresses;
-
             try {
                 addresses = geocoder.getFromLocation(latitude, longitude, 1);
             } catch (IOException e) {
@@ -206,7 +208,6 @@ public class MainActivity extends AppCompatActivity {
 
                 String postalCode = addresses.get(0).getPostalCode();
                 qrCode.setPostalCode(postalCode);
-                // Convert code to prefix (For most countries this is just the first three digits)
                 qrCode.setPostalCodePrefix(postalCode.substring(0, 3));
             }
 
@@ -229,9 +230,10 @@ public class MainActivity extends AppCompatActivity {
             ArrayList<String> qrCodeIDs = new ArrayList<>();
             ArrayList<String> commentedOn = new ArrayList<>();
 
-            // Add a random number of QR Codes from the array to the user's collection
+            // Add a random selection of QR Codes from the array to the user's collection
             int rangeQRCodesForUser = new Random().nextInt(qrCodes.size());
             Collections.shuffle(qrCodes);
+
             for (int j = 0; j < rangeQRCodesForUser; j++) {
 
                 QRCode currentQRCode = qrCodes.get(j);
