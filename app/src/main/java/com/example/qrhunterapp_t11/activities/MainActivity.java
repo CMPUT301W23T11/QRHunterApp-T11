@@ -15,6 +15,7 @@ import com.example.qrhunterapp_t11.fragments.MapFragment;
 import com.example.qrhunterapp_t11.fragments.ProfileFragment;
 import com.example.qrhunterapp_t11.fragments.SearchFragment;
 import com.example.qrhunterapp_t11.fragments.SettingsFragment;
+import com.example.qrhunterapp_t11.objectclasses.Comment;
 import com.example.qrhunterapp_t11.objectclasses.Preference;
 import com.example.qrhunterapp_t11.objectclasses.QRCode;
 import com.example.qrhunterapp_t11.objectclasses.User;
@@ -94,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
 
             //populateApp();
+            //commentOnQRCode();
 
             getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null), Preference.getPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, null))).commit();
         }
@@ -257,6 +259,26 @@ public class MainActivity extends AppCompatActivity {
 
             usersReference.document(username).set(user);
         }
+    }
+
+    /**
+     * Helper function to add a comment to a QR Code
+     */
+    public void commentOnQRCode() {
+
+        // Comment parameters
+        String usernameToComment = "user3";
+        String displayNameToComment = "user3";
+        String commentString = "very sikk bro";
+
+        Comment comment = new Comment(commentString, displayNameToComment, usernameToComment);
+
+        // QRCode ID to leave comment on
+        String qrCodeIDToCommentOn = "11e6b40bfa828b0a78d05a983346b1de44a0c72cc948225bc16c8c9a806d497f37.4237-122.0794";
+
+        // Update database
+        db.collection("QRCodes").document(qrCodeIDToCommentOn).collection("commentList").add(comment);
+        usersReference.document(usernameToComment).update("commentedOn", FieldValue.arrayUnion(qrCodeIDToCommentOn));
     }
 
     /**
