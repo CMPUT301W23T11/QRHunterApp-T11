@@ -161,7 +161,11 @@ public class MainActivity extends AppCompatActivity {
      * Helper function to populate a small cluster of area in the app
      */
     public void populateApp() {
+
+        // Set number of users to add, be careful when setting values here
         for (int i = 3; i < 5; i++) {
+
+            // Initialize values for user
             String username = "user" + i;
             String displayName = username;
             int totalPoints = 0;
@@ -187,13 +191,12 @@ public class MainActivity extends AppCompatActivity {
 //            double latitude = Double.parseDouble("37.4" + (221 + randomClusterBounds));
 //            double longitude = Double.parseDouble("-122.0" + (841 + randomClusterBounds));
 
-                QRCode qrCode = new QRCode("randomshit" + (rangeQRCodesPerUser * i) + "hopefullyrandomenough" + (rangeQRCodesPerUser * 100));
+                QRCode qrCode = new QRCode("randomshit" + ((j + 1) * i) + "hopefullyrandomenough" + (rangeQRCodesPerUser * 100));
 
                 Geocoder geocoder = new Geocoder(this.getApplicationContext(), Locale.getDefault());
                 List<Address> addresses;
 
                 try {
-                    // Get more data about the QR Code's location based on latitude and longitude
                     addresses = geocoder.getFromLocation(latitude, longitude, 1);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -223,7 +226,9 @@ public class MainActivity extends AppCompatActivity {
                 // Increment user's stats/collection
                 totalPoints += qrCode.getPoints();
                 totalScans += 1;
-                topQRCode = totalPoints;
+                if (totalPoints > topQRCode) {
+                    topQRCode = totalPoints;
+                }
                 qrCodeHashes.add(qrCode.getHash());
                 qrCodeIDs.add(qrCode.getID());
 
