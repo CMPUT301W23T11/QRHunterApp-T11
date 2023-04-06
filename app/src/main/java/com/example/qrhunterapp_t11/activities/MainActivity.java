@@ -175,12 +175,12 @@ public class MainActivity extends AppCompatActivity {
             int randomClusterBoundsLong = new Random().nextInt(100) - 50;
 
             // For U of A region
-//            double latitude = Double.parseDouble("53.5" + (265 + randomClusterBoundsLat));
-//            double longitude = Double.parseDouble("-113.5" + (258 + randomClusterBoundsLong));
+            double latitude = Double.parseDouble("53.5" + (265 + randomClusterBoundsLat));
+            double longitude = Double.parseDouble("-113.5" + (258 + randomClusterBoundsLong));
 
             // For Googleplex region
-            double latitude = Double.parseDouble("37.4" + (221 + randomClusterBoundsLat));
-            double longitude = Double.parseDouble("-122.0" + (841 + randomClusterBoundsLong));
+//            double latitude = Double.parseDouble("37.4" + (221 + randomClusterBoundsLat));
+//            double longitude = Double.parseDouble("-122.0" + (841 + randomClusterBoundsLong));
 
             QRCode qrCode = new QRCode("randomshit" + (randomClusterBoundsLat * i) + "hopefullyrandomenough" + (randomClusterBoundsLong * (i + 1)));
 
@@ -216,8 +216,8 @@ public class MainActivity extends AppCompatActivity {
             qrCodes.add(qrCode);
         }
 
-        // Set number of users to add, be careful when setting values here
-        for (int i = 3; i < 5; i++) {
+        // Set users to add, be very careful when setting values here
+        for (int i = 3; i < 22; i++) {
 
             // Initialize values for user
             String username = "user" + i;
