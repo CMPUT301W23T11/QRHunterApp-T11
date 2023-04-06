@@ -175,6 +175,8 @@ public class CameraFragment extends Fragment {
                                 DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int which) {
                                         Log.d("PhotoPrompt", "User accepted photo prompt.");
+                                        MediaPlayer importantEffect2 = MediaPlayer.create(getActivity().getApplicationContext(), R.raw.important_file_1);
+                                        importantEffect2.start();
                                         takePhoto();
                                     }
                                 })
@@ -420,7 +422,6 @@ public class CameraFragment extends Fragment {
                         imageUrl = extras.getString("url");
 
                         resizedImageUrl = getResizeImageUrl(imageUrl);
-
                         promptForLocation(); // prompt for location once the TakePhotoActivity has finished
                     }
                 }
