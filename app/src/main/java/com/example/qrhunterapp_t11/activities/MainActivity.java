@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             });
         } else {
 
-            populateApp();
+            //populateApp();
 
             getSupportFragmentManager().beginTransaction().replace(R.id.main_screen, new ProfileFragment(db, Preference.getPrefsString(Preference.PREFS_CURRENT_USER, null), Preference.getPrefsString(Preference.PREFS_CURRENT_USER_DISPLAY_NAME, null))).commit();
         }
@@ -165,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
     public void populateApp() {
 
         ArrayList<QRCode> qrCodes = new ArrayList<>();
-        int numQRCodesToAddToDB = 10;
+        int numQRCodesToAddToDB = 17;
 
         // Set number of QR Codes to add to db
         for (int i = 0; i < numQRCodesToAddToDB; i++) {
@@ -217,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Set users to add, be very careful when setting values here
-        for (int i = 3; i < 22; i++) {
+        for (int i = 22; i < 47; i++) {
 
             // Initialize values for user
             String username = "user" + i;
