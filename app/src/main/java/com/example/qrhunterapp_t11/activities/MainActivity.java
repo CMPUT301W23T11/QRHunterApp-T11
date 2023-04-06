@@ -248,8 +248,9 @@ public class MainActivity extends AppCompatActivity {
                 qrCodeHashes.add(currentQRCode.getHash());
                 qrCodeIDs.add(currentQRCode.getID());
 
-                // Update qrCode document's inCollection field
+                // Update qrCode document's inCollection field, and its numberOfScans field
                 db.collection("QRCodes").document(currentQRCode.getID()).update("inCollection", FieldValue.arrayUnion(username));
+                db.collection("QRCodes").document(currentQRCode.getID()).update("numberOfScans", FieldValue.increment(1));
             }
 
             User user = new User(displayName, username, totalPoints, totalScans, topQRCode, email, qrCodeIDs, qrCodeHashes, commentedOn);
