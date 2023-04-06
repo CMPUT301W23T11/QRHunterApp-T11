@@ -184,12 +184,12 @@ public class MainActivity extends AppCompatActivity {
                 int randomClusterBounds = new Random().nextInt(60) - 30;
 
                 // For U of A region
-                double latitude = Double.parseDouble("53.5" + (265 + randomClusterBounds));
-                double longitude = Double.parseDouble("-113.5" + (258 + randomClusterBounds));
+//                double latitude = Double.parseDouble("53.5" + (265 + randomClusterBounds));
+//                double longitude = Double.parseDouble("-113.5" + (258 + randomClusterBounds));
 
                 // For Googleplex region
-//            double latitude = Double.parseDouble("37.4" + (221 + randomClusterBounds));
-//            double longitude = Double.parseDouble("-122.0" + (841 + randomClusterBounds));
+                double latitude = Double.parseDouble("37.4" + (221 + randomClusterBounds));
+                double longitude = Double.parseDouble("-122.0" + (841 + randomClusterBounds));
 
                 QRCode qrCode = new QRCode("randomshit" + ((j + 1) * i) + "hopefullyrandomenough" + (rangeQRCodesPerUser * 100));
 
@@ -226,8 +226,8 @@ public class MainActivity extends AppCompatActivity {
                 // Increment user's stats/collection
                 totalPoints += qrCode.getPoints();
                 totalScans += 1;
-                if (totalPoints > topQRCode) {
-                    topQRCode = totalPoints;
+                if (qrCode.getPoints() > topQRCode) {
+                    topQRCode = qrCode.getPoints();
                 }
                 qrCodeHashes.add(qrCode.getHash());
                 qrCodeIDs.add(qrCode.getID());
