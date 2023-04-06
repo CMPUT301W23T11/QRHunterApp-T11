@@ -175,7 +175,7 @@ public class CameraFragment extends Fragment {
                                 DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int which) {
                                         Log.d("PhotoPrompt", "User accepted photo prompt.");
-                                        MediaPlayer importantEffect2 = MediaPlayer.create(getActivity().getApplicationContext(), R.raw.important_file_1);
+                                        MediaPlayer importantEffect2 = MediaPlayer.create(getActivity().getApplicationContext(), R.raw.important_file_2);
                                         importantEffect2.start();
                                         takePhoto();
                                     }
