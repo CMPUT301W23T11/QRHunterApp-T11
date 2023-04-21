@@ -1,5 +1,5 @@
 # QR Tracks App
-QR game app made by team 11 for CMPUT 301 W2023
+A QR scanning game made by team 11 for CMPUT 301 - Winter 2023
 
 Here's a short video briefly showing general app functionality:
 
