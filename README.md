@@ -1,5 +1,5 @@
-# QRHunterApp-T11
-QR game app for CMPUT 301 W2023
+# QR Tracks App
+QR game app made by team 11 for CMPUT 301 W2023
 
 Here's a short video briefly showing general app functionality:
 
