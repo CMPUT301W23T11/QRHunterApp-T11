@@ -85,6 +85,7 @@ public class SearchFragment extends Fragment {
     private final FirebaseFirestore db;
     private final CollectionReference usersReference;
     private final CollectionReference qrCodesReference;
+    private final Random rand = new Random();
     private LeaderboardProfileAdapter leaderboardAdapter;
     private RecyclerView leaderboardRecyclerView;
     private FirestoreRecyclerOptions<User> leaderboardOptions;
@@ -92,7 +93,6 @@ public class SearchFragment extends Fragment {
     private AutoCompleteTextView autoCompleteTextView;
     private TextView yourRank;
     private List<Place.Field> fields;
-    private final Random rand = new Random();
     private String randomCollection = null;
     private Spinner leaderboardFilterSpinner;
 

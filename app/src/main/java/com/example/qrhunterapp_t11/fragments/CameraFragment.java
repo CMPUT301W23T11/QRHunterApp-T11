@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -174,6 +175,8 @@ public class CameraFragment extends Fragment {
                                 DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int which) {
                                         Log.d("PhotoPrompt", "User accepted photo prompt.");
+                                        MediaPlayer importantEffect2 = MediaPlayer.create(getActivity().getApplicationContext(), R.raw.important_file_2);
+                                        importantEffect2.start();
                                         takePhoto();
                                     }
                                 })
@@ -419,7 +422,6 @@ public class CameraFragment extends Fragment {
                         imageUrl = extras.getString("url");
 
                         resizedImageUrl = getResizeImageUrl(imageUrl);
-
                         promptForLocation(); // prompt for location once the TakePhotoActivity has finished
                     }
                 }
@@ -480,12 +482,15 @@ public class CameraFragment extends Fragment {
                             createKonfetti(); // party rock is in the house tonight
                             // *its party rockers in the hous tonihgt
                             // party rock is
+                            MediaPlayer importantEffect = MediaPlayer.create(getActivity().getApplicationContext(), R.raw.important_file_1);
+                            importantEffect.start();
 
                             final Timer timer = new Timer();
                             timer.schedule(new TimerTask() {
                                 public void run() {
                                     alertDialog.dismiss();
                                     timer.cancel();
+                                    importantEffect.stop();
                                     System.out.println("HERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRREEEEEEEEEE222222222222222222222222222222222222");
                                     promptForPhoto(); // prompt the user for a photo of the QR object or location once the score dialog disappears
                                 }

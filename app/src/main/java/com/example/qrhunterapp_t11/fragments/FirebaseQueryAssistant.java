@@ -165,14 +165,14 @@ public class FirebaseQueryAssistant {
                 .get()
                 .addOnSuccessListener(qrCode -> {
                             System.out.println("QR EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS111111111111");
-                    if (qrCode.exists()) {
-                        System.out.println("QR EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
-                        ArrayList<String> users = (ArrayList<String>) qrCode.get("inCollection");
-                        userHasQRCode.queryCompleteCheck(users.contains(username));
-                    } else {
-                        System.out.println("QR NOT EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
-                        userHasQRCode.queryCompleteCheck(false);
-                    }
+                            if (qrCode.exists()) {
+                                System.out.println("QR EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
+                                ArrayList<String> users = (ArrayList<String>) qrCode.get("inCollection");
+                                userHasQRCode.queryCompleteCheck(users.contains(username));
+                            } else {
+                                System.out.println("QR NOT EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
+                                userHasQRCode.queryCompleteCheck(false);
+                            }
                         }
                 );
     }
